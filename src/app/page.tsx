@@ -140,7 +140,7 @@ export default function PublicTeamsPage() {
     
     fetchData(); // Initial fetch
 
-    const interval = setInterval(fetchData, 15000); // Poll every 15 seconds
+    const interval = setInterval(fetchData, 60000); // Poll every 60 seconds
     return () => clearInterval(interval);
   }, []);
 
