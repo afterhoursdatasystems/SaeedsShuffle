@@ -19,3 +19,9 @@ export type Match = {
   resultB: number | null;
   court: string;
 };
+
+export type GameFormat = 
+  | 'round-robin' 
+  | 'pool-play-bracket' 
+  | 'king-of-the-court'
+  | 'monarch-of-the-court';

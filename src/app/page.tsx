@@ -2,50 +2,126 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getPublishedTeams } from '@/app/actions';
-import type { Team } from '@/types';
+import { getPublishedData } from '@/app/actions';
+import type { Team, GameFormat } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Volleyball, Users } from 'lucide-react';
+import { Volleyball, Users, Trophy, BookOpen, Crown, Gem, ShieldQuestion } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
+import { Separator } from '@/components/ui/separator';
+
+const formatDetails: Record<GameFormat, { title: string; description: React.ReactNode; icon: React.ElementType }> = {
+  'king-of-the-court': {
+    title: 'Continuous King of the Court',
+    icon: Crown,
+    description: (
+       <div>
+        <p className="mb-4 text-lg">A high-energy, continuous-play format designed to maximize playtime and interaction.</p>
+        <h4 className="font-bold text-xl mb-2">The Concept</h4>
+        <p className="mb-4">A dynamic, non-stop format where the goal is to seize control of the “winner’s court” and hold it against a constant stream of new challengers.</p>
+        <h4 className="font-bold text-xl mb-2">The Flow of Play</h4>
+        <ul className="list-disc pl-5 space-y-2">
+            <li><strong>Court Setup:</strong> Court 1 will be the designated “King/Queen Court” and Court 2 will be the “Challenger Court.”</li>
+            <li><strong>Starting the Game:</strong> The first two teams in line will play on the King Court, and the next two teams will play on the Challenger Court. All games are to 15 points.</li>
+            <li><strong>On the King Court (Court 1):</strong> The winning team stays on the court and earns one point on the main scoreboard. The losing team leaves the court and goes to the back of the challenger line.</li>
+            <li><strong>On the Challenger Court (Court 2):</strong> The winning team of this match becomes the next in line to move up and challenge the current King.</li>
+            <li><strong>Winning the Tournament:</strong> This process repeats continuously. The team with the most points (total wins) at the end of the time is the champion.</li>
+        </ul>
+        <h4 className="font-bold text-xl mt-4 mb-2">Fair Play Inclusions</h4>
+        <p>This format includes The King’s Handicap Rule, Secret Missions, and the Cosmic Scramble to ensure all teams stay engaged. Teams can earn bonus points by completing their missions, and the Cosmic Scramble may be initiated by the TD to refresh team lineups and add a fun, random twist.</p>
+      </div>
+    ),
+  },
+  'monarch-of-the-court': {
+    title: 'Monarch of the Court',
+    icon: Gem,
+    description: (
+      <div>
+        <p className="mb-4 text-lg">A classic King of the Court format with a fun, social twist that gives the winning team a small “power” after their win, adding a layer of strategy and interaction.</p>
+        <h4 className="font-bold text-xl mb-2">The Concept</h4>
+        <p className="mb-4">Win the King Court to earn the title of “The Monarchs” and gain the right to choose a special privilege before your next game.</p>
+        <h4 className="font-bold text-xl mb-2">The Flow of Play</h4>
+         <ul className="list-disc pl-5 space-y-2">
+            <li>The tournament follows the standard KOTC winner-stays-on format.</li>
+            <li><strong>Becoming the Monarch:</strong> After winning a game on the King Court, your team is crowned “The Monarchs”.</li>
+            <li><strong>Using Your Power:</strong> Before the next challenger begins their game against you, you must choose one of the following powers:
+                <ul className="list-circle pl-5 mt-2 space-y-1">
+                    <li><strong>Choose Your Challenger:</strong> You may pick any team waiting in line to be your next opponent.</li>
+                    <li><strong>Impose a Rule:</strong> You may add a fun, temporary rule for the next game only (e.g., “no jump serves”).</li>
+                    <li><strong>Take a Royal Rest:</strong> You can choose to sit out one round. The next two teams will play each other to determine who challenges you next.</li>
+                </ul>
+            </li>
+        </ul>
+        <h4 className="font-bold text-xl mt-4 mb-2">Fair Play Inclusions</h4>
+        <p>To keep the monarchy from becoming a tyranny, this format incorporates The King’s Handicap Rule, Secret Missions, and the Cosmic Scramble. A struggling team can still achieve victory by completing their mission, and the Cosmic Scramble ensures that even a dominant Monarch’s roster isn’t safe from a fun, random shake-up.</p>
+      </div>
+    ),
+  },
+  'pool-play-bracket': {
+    title: 'Pool Play / Bracket',
+    icon: Trophy,
+    description: (
+      <div>
+        <p className="mb-4 text-lg">A classic tournament format where teams first compete in a round-robin style "pool play" to determine seeding, followed by a single-elimination bracket to crown the champion.</p>
+        <h4 className="font-bold text-xl mb-2">Pool Play</h4>
+        <p className="mb-4">All teams will play against each other once. The results of these matches (wins, losses, and point differential) will be used to rank the teams for the bracket.</p>
+        <h4 className="font-bold text-xl mb-2">Bracket Play</h4>
+        <p>After pool play, teams are seeded into a single-elimination tournament. The top-ranked team plays the lowest-ranked team, and so on. Win and you advance, lose and you're out. The last team standing is the winner!</p>
+      </div>
+    ),
+  },
+  'round-robin': {
+    title: 'Round Robin',
+    icon: BookOpen,
+    description: (
+       <div>
+        <p className="mb-4 text-lg">A simple and fair format where every team gets to play against every other team. This is great for maximizing play time and ensuring a variety of matchups.</p>
+        <h4 className="font-bold text-xl mb-2">The Concept</h4>
+        <p className="mb-4">The schedule is generated so that each team plays all other teams once (or twice, depending on the setup). The winner is determined by the final standings based on wins and point differential.</p>
+       </div>
+    )
+  },
+};
 
 export default function PublicTeamsPage() {
   const [teams, setTeams] = useState<Team[]>([]);
+  const [gameFormat, setGameFormat] = useState<GameFormat>('round-robin');
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchTeams() {
-      // Don't show loading skeleton on subsequent polls
+    async function fetchData() {
       if (teams.length === 0) {
         setIsLoading(true);
       }
-      const result = await getPublishedTeams();
+      const result = await getPublishedData();
       if (result.success && result.data) {
-        setTeams(result.data);
+        setTeams(result.data.teams);
+        setGameFormat(result.data.format || 'round-robin');
       } else {
-        console.error('Failed to fetch teams:', result.error);
+        console.error('Failed to fetch data:', result.error);
       }
       setIsLoading(false);
     }
     
-    fetchTeams(); // Initial fetch
+    fetchData(); // Initial fetch
 
-    const interval = setInterval(fetchTeams, 15000); // Poll every 15 seconds
+    const interval = setInterval(fetchData, 15000); // Poll every 15 seconds
     return () => clearInterval(interval);
-  }, []); // Empty dependency array ensures this effect runs only once on mount
+  }, []);
 
   const renderSkeletons = () => (
-    Array.from({ length: 6 }).map((_, index) => (
-       <Card key={index} className="flex flex-col shadow-lg">
+    Array.from({ length: 4 }).map((_, index) => (
+       <Card key={index} className="flex flex-col shadow-lg rounded-xl">
         <CardHeader className="p-6">
-          <Skeleton className="h-8 w-3/4 rounded-md" />
+          <Skeleton className="h-10 w-3/4 rounded-md" />
         </CardHeader>
         <CardContent className="flex-grow p-6 pt-0">
-          <div className="space-y-4">
+          <div className="space-y-6">
             {Array.from({length: 4}).map((_, pIndex) => (
               <div key={pIndex} className="flex items-center gap-4">
-                <Skeleton className="h-12 w-12 rounded-full" />
-                <Skeleton className="h-7 w-1/2 flex-grow rounded-md" />
+                <Skeleton className="h-16 w-16 rounded-full" />
+                <Skeleton className="h-8 w-1/2 flex-grow rounded-md" />
               </div>
             ))}
           </div>
@@ -54,64 +130,82 @@ export default function PublicTeamsPage() {
     ))
   );
 
-  return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <header className="flex h-20 items-center justify-between border-b bg-card px-6 md:px-8">
-        <div className="flex items-center gap-4">
-          <Volleyball className="h-8 w-8 text-primary" />
-          <h1 className="text-2xl font-bold tracking-tight">Saeed's Shuffle</h1>
-        </div>
-        <p className="hidden text-base text-muted-foreground sm:block">Teams refresh automatically</p>
-      </header>
-      <main className="flex-1 p-6 md:p-8 lg:p-12">
-        <div className="mx-auto max-w-screen-2xl">
-          <div className="mb-10 text-center">
-            <h2 className="text-5xl font-bold tracking-tight sm:text-6xl">Tonight's Teams</h2>
-            <p className="mt-4 text-xl text-muted-foreground">
-              Welcome to the shuffle! Find your team below.
-            </p>
-          </div>
+  const CurrentFormatIcon = formatDetails[gameFormat]?.icon || ShieldQuestion;
 
+  return (
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
+      <header className="flex h-24 items-center justify-between border-b-4 border-primary bg-card px-6 md:px-8">
+        <div className="flex items-center gap-4">
+          <Volleyball className="h-12 w-12 text-primary" />
+          <h1 className="text-4xl font-bold tracking-tight">Saeed's Shuffle</h1>
+        </div>
+        <p className="hidden text-xl text-muted-foreground sm:block">Teams refresh automatically</p>
+      </header>
+      <main className="flex-1 p-6 md:p-8">
+        <div className="mx-auto w-full max-w-full">
           {isLoading ? (
-            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {renderSkeletons()}
             </div>
           ) : teams.length > 0 ? (
-            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {teams.map((team) => (
-                  <Card key={team.name} className="flex flex-col rounded-xl border-2 shadow-lg transition-transform hover:scale-105">
-                    <CardHeader className="p-6">
-                      <CardTitle className="flex items-center gap-3 text-2xl font-bold">
-                        <Users className="h-7 w-7 text-primary" />
-                        {team.name}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="flex-grow p-6 pt-0">
-                      <div className="space-y-4">
-                        {team.players.map((player) => (
-                          <div key={player.id} className="flex items-center gap-4">
-                            <Avatar className="h-12 w-12 border-4 border-white">
-                              <AvatarFallback className="bg-primary/20 text-2xl font-bold text-primary">
-                                {player.name.charAt(0)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span className="text-xl font-medium">{player.name}</span>
+            <div className="grid grid-cols-12 gap-8">
+              <div className="col-span-12 lg:col-span-8">
+                  <div className="mb-10 text-left">
+                    <h2 className="text-7xl font-bold tracking-tight">Tonight's Teams</h2>
+                  </div>
+                  <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
+                    {teams.map((team) => (
+                      <Card key={team.name} className="flex flex-col rounded-xl border-2 border-primary/50 shadow-2xl transition-transform hover:scale-105 bg-card">
+                        <CardHeader className="p-6 bg-primary/10 rounded-t-lg">
+                          <CardTitle className="flex items-center gap-4 text-4xl font-bold text-primary">
+                            <Users className="h-10 w-10" />
+                            {team.name}
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex-grow p-6">
+                          <div className="space-y-6">
+                            {team.players.map((player) => (
+                              <div key={player.id} className="flex items-center gap-4">
+                                <Avatar className="h-16 w-16 border-4 border-white">
+                                  <AvatarFallback className="bg-primary/20 text-3xl font-bold text-primary">
+                                    {player.name.charAt(0)}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span className="text-3xl font-medium">{player.name}</span>
+                              </div>
+                            ))}
                           </div>
-                        ))}
-                      </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+              </div>
+              <div className="col-span-12 lg:col-span-4">
+                 <Card className="sticky top-8 rounded-xl border-2 shadow-2xl">
+                    <CardHeader className="p-6 bg-secondary/10 rounded-t-lg">
+                        <CardTitle className="flex items-center gap-4 text-4xl font-bold text-secondary-foreground">
+                            <CurrentFormatIcon className="h-10 w-10 text-secondary" />
+                            Tonight's Format
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-6 text-xl">
+                        <h3 className="font-bold text-3xl mb-4">{formatDetails[gameFormat]?.title}</h3>
+                        {formatDetails[gameFormat]?.description}
                     </CardContent>
-                  </Card>
-              ))}
+                 </Card>
+              </div>
             </div>
           ) : (
-            <div className="py-24 text-center">
-              <h3 className="text-3xl font-semibold">Teams not yet published</h3>
-              <p className="mt-4 text-xl text-muted-foreground">The commissioner is still drafting. Check back soon!</p>
+             <div className="flex h-[60vh] flex-col items-center justify-center rounded-xl border-4 border-dashed bg-muted/50 p-12 text-center">
+              <h3 className="text-6xl font-bold tracking-tight">Teams Not Yet Published</h3>
+              <p className="mt-6 text-3xl text-muted-foreground">The commissioner is still drafting. Check back soon!</p>
+              <Skeleton className="h-16 w-full max-w-md mt-12" />
+              <Skeleton className="h-16 w-full max-w-sm mt-4" />
             </div>
           )}
         </div>
       </main>
-       <footer className="mt-auto py-6 text-center text-base text-muted-foreground">
+       <footer className="mt-auto py-6 text-center text-lg text-muted-foreground">
           <p>&copy; {new Date().getFullYear()} Saeed's Volleyball. All rights reserved.</p>
           <a href="/login" className="mt-2 inline-block text-sm underline">Commissioner Login</a>
         </footer>

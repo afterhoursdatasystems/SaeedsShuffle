@@ -1,20 +1,21 @@
 'use client';
 
-import type { Player, Team, Match } from '@/types';
+import type { Player, Team, Match, GameFormat } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Swords, Save, Users, BarChart2, TrendingUp, CalendarDays, Send } from 'lucide-react';
+import { Swords, Save, Users, BarChart2, TrendingUp, CalendarDays, Send, Crown, Trophy, BookOpen } from 'lucide-react';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import React, { useMemo, useState } from 'react';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { Label } from './ui/label';
 import { Separator } from './ui/separator';
 import { cn } from '@/lib/utils';
-import { publishTeams } from '@/app/actions';
+import { publishData } from '@/app/actions';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 interface TeamsScheduleProps {
   players: Player[];
@@ -45,6 +46,7 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
   const { toast } = useToast();
   const [teamSize, setTeamSize] = useState<number>(4);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [gameFormat, setGameFormat] = useState<GameFormat>('round-robin');
 
   const presentPlayers = useMemo(() => players.filter((p) => p.present), [players]);
   const possibleTeamsCount = Math.floor(presentPlayers.length / teamSize);
@@ -173,6 +175,69 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
     });
   };
 
+  const generateRoundRobinSchedule = (teamNames: string[]): Match[] => {
+    const newSchedule: Match[] = [];
+    const courts = ['Court 1', 'Court 2'];
+    let courtIndex = 0;
+    
+    for (let i = 0; i < teamNames.length; i++) {
+      for (let j = i + 1; j < teamNames.length; j++) {
+        newSchedule.push({
+          id: crypto.randomUUID(),
+          teamA: teamNames[i],
+          teamB: teamNames[j],
+          resultA: null,
+          resultB: null,
+          court: courts[courtIndex % courts.length]
+        });
+        courtIndex++;
+      }
+    }
+    return shuffleArray(newSchedule);
+  };
+
+  const generateKOTCSchedule = (teamNames: string[]): Match[] => {
+    if (teamNames.length < 2) return [];
+
+    let waitingTeams = [...teamNames];
+    const kingCourtMatch: Match = {
+        id: crypto.randomUUID(),
+        teamA: waitingTeams.shift()!,
+        teamB: waitingTeams.shift()!,
+        resultA: null,
+        resultB: null,
+        court: 'King Court',
+    };
+
+    let newSchedule: Match[] = [kingCourtMatch];
+
+    if (waitingTeams.length >= 2) {
+        const challengerCourtMatch: Match = {
+            id: crypto.randomUUID(),
+            teamA: waitingTeams.shift()!,
+            teamB: waitingTeams.shift()!,
+            resultA: null,
+            resultB: null,
+            court: 'Challenger Court',
+        };
+        newSchedule.push(challengerCourtMatch);
+    }
+    
+    // The rest of the teams are in the challenger line
+    waitingTeams.forEach((teamName, index) => {
+        newSchedule.push({
+            id: crypto.randomUUID(),
+            teamA: teamName,
+            teamB: `Waiting #${index + 1}`,
+            resultA: null,
+            resultB: null,
+            court: 'Challenger Line',
+        });
+    });
+
+    return newSchedule;
+  };
+
   const handleGenerateSchedule = () => {
     if (teams.length < 2) {
       toast({
@@ -184,28 +249,31 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
     }
 
     const teamNamesForSchedule = teams.map(t => t.name);
-    const newSchedule: Match[] = [];
-    const courts = ['Court 1', 'Court 2'];
-    let courtIndex = 0;
-    
-    for (let i = 0; i < teamNamesForSchedule.length; i++) {
-      for (let j = i + 1; j < teamNamesForSchedule.length; j++) {
-        newSchedule.push({
-          id: crypto.randomUUID(),
-          teamA: teamNamesForSchedule[i],
-          teamB: teamNamesForSchedule[j],
-          resultA: null,
-          resultB: null,
-          court: courts[courtIndex % courts.length]
-        });
-        courtIndex++;
-      }
+    let newSchedule: Match[] = [];
+
+    switch(gameFormat) {
+        case 'pool-play-bracket':
+        case 'round-robin':
+            newSchedule = generateRoundRobinSchedule(teamNamesForSchedule);
+            break;
+        case 'king-of-the-court':
+        case 'monarch-of-the-court':
+            newSchedule = generateKOTCSchedule(teamNamesForSchedule);
+            break;
+        default:
+             toast({
+                title: 'Unknown game format',
+                description: 'Please select a valid game format.',
+                variant: 'destructive',
+             });
+             return;
     }
-    setSchedule(shuffleArray(newSchedule));
+
+    setSchedule(newSchedule);
     
     toast({
       title: 'Schedule Generated!',
-      description: `${newSchedule.length} matches have been created.`,
+      description: `${newSchedule.length} matches have been created for the ${gameFormat} format.`,
     });
   };
 
@@ -222,7 +290,7 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
     toast({ title: "Results saved", description: "All match results have been updated." });
   };
 
-  const handlePublishTeams = async () => {
+  const handlePublish = async () => {
     if (teams.length === 0) {
       toast({
         title: 'No Teams Generated',
@@ -232,15 +300,15 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
       return;
     }
     setIsPublishing(true);
-    const result = await publishTeams(teams);
+    const result = await publishData(teams, gameFormat);
     setIsPublishing(false);
 
     if (result.success) {
       toast({
-        title: 'Teams Published!',
+        title: 'Data Published!',
         description: (
           <span>
-            Players can now view their teams at{' '}
+            Players can now view teams and format at{' '}
             <a href="/" target="_blank" className="underline font-bold">
               the public dashboard
             </a>.
@@ -249,7 +317,7 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
       });
     } else {
       toast({
-        title: 'Error Publishing Teams',
+        title: 'Error Publishing Data',
         description: result.error,
         variant: 'destructive',
       });
@@ -263,6 +331,8 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
     const galCount = team.players.filter(p => p.gender === 'Gal').length;
     return { totalSkill, avgSkill, guyCount, galCount };
   }
+  
+  const isKOTC = gameFormat === 'king-of-the-court' || gameFormat === 'monarch-of-the-court';
 
   return (
     <div className="space-y-8">
@@ -274,6 +344,20 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
         <CardContent className="space-y-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-lg border p-4">
                 <div className='space-y-2'>
+                    <Label>Game Format</Label>
+                    <Select value={gameFormat} onValueChange={(val: GameFormat) => setGameFormat(val)}>
+                      <SelectTrigger className="w-full sm:w-[240px]">
+                        <SelectValue placeholder="Select a format" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="round-robin"><BookOpen className="inline-block mr-2" /> Round Robin</SelectItem>
+                        <SelectItem value="pool-play-bracket"><Trophy className="inline-block mr-2" /> Pool Play / Bracket</SelectItem>
+                        <SelectItem value="king-of-the-court"><Crown className="inline-block mr-2" /> King of the Court</SelectItem>
+                        <SelectItem value="monarch-of-the-court"><Users className="inline-block mr-2" /> Monarch of the Court</SelectItem>
+                      </SelectContent>
+                    </Select>
+                </div>
+                 <div className='space-y-2'>
                     <Label>Team Size</Label>
                     <RadioGroup value={String(teamSize)} onValueChange={(val) => setTeamSize(Number(val))} className="flex space-x-4">
                         <div className="flex items-center space-x-2">
@@ -317,9 +401,9 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
                   <CardTitle>Tonight's Teams</CardTitle>
                   <CardDescription>Analysis of the generated teams.</CardDescription>
                 </div>
-                <Button onClick={handlePublishTeams} disabled={isPublishing || teams.length === 0}>
+                <Button onClick={handlePublish} disabled={isPublishing || teams.length === 0}>
                     <Send className="mr-2 h-4 w-4" />
-                    {isPublishing ? 'Publishing...' : 'Publish Teams'}
+                    {isPublishing ? 'Publishing...' : 'Publish to Dashboard'}
                 </Button>
             </div>
           </CardHeader>
@@ -378,10 +462,10 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[100px]">Court</TableHead>
+                    <TableHead className="w-[150px]">Court / Status</TableHead>
                     <TableHead>Team A</TableHead>
-                    <TableHead>Team B</TableHead>
-                    <TableHead className="w-[120px] text-center">Result</TableHead>
+                    <TableHead>{ isKOTC ? 'vs Team B / Status' : 'Team B'}</TableHead>
+                    <TableHead className={cn("w-[120px] text-center", isKOTC && "hidden")}>Result</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -390,7 +474,7 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
                       <TableCell><Badge>{match.court}</Badge></TableCell>
                       <TableCell className="font-medium">{match.teamA}</TableCell>
                       <TableCell className="font-medium">{match.teamB}</TableCell>
-                      <TableCell>
+                      <TableCell className={cn(isKOTC && "hidden")}>
                         <div className="flex items-center justify-center gap-2">
                           <Input
                             type="number"
