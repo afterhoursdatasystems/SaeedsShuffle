@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Swords, Save, Users, BarChart2, TrendingUp, CalendarDays, Send, Crown, Trophy, BookOpen } from 'lucide-react';
+import { Swords, Save, Users, BarChart2, TrendingUp, CalendarDays, Send, Crown, Trophy, BookOpen, Gem } from 'lucide-react';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import React, { useMemo, useState } from 'react';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
@@ -52,95 +52,65 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
   const possibleTeamsCount = Math.floor(presentPlayers.length / teamSize);
 
   const createBalancedTeams = (players: Player[], numTeams: number): Team[] => {
-    const shuffledPlayers = shuffleArray(players);
+    // Start with a shuffled list of players to ensure randomness from the start
+    let availablePlayers = shuffleArray(players);
     const shuffledNames = shuffleArray(teamNames);
-    
-    type TeamInternal = { name: string; players: Player[]; totalSkill: number; adjustedSkill: number; maleCount: number; femaleCount: number };
 
-    const newTeams: TeamInternal[] = Array.from({ length: numTeams }, (_, i) => ({
-      name: shuffledNames[i % shuffledNames.length],
-      players: [],
-      totalSkill: 0,
-      adjustedSkill: 0,
-      maleCount: 0,
-      femaleCount: 0,
+    const newTeams: Team[] = Array.from({ length: numTeams }, (_, i) => ({
+        name: shuffledNames[i % shuffledNames.length],
+        players: [],
     }));
 
-    const playersWithAdjusted = shuffledPlayers.map(player => ({
-      ...player,
-      adjustedSkill: player.gender === 'Guy' ? player.skill : player.skill - 1.2
-    }));
+    // Sort players by skill to ensure top players are distributed
+    availablePlayers.sort((a, b) => b.skill - a.skill);
 
-    const males = playersWithAdjusted.filter(p => p.gender === 'Guy').sort((a,b) => b.adjustedSkill - a.adjustedSkill);
-    const females = playersWithAdjusted.filter(p => p.gender === 'Gal').sort((a,b) => b.adjustedSkill - a.adjustedSkill);
-
-    const totalPlayersToDraft = males.length + females.length;
-    const baseSize = Math.floor(totalPlayersToDraft / numTeams);
-    const teamsWithExtra = totalPlayersToDraft % numTeams;
+    // Distribute the highest-skilled players first, one to each team
+    for (let i = 0; i < numTeams; i++) {
+        if (availablePlayers.length > 0) {
+            newTeams[i].players.push(availablePlayers.shift()!);
+        }
+    }
     
-    let maleIndex = 0;
-    let femaleIndex = 0;
-    const maxRounds = baseSize + (teamsWithExtra > 0 ? 1 : 0);
+    // Shuffle remaining players to add more randomness before distributing the rest
+    availablePlayers = shuffleArray(availablePlayers);
 
-    for (let round = 0; round < maxRounds; round++) {
-      const isReverse = round % 2 === 1;
-      const order = Array.from({ length: numTeams }, (_, i) => isReverse ? numTeams - 1 - i : i);
-      
-      for (const teamIndex of order) {
-        const team = newTeams[teamIndex];
-        const targetSize = teamIndex < teamsWithExtra ? baseSize + 1 : baseSize;
+    // Distribute the rest of the players, trying to balance team size
+    let teamIndex = 0;
+    while (availablePlayers.length > 0) {
+        newTeams[teamIndex % numTeams].players.push(availablePlayers.shift()!);
+        teamIndex++;
+    }
+
+    // A final balancing pass: Look for highly imbalanced teams and swap players
+    // This is a simple heuristic: if a team's total skill is way off the average, try a swap.
+    for (let i = 0; i < 5; i++) { // Run the balancing pass a few times
+        const teamSkills = newTeams.map(t => t.players.reduce((sum, p) => sum + p.skill, 0));
+        const avgSkill = teamSkills.reduce((sum, s) => sum + s, 0) / numTeams;
         
-        if (team.players.length >= targetSize) continue;
+        const strongestTeamIndex = teamSkills.indexOf(Math.max(...teamSkills));
+        const weakestTeamIndex = teamSkills.indexOf(Math.min(...teamSkills));
 
-        let candidates = [];
-        if (maleIndex < males.length) candidates.push(males[maleIndex]);
-        if (femaleIndex < females.length) candidates.push(females[femaleIndex]);
+        const strongestTeam = newTeams[strongestTeamIndex];
+        const weakestTeam = newTeams[weakestTeamIndex];
 
-        if (candidates.length === 0) break;
+        // If the skill gap is significant, attempt a swap
+        if (teamSkills[strongestTeamIndex] > avgSkill + 2 && teamSkills[weakestTeamIndex] < avgSkill - 2) {
+            const highPlayerIndex = strongestTeam.players.findIndex(p => p.skill > avgSkill / strongestTeam.players.length);
+            const lowPlayerIndex = weakestTeam.players.findIndex(p => p.skill < avgSkill / weakestTeam.players.length);
 
-        const lowSkillCount = team.players.filter(p => p.skill <= 3).length;
-        let preferredCandidates = candidates;
-        if (lowSkillCount >= 1) {
-            const nonLowSkill = candidates.filter(p => p.skill > 3);
-            if (nonLowSkill.length > 0) {
-                preferredCandidates = nonLowSkill;
+            if (highPlayerIndex !== -1 && lowPlayerIndex !== -1) {
+                const highPlayer = strongestTeam.players[highPlayerIndex];
+                const lowPlayer = weakestTeam.players[lowPlayerIndex];
+
+                // Swap players if it makes the teams more balanced
+                if (Math.abs((teamSkills[strongestTeamIndex] - highPlayer.skill + lowPlayer.skill) - (teamSkills[weakestTeamIndex] - lowPlayer.skill + highPlayer.skill)) < Math.abs(teamSkills[strongestTeamIndex] - teamSkills[weakestTeamIndex])) {
+                    [strongestTeam.players[highPlayerIndex], weakestTeam.players[lowPlayerIndex]] = [weakestTeam.players[lowPlayerIndex], strongestTeam.players[highPlayerIndex]];
+                }
             }
         }
-        
-        let playerToDraft;
-        const genderDiff = team.maleCount - team.femaleCount;
-        
-        const wantsFemale = genderDiff >= 1;
-        const wantsMale = genderDiff <= -1;
-
-        const femaleCandidate = preferredCandidates.find(p => p.gender === 'Gal');
-        const maleCandidate = preferredCandidates.find(p => p.gender === 'Guy');
-        
-        if (wantsFemale && femaleCandidate) {
-            playerToDraft = femaleCandidate;
-        } else if (wantsMale && maleCandidate) {
-            playerToDraft = maleCandidate;
-        } else {
-            preferredCandidates.sort((a,b) => b.adjustedSkill - a.adjustedSkill);
-            playerToDraft = preferredCandidates[0];
-        }
-        
-        if (!playerToDraft) continue;
-
-        if (playerToDraft.gender === 'Guy') {
-            maleIndex++;
-            team.maleCount++;
-        } else {
-            femaleIndex++;
-            team.femaleCount++;
-        }
-        
-        team.players.push(playerToDraft);
-        team.totalSkill += playerToDraft.skill;
-        team.adjustedSkill += playerToDraft.adjustedSkill;
-      }
     }
-     return newTeams.map(({name, players}) => ({ name, players }));
+
+    return newTeams;
   }
 
   const handleGenerateTeams = () => {
@@ -350,10 +320,10 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
                         <SelectValue placeholder="Select a format" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="round-robin"><BookOpen className="inline-block mr-2" /> Round Robin</SelectItem>
-                        <SelectItem value="pool-play-bracket"><Trophy className="inline-block mr-2" /> Pool Play / Bracket</SelectItem>
-                        <SelectItem value="king-of-the-court"><Crown className="inline-block mr-2" /> King of the Court</SelectItem>
-                        <SelectItem value="monarch-of-the-court"><Users className="inline-block mr-2" /> Monarch of the Court</SelectItem>
+                        <SelectItem value="round-robin"><BookOpen className="inline-block h-4 w-4 mr-2" /> Round Robin</SelectItem>
+                        <SelectItem value="pool-play-bracket"><Trophy className="inline-block h-4 w-4 mr-2" /> Pool Play / Bracket</SelectItem>
+                        <SelectItem value="king-of-the-court"><Crown className="inline-block h-4 w-4 mr-2" /> King of the Court</SelectItem>
+                        <SelectItem value="monarch-of-the-court"><Gem className="inline-block h-4 w-4 mr-2" /> Monarch of the Court</SelectItem>
                       </SelectContent>
                     </Select>
                 </div>
