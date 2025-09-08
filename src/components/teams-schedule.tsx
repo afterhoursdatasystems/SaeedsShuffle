@@ -7,9 +7,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Swords, Save } from 'lucide-react';
+import { Swords, Save, Users, BarChart2, TrendingUp } from 'lucide-react';
 import { Avatar, AvatarFallback } from './ui/avatar';
-import React from 'react';
+import React, { useMemo, useState } from 'react';
+import { RadioGroup, RadioGroupItem } from './ui/radio-group';
+import { Label } from './ui/label';
+import { Separator } from './ui/separator';
 
 interface TeamsScheduleProps {
   players: Player[];
@@ -18,6 +21,13 @@ interface TeamsScheduleProps {
   schedule: Match[];
   setSchedule: React.Dispatch<React.SetStateAction<Match[]>>;
 }
+
+const teamNames = [
+  'Birkdale Bombers', 'Cool Fish Commandos', 'Jetton Juggernauts',
+  'McGuire Nuclear Knockouts', 'Peninsula Powerhouse', 'Soda Shop Slammers',
+  'Langtree Lightning', 'Bailey\'s Bruisers', 'Antiquity Attackers',
+  'Summit Strikers', 'Toast Titans'
+];
 
 const shuffleArray = <T,>(array: T[]): T[] => {
   const newArray = [...array];
@@ -30,58 +40,79 @@ const shuffleArray = <T,>(array: T[]): T[] => {
 
 export default function TeamsSchedule({ players, teams, setTeams, schedule, setSchedule }: TeamsScheduleProps) {
   const { toast } = useToast();
+  const [teamSize, setTeamSize] = useState<number>(4);
+
+  const presentPlayers = useMemo(() => players.filter((p) => p.present), [players]);
+  const possibleTeamsCount = Math.floor(presentPlayers.length / teamSize);
 
   const handleGenerate = () => {
-    const presentPlayers = players.filter((p) => p.present);
-    if (presentPlayers.length < 4) {
+    if (presentPlayers.length < teamSize) {
       toast({
         title: 'Not enough players',
-        description: 'You need at least 4 present players to generate teams.',
+        description: `You need at least ${teamSize} present players to generate teams.`,
         variant: 'destructive',
       });
       return;
     }
 
-    // Simple randomization, could be improved with skill/gender balancing
-    const shuffledPlayers = shuffleArray(presentPlayers);
-    const numTeams = Math.floor(shuffledPlayers.length / 4);
+    const numTeams = Math.floor(presentPlayers.length / teamSize);
+    if (numTeams === 0) {
+       toast({
+        title: 'Not enough players',
+        description: `Not enough players to form any ${teamSize}-player teams.`,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Sort players by skill descending for fair distribution
+    const sortedPlayers = [...presentPlayers].sort((a, b) => b.skill - a.skill);
+
+    const shuffledTeamNames = shuffleArray(teamNames);
+
     const newTeams: Team[] = Array.from({ length: numTeams }, (_, i) => ({
-      name: `Team ${i + 1}`,
+      name: shuffledTeamNames[i % shuffledTeamNames.length],
       players: [],
     }));
-
-    shuffledPlayers.slice(0, numTeams * 4).forEach((player, i) => {
-      newTeams[i % numTeams].players.push(player);
+    
+    // Snake draft distribution
+    let direction = 1;
+    let teamIndex = 0;
+    sortedPlayers.slice(0, numTeams * teamSize).forEach(player => {
+        newTeams[teamIndex].players.push(player);
+        teamIndex += direction;
+        if (teamIndex < 0 || teamIndex >= numTeams) {
+            direction *= -1;
+            teamIndex += direction;
+        }
     });
 
     setTeams(newTeams);
 
     // Round Robin schedule generation
-    const teamNames = newTeams.map(t => t.name);
+    const teamNamesForSchedule = newTeams.map(t => t.name);
     const newSchedule: Match[] = [];
-    if (teamNames.length < 2) {
+    if (teamNamesForSchedule.length < 2) {
       setSchedule([]);
-      return;
+    } else {
+        const courts = ['Court 1', 'Court 2', 'Court 3', 'Court 4'];
+        let courtIndex = 0;
+        for (let i = 0; i < teamNamesForSchedule.length; i++) {
+          for (let j = i + 1; j < teamNamesForSchedule.length; j++) {
+            newSchedule.push({
+              id: crypto.randomUUID(),
+              teamA: teamNamesForSchedule[i],
+              teamB: teamNamesForSchedule[j],
+              resultA: null,
+              resultB: null,
+              court: courts[courtIndex % courts.length]
+            });
+            courtIndex++;
+          }
+        }
+        setSchedule(shuffleArray(newSchedule));
     }
-
-    const courts = ['Court 1', 'Court 2', 'Court 3', 'Court 4'];
-    let courtIndex = 0;
-
-    for (let i = 0; i < teamNames.length; i++) {
-      for (let j = i + 1; j < teamNames.length; j++) {
-        newSchedule.push({
-          id: crypto.randomUUID(),
-          teamA: teamNames[i],
-          teamB: teamNames[j],
-          resultA: null,
-          resultB: null,
-          court: courts[courtIndex % courts.length]
-        });
-        courtIndex++;
-      }
-    }
-
-    setSchedule(shuffleArray(newSchedule));
+    
     toast({
       title: 'Teams & Schedule Generated!',
       description: `${newTeams.length} teams and ${newSchedule.length} matches have been created.`,
@@ -101,37 +132,69 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
     toast({ title: "Results saved", description: "All match results have been updated." });
   }
 
+  const getTeamAnalysis = (team: Team) => {
+    const totalSkill = team.players.reduce((sum, p) => sum + p.skill, 0);
+    const avgSkill = (totalSkill / team.players.length).toFixed(1);
+    const guyCount = team.players.filter(p => p.gender === 'Guy').length;
+    const galCount = team.players.filter(p => p.gender === 'Gal').length;
+    return { totalSkill, avgSkill, guyCount, galCount };
+  }
+
   return (
     <div className="space-y-8">
       <Card>
         <CardHeader>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <CardTitle>Team & Schedule Generation</CardTitle>
-              <CardDescription>Generate teams and a match schedule for tonight.</CardDescription>
-            </div>
-            <Button onClick={handleGenerate} className="mt-4 sm:mt-0">
-              <Swords className="mr-2 h-4 w-4" />
-              Generate Teams & Schedule
-            </Button>
-          </div>
+          <CardTitle>Team & Schedule Generation</CardTitle>
+          <CardDescription>Generate balanced teams and a match schedule for tonight.</CardDescription>
         </CardHeader>
+        <CardContent className="space-y-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-lg border p-4">
+                <div className='space-y-2'>
+                    <Label>Team Size</Label>
+                    <RadioGroup value={String(teamSize)} onValueChange={(val) => setTeamSize(Number(val))} className="flex space-x-4">
+                        <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="3" id="3v3" />
+                            <Label htmlFor="3v3">3 vs 3</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="4" id="4v4" />
+                            <Label htmlFor="4v4">4 vs 4</Label>
+                        </div>
+                    </RadioGroup>
+                </div>
+                <Separator orientation='vertical' className='hidden sm:block h-12' />
+                <div className="text-center">
+                    <p className="text-sm font-medium text-muted-foreground">Present Players</p>
+                    <p className="text-2xl font-bold">{presentPlayers.length}</p>
+                </div>
+                <div className="text-center">
+                    <p className="text-sm font-medium text-muted-foreground">Possible Teams</p>
+                    <p className="text-2xl font-bold">{possibleTeamsCount}</p>
+                </div>
+                <Button onClick={handleGenerate} className="mt-4 sm:mt-0">
+                    <Swords className="mr-2 h-4 w-4" />
+                    Generate Teams & Schedule
+                </Button>
+            </div>
+        </CardContent>
       </Card>
       
       {teams.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>Tonight's Teams</CardTitle>
+            <CardDescription>Analysis of the generated teams.</CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {teams.map((team) => (
+          <CardContent className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {teams.map((team) => {
+              const { totalSkill, avgSkill, guyCount, galCount } = getTeamAnalysis(team);
+              return (
               <Card key={team.name} className="flex flex-col">
-                <CardHeader className="flex-row items-center justify-between p-4">
+                <CardHeader className="p-4">
                   <CardTitle className="text-lg">{team.name}</CardTitle>
-                  <Badge variant="secondary">{team.players.length} Players</Badge>
                 </CardHeader>
-                <CardContent className="p-4 pt-0">
-                  <div className="space-y-2">
+                <CardContent className="flex-grow p-4 pt-0">
+                  <div className="space-y-3">
                     {team.players.map(player => (
                       <div key={player.id} className="flex items-center gap-3">
                          <Avatar className="h-8 w-8 border-2 border-white">
@@ -145,8 +208,15 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
                     ))}
                   </div>
                 </CardContent>
+                <CardFooter className="flex-col items-start gap-2 border-t bg-muted/50 p-4 text-sm text-muted-foreground">
+                    <div className="flex w-full justify-between">
+                        <div className='flex items-center gap-2'><BarChart2 className="h-4 w-4" /> Total Skill: <span className="font-bold text-foreground">{totalSkill}</span></div>
+                        <div className='flex items-center gap-2'><TrendingUp className="h-4 w-4" /> Avg Skill: <span className="font-bold text-foreground">{avgSkill}</span></div>
+                    </div>
+                    <div className="flex items-center gap-2"><Users className="h-4 w-4" /> Gender: <span className="font-bold text-foreground">{guyCount} Guys, {galCount} Gals</span></div>
+                </CardFooter>
               </Card>
-            ))}
+            )})}
           </CardContent>
         </Card>
       )}
