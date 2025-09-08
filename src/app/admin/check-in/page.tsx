@@ -22,6 +22,22 @@ export default function CheckinPage() {
   const sortedPlayers = [...players].sort((a, b) => a.name.localeCompare(b.name));
   const presentCount = players.filter(p => p.present).length;
 
+  const formatName = (name: string) => {
+    const firstSpaceIndex = name.indexOf(' ');
+    if (firstSpaceIndex === -1) {
+      return name; // Return as is if no space
+    }
+    const firstName = name.substring(0, firstSpaceIndex);
+    const restOfName = name.substring(firstSpaceIndex + 1);
+    return (
+      <>
+        {firstName}
+        <br />
+        {restOfName}
+      </>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-muted/40">
         <header className="sticky top-0 z-10 flex h-20 items-center justify-between border-b bg-background px-4 sm:px-6 md:px-8">
@@ -42,19 +58,21 @@ export default function CheckinPage() {
                 key={player.id}
                 onClick={() => togglePlayerPresence(player.id)}
                 className={cn(
-                    'cursor-pointer select-none transition-all duration-200 ease-in-out',
+                    'cursor-pointer select-none transition-all duration-200 ease-in-out flex flex-col',
                     player.present
                     ? 'border-green-500 bg-green-50/50 border-2 shadow-lg'
                     : 'border-red-500 bg-red-50/20 text-muted-foreground'
                 )}
                 >
-                <CardContent className="flex items-center justify-start p-3 sm:p-4 gap-3">
+                <CardContent className="flex items-center justify-start p-3 sm:p-4 gap-3 flex-grow">
                     {player.present ? (
                         <CheckCircle className="h-8 w-8 text-green-500 flex-shrink-0" />
                     ) : (
                         <XCircle className="h-8 w-8 text-red-500 flex-shrink-0" />
                     )}
-                    <p className="text-base sm:text-lg font-bold leading-tight" title={player.name}>{player.name}</p>
+                    <p className="text-base sm:text-lg font-bold leading-tight" title={player.name}>
+                        {formatName(player.name)}
+                    </p>
                 </CardContent>
                 </Card>
             ))}
