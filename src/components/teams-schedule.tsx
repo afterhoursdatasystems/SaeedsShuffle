@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Swords, Save, Users, BarChart2, TrendingUp } from 'lucide-react';
+import { Swords, Save, Users, BarChart2, TrendingUp, CalendarDays } from 'lucide-react';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import React, { useMemo, useState } from 'react';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
@@ -48,6 +48,7 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
   const possibleTeamsCount = Math.floor(presentPlayers.length / teamSize);
 
   const createBalancedTeams = (players: Player[], numTeams: number): Team[] => {
+    const shuffledPlayers = shuffleArray(players);
     const shuffledNames = shuffleArray(teamNames);
     
     type TeamInternal = { name: string; players: Player[]; totalSkill: number; adjustedSkill: number; maleCount: number; femaleCount: number };
@@ -61,12 +62,10 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
       femaleCount: 0,
     }));
 
-    const totalPlayers = players.length;
+    const totalPlayers = shuffledPlayers.length;
     const baseSize = Math.floor(totalPlayers / numTeams);
     const teamsWithExtra = totalPlayers % numTeams;
     
-    const shuffledPlayers = shuffleArray(players);
-
     const playersWithAdjusted = shuffledPlayers.map(player => ({
       ...player,
       adjustedSkill: player.gender === 'Guy' ? player.skill : player.skill - 1.2
@@ -122,6 +121,8 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
             playerToDraft = preferredCandidates[0];
         }
         
+        if (!playerToDraft) continue;
+
         if (playerToDraft.gender === 'Guy') {
             maleIndex++;
             team.maleCount++;
@@ -138,8 +139,7 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
      return newTeams.map(({name, players}) => ({ name, players }));
   }
 
-
-  const handleGenerate = () => {
+  const handleGenerateTeams = () => {
     if (presentPlayers.length < teamSize) {
       toast({
         title: 'Not enough players',
@@ -159,40 +159,51 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
       return;
     }
     
-    // Clear previous teams before generating new ones
     setTeams([]);
     setSchedule([]);
     
     const newTeams = createBalancedTeams(presentPlayers, numTeams);
     setTeams(newTeams);
 
-    // Round Robin schedule generation
-    const teamNamesForSchedule = newTeams.map(t => t.name);
-    const newSchedule: Match[] = [];
-    if (teamNamesForSchedule.length < 2) {
-      setSchedule([]);
-    } else {
-        const courts = ['Court 1', 'Court 2'];
-        let courtIndex = 0;
-        for (let i = 0; i < teamNamesForSchedule.length; i++) {
-          for (let j = i + 1; j < teamNamesForSchedule.length; j++) {
-            newSchedule.push({
-              id: crypto.randomUUID(),
-              teamA: teamNamesForSchedule[i],
-              teamB: teamNamesForSchedule[j],
-              resultA: null,
-              resultB: null,
-              court: courts[courtIndex % courts.length]
-            });
-            courtIndex++;
-          }
-        }
-        setSchedule(shuffleArray(newSchedule));
+    toast({
+      title: 'Teams Generated!',
+      description: `${newTeams.length} teams have been created.`,
+    });
+  };
+
+  const handleGenerateSchedule = () => {
+    if (teams.length < 2) {
+      toast({
+        title: 'Not enough teams',
+        description: 'Please generate teams before creating a schedule.',
+        variant: 'destructive',
+      });
+      return;
     }
+
+    const teamNamesForSchedule = teams.map(t => t.name);
+    const newSchedule: Match[] = [];
+    const courts = ['Court 1', 'Court 2'];
+    let courtIndex = 0;
+    
+    for (let i = 0; i < teamNamesForSchedule.length; i++) {
+      for (let j = i + 1; j < teamNamesForSchedule.length; j++) {
+        newSchedule.push({
+          id: crypto.randomUUID(),
+          teamA: teamNamesForSchedule[i],
+          teamB: teamNamesForSchedule[j],
+          resultA: null,
+          resultB: null,
+          court: courts[courtIndex % courts.length]
+        });
+        courtIndex++;
+      }
+    }
+    setSchedule(shuffleArray(newSchedule));
     
     toast({
-      title: 'Teams & Schedule Generated!',
-      description: `${newTeams.length} teams and ${newSchedule.length} matches have been created.`,
+      title: 'Schedule Generated!',
+      description: `${newSchedule.length} matches have been created.`,
     });
   };
 
@@ -248,10 +259,16 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
                     <p className="text-sm font-medium text-muted-foreground">Possible Teams</p>
                     <p className="text-2xl font-bold">{possibleTeamsCount}</p>
                 </div>
-                <Button onClick={handleGenerate} className="mt-4 sm:mt-0">
-                    <Swords className="mr-2 h-4 w-4" />
-                    Generate Teams & Schedule
-                </Button>
+                <div className="flex flex-col sm:flex-row gap-2 mt-4 sm:mt-0">
+                  <Button onClick={handleGenerateTeams}>
+                      <Swords className="mr-2 h-4 w-4" />
+                      Generate Teams
+                  </Button>
+                  <Button onClick={handleGenerateSchedule} variant="outline" disabled={teams.length === 0}>
+                      <CalendarDays className="mr-2 h-4 w-4" />
+                      Generate Schedule
+                  </Button>
+                </div>
             </div>
         </CardContent>
       </Card>
