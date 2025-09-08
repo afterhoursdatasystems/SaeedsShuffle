@@ -46,6 +46,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Badge } from './ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
 import { Slider } from './ui/slider';
+import { cn } from '@/lib/utils';
 
 const playerSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
@@ -217,13 +218,22 @@ export default function PlayerManagement({ players, setPlayers }: PlayerManageme
                      <Badge variant={
                       player.skill > 7 ? 'destructive' :
                       player.skill > 4 ? 'secondary' : 'default'
-                    } className={
-                      player.skill <= 4 ? 'bg-blue-500 text-white' : ''
-                    }>
-                      {player.skill} / 10
+                    } className={cn(
+                      player.skill <= 4 && 'bg-blue-500 text-white'
+                    )}>
+                      {player.skill}
                     </Badge>
                   </TableCell>
-                  <TableCell className="hidden sm:table-cell">{player.gender}</TableCell>
+                  <TableCell className="hidden sm:table-cell">
+                     <span
+                      className={cn(
+                        'rounded-full px-2 py-0.5 text-xs font-semibold',
+                        player.gender === 'Guy' ? 'bg-blue-100 text-blue-800' : 'bg-pink-100 text-pink-800'
+                      )}
+                    >
+                      {player.gender}
+                    </span>
+                  </TableCell>
                    <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>

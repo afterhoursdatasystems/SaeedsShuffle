@@ -95,7 +95,7 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
     if (teamNamesForSchedule.length < 2) {
       setSchedule([]);
     } else {
-        const courts = ['Court 1', 'Court 2', 'Court 3', 'Court 4'];
+        const courts = ['Court 1', 'Court 2'];
         let courtIndex = 0;
         for (let i = 0; i < teamNamesForSchedule.length; i++) {
           for (let j = i + 1; j < teamNamesForSchedule.length; j++) {
@@ -203,7 +203,7 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
                            </AvatarFallback>
                          </Avatar>
                         <span className="font-medium">{player.name}</span>
-                        <Badge variant="outline" className="ml-auto">{player.skill}/10</Badge>
+                        <Badge variant="outline" className="ml-auto">{player.skill}</Badge>
                       </div>
                     ))}
                   </div>
