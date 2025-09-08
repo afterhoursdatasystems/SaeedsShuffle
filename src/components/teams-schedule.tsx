@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Swords, Save, Users, CalendarDays, Send, Crown, Trophy, BookOpen, Gem } from 'lucide-react';
+import { Swords, Save, Users, CalendarDays, Send, Crown, Trophy, BookOpen, Gem, Shuffle } from 'lucide-react';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import React, { useMemo, useState } from 'react';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
@@ -17,6 +17,8 @@ import { Separator } from './ui/separator';
 import { cn } from '@/lib/utils';
 import { publishData } from '@/app/actions';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { DragDropContext, Droppable, Draggable, type DropResult } from 'react-beautiful-dnd';
+
 
 interface TeamsScheduleProps {
   players: Player[];
@@ -51,52 +53,47 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
 
   const presentPlayers = useMemo(() => players.filter((p) => p.present), [players]);
   const possibleTeamsCount = Math.floor(presentPlayers.length / teamSize);
-
+  
   const createBalancedTeams = (players: Player[], numTeams: number): Team[] => {
     const shuffledNames = shuffleArray(teamNames);
     const newTeams: Team[] = Array.from({ length: numTeams }, (_, i) => ({
-        name: shuffledNames[i % shuffledNames.length],
-        players: [],
+      name: shuffledNames[i % shuffledNames.length],
+      players: [],
     }));
 
-    const guys = shuffleArray(players.filter(p => p.gender === 'Guy')).sort((a, b) => b.skill - a.skill);
-    const gals = shuffleArray(players.filter(p => p.gender === 'Gal')).sort((a, b) => b.skill - a.skill);
+    // Separate players by gender and sort by skill descending
+    const guys = players.filter(p => p.gender === 'Guy').sort((a, b) => b.skill - a.skill);
+    const gals = players.filter(p => p.gender === 'Gal').sort((a, b) => b.skill - a.skill);
 
-    const distributePlayers = (playersToDistribute: Player[], teams: Team[]) => {
+    const distributePlayersSnakeDraft = (playersToDistribute: Player[], teams: Team[]) => {
       let teamIndex = 0;
-      let direction = 1; // 1 for forward, -1 for backward (snake draft)
+      let direction = 1;
 
       playersToDistribute.forEach(player => {
-          // Sort teams by the number of players they have, then by average skill
-          teams.sort((a, b) => {
-              if (a.players.length !== b.players.length) {
-                  return a.players.length - b.players.length;
-              }
-              const avgSkillA = a.players.reduce((sum, p) => sum + p.skill, 0) / (a.players.length || 1);
-              const avgSkillB = b.players.reduce((sum, p) => sum + p.skill, 0) / (b.players.length || 1);
-              return avgSkillA - avgSkillB;
-          });
-          teams[0].players.push(player);
+        teams[teamIndex].players.push(player);
+        teamIndex += direction;
+
+        // Reverse direction at the ends of the team list
+        if (teamIndex < 0) {
+          teamIndex = 1;
+          direction = 1;
+        } else if (teamIndex >= teams.length) {
+          teamIndex = teams.length - 2;
+          direction = -1;
+        }
       });
     };
-
-    // A simpler round-robin distribution for more randomness while trying to balance
-    const distributeRoundRobin = (playersToDistribute: Player[], teams: Team[]) => {
-        let teamIndex = 0;
-        playersToDistribute.forEach(player => {
-            teams[teamIndex].players.push(player);
-            teamIndex = (teamIndex + 1) % teams.length;
-        });
-    };
     
-    // Distribute the highest skilled players first to ensure they are separated
-    distributeRoundRobin(guys.splice(0, numTeams), newTeams);
-    distributeRoundRobin(gals.splice(0, numTeams), newTeams);
-    
-    // Distribute the rest of the players
-    distributePlayers(shuffleArray([...guys, ...gals]), newTeams);
+    // Distribute guys and gals separately using snake draft
+    distributePlayersSnakeDraft(guys, newTeams);
+    distributePlayersSnakeDraft(gals, newTeams);
 
-    return newTeams;
+    // Sort teams by average skill to see the balance
+    return newTeams.sort((a,b) => {
+        const avgA = a.players.reduce((sum, p) => sum + p.skill, 0) / (a.players.length || 1);
+        const avgB = b.players.reduce((sum, p) => sum + p.skill, 0) / (b.players.length || 1);
+        return avgA - avgB;
+    });
   }
 
   const handleGenerateTeams = () => {
@@ -291,7 +288,55 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
   
   const isKOTC = gameFormat === 'king-of-the-court' || gameFormat === 'monarch-of-the-court';
 
+  const onDragEnd = (result: DropResult) => {
+    const { source, destination } = result;
+
+    // Dropped outside the list
+    if (!destination) {
+      return;
+    }
+
+    const sourceTeamName = source.droppableId;
+    const destTeamName = destination.droppableId;
+    const sourcePlayerId = source.draggableId;
+    const destPlayerId = destination.draggableId;
+
+    // If dropped on the same team or not on a player, do nothing.
+    if (sourceTeamName === destTeamName || !destPlayerId) {
+        return;
+    }
+
+    setTeams(currentTeams => {
+        const newTeams = JSON.parse(JSON.stringify(currentTeams)); // Deep copy
+
+        const sourceTeam = newTeams.find((t: Team) => t.name === sourceTeamName);
+        const destTeam = newTeams.find((t: Team) => t.name === destTeamName);
+
+        if (!sourceTeam || !destTeam) return currentTeams;
+
+        const sourcePlayerIndex = sourceTeam.players.findIndex((p: Player) => p.id === sourcePlayerId);
+        const destPlayerIndex = destTeam.players.findIndex((p: Player) => p.id === destPlayerId);
+
+        if (sourcePlayerIndex === -1 || destPlayerIndex === -1) return currentTeams;
+
+        // Swap the players
+        const [sourcePlayer] = sourceTeam.players.splice(sourcePlayerIndex, 1);
+        const [destPlayer] = destTeam.players.splice(destPlayerIndex, 1);
+        
+        sourceTeam.players.splice(sourcePlayerIndex, 0, destPlayer);
+        destTeam.players.splice(destPlayerIndex, 0, sourcePlayer);
+        
+        return newTeams;
+    });
+
+    toast({
+        title: "Players Swapped",
+        description: "The players have been swapped between teams."
+    })
+  };
+
   return (
+    <DragDropContext onDragEnd={onDragEnd}>
     <div className="space-y-8">
       <Card>
         <CardHeader>
@@ -338,7 +383,7 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
                 </div>
                 <div className="flex flex-col sm:flex-row gap-2 mt-4 sm:mt-0">
                   <Button onClick={handleGenerateTeams}>
-                      <Swords className="mr-2 h-4 w-4" />
+                      <Shuffle className="mr-2 h-4 w-4" />
                       Generate Teams
                   </Button>
                   <Button onClick={handleGenerateSchedule} variant="outline" disabled={teams.length === 0}>
@@ -356,7 +401,7 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <CardTitle>Tonight's Teams</CardTitle>
-                  <CardDescription>Analysis of the generated teams.</CardDescription>
+                  <CardDescription>Drag and drop players between teams to swap them.</CardDescription>
                 </div>
                 <Button onClick={handlePublish} disabled={isPublishing || teams.length === 0}>
                     <Send className="mr-2 h-4 w-4" />
@@ -368,34 +413,55 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
             {teams.map((team) => {
               const { avgSkill, guyCount, galCount } = getTeamAnalysis(team);
               return (
-              <Card key={team.name} className="flex flex-col">
-                <CardHeader className="p-4">
-                  <CardTitle className="text-lg">{team.name}</CardTitle>
-                </CardHeader>
-                <CardContent className="flex-grow p-4 pt-0">
-                  <div className="space-y-3">
-                    {[...team.players]
-                      .sort((a, b) => a.name.localeCompare(b.name))
-                      .map(player => (
-                      <div key={player.id} className="flex items-center gap-3">
-                         <Avatar className="h-8 w-8 border-2 border-white">
-                           <AvatarFallback className="bg-primary/20 text-primary font-bold">
-                             {player.name.charAt(0)}
-                           </AvatarFallback>
-                         </Avatar>
-                        <span className="font-medium">{player.name}</span>
-                        <Badge variant="outline" className="ml-auto">{player.skill}</Badge>
+              <Droppable droppableId={team.name} key={team.name}>
+                {(provided) => (
+                  <Card 
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                    className="flex flex-col"
+                  >
+                    <CardHeader className="p-4">
+                      <CardTitle className="text-lg">{team.name}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex-grow p-4 pt-0">
+                      <div className="space-y-3">
+                        {[...team.players]
+                          .sort((a, b) => a.name.localeCompare(b.name))
+                          .map((player, index) => (
+                            <Draggable key={player.id} draggableId={player.id} index={index}>
+                                {(provided, snapshot) => (
+                                    <div
+                                        ref={provided.innerRef}
+                                        {...provided.draggableProps}
+                                        {...provided.dragHandleProps}
+                                        className={cn(
+                                            "flex items-center gap-3 p-2 rounded-md cursor-grab",
+                                            snapshot.isDragging ? 'bg-primary/20 shadow-lg' : 'bg-transparent'
+                                        )}
+                                    >
+                                        <Avatar className="h-8 w-8 border-2 border-white">
+                                            <AvatarFallback className="bg-primary/20 text-primary font-bold">
+                                                {player.name.charAt(0)}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                        <span className="font-medium">{player.name}</span>
+                                        <Badge variant="outline" className="ml-auto">{player.skill}</Badge>
+                                    </div>
+                                )}
+                            </Draggable>
+                        ))}
+                        {provided.placeholder}
                       </div>
-                    ))}
-                  </div>
-                </CardContent>
-                <CardFooter className="flex-col items-start gap-2 border-t bg-muted/50 p-4 text-sm text-muted-foreground">
-                    <div className="flex w-full justify-between">
-                        <div className='flex items-center gap-2'>Avg Skill: <span className="font-bold text-foreground">{avgSkill}</span></div>
-                    </div>
-                    <div className="flex items-center gap-2"><Users className="h-4 w-4" /> Gender: <span className="font-bold text-foreground">{guyCount} Guys, {galCount} Gals</span></div>
-                </CardFooter>
-              </Card>
+                    </CardContent>
+                    <CardFooter className="flex-col items-start gap-2 border-t bg-muted/50 p-4 text-sm text-muted-foreground">
+                        <div className="flex w-full justify-between">
+                            <div className='flex items-center gap-2'>Avg Skill: <span className="font-bold text-foreground">{avgSkill}</span></div>
+                        </div>
+                        <div className="flex items-center gap-2"><Users className="h-4 w-4" /> Gender: <span className="font-bold text-foreground">{guyCount} Guys, {galCount} Gals</span></div>
+                    </CardFooter>
+                  </Card>
+                )}
+              </Droppable>
             )})}
           </CardContent>
         </Card>
@@ -460,5 +526,6 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
         </Card>
       )}
     </div>
+    </DragDropContext>
   );
 }
