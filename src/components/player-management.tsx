@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo, useState } from 'react';
@@ -41,13 +42,15 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Plus, Trash, Pencil, MoreVertical, ChevronsUpDown, ArrowDown, ArrowUp, Users } from 'lucide-react';
+import { Plus, Trash, Pencil, MoreVertical, ChevronsUpDown, ArrowDown, ArrowUp, Users, UserCheck } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from './ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
 import { Slider } from './ui/slider';
 import { cn } from '@/lib/utils';
 import { Separator } from './ui/separator';
+import { usePlayerContext } from '@/contexts/player-context';
+import Link from 'next/link';
 
 const playerSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
@@ -58,15 +61,14 @@ const playerSchema = z.object({
 type PlayerFormValues = z.infer<typeof playerSchema>;
 
 interface PlayerManagementProps {
-  players: Player[];
-  setPlayers: React.Dispatch<React.SetStateAction<Player[]>>;
   teams: Team[];
 }
 
 type SortKey = keyof Player | 'present' | 'team';
 type SortDirection = 'asc' | 'desc';
 
-export default function PlayerManagement({ players, setPlayers, teams }: PlayerManagementProps) {
+export default function PlayerManagement({ teams }: PlayerManagementProps) {
+  const { players, setPlayers, togglePlayerPresence } = usePlayerContext();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
@@ -90,13 +92,6 @@ export default function PlayerManagement({ players, setPlayers, teams }: PlayerM
     });
     return map;
   }, [teams]);
-
-
-  const handleTogglePresent = (id: string) => {
-    setPlayers(
-      players.map((p) => (p.id === id ? { ...p, present: !p.present } : p))
-    );
-  };
 
   const onSubmit = (data: PlayerFormValues) => {
     if (editingPlayer) {
@@ -201,8 +196,8 @@ export default function PlayerManagement({ players, setPlayers, teams }: PlayerM
             <CardTitle>Nightly Check-in</CardTitle>
             <CardDescription>A quick look at tonight's player stats.</CardDescription>
           </CardHeader>
-          <CardContent>
-             <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-around rounded-lg border p-4">
+          <CardContent className="flex flex-col items-center gap-6 sm:flex-row sm:justify-between">
+             <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-around rounded-lg border p-4 flex-grow">
                 <div className="text-center">
                     <p className="text-sm font-medium text-muted-foreground">Present Players</p>
                     <p className="text-3xl font-bold">{presentPlayersCount}</p>
@@ -222,15 +217,21 @@ export default function PlayerManagement({ players, setPlayers, teams }: PlayerM
                     <p className="text-3xl font-bold">{averageSkill}</p>
                 </div>
             </div>
+            <Button asChild size="lg" className="w-full sm:w-auto">
+              <Link href="/admin/check-in">
+                <UserCheck className="mr-2 h-5 w-5" />
+                Go to Check-in Page
+              </Link>
+            </Button>
           </CardContent>
         </Card>
       <Card>
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <CardTitle>Player Management</CardTitle>
+              <CardTitle>Player Roster</CardTitle>
               <CardDescription>
-                {presentPlayersCount} of {players.length} players checked in.
+                Full list of all players in the league.
               </CardDescription>
             </div>
             <Dialog open={open} onOpenChange={(isOpen) => {
@@ -346,7 +347,7 @@ export default function PlayerManagement({ players, setPlayers, teams }: PlayerM
                     <TableCell>
                       <Switch
                         checked={player.present}
-                        onCheckedChange={() => handleTogglePresent(player.id)}
+                        onCheckedChange={() => togglePlayerPresence(player.id)}
                         aria-label={`${player.name} presence`}
                       />
                     </TableCell>

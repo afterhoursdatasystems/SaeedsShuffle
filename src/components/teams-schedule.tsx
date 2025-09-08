@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import type { Player, Team, Match, GameFormat } from '@/types';
@@ -18,10 +19,10 @@ import { cn } from '@/lib/utils';
 import { publishData } from '@/app/actions';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { DragDropContext, Droppable, Draggable, type DropResult } from 'react-beautiful-dnd';
+import { usePlayerContext } from '@/contexts/player-context';
 
 
 interface TeamsScheduleProps {
-  players: Player[];
   teams: Team[];
   setTeams: React.Dispatch<React.SetStateAction<Team[]>>;
   schedule: Match[];
@@ -45,7 +46,8 @@ const shuffleArray = <T,>(array: T[]): T[] => {
 };
 
 
-export default function TeamsSchedule({ players, teams, setTeams, schedule, setSchedule }: TeamsScheduleProps) {
+export default function TeamsSchedule({ teams, setTeams, schedule, setSchedule }: TeamsScheduleProps) {
+  const { players } = usePlayerContext();
   const { toast } = useToast();
   const [teamSize, setTeamSize] = useState<number>(4);
   const [isPublishing, setIsPublishing] = useState(false);
