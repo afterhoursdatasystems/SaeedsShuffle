@@ -13,6 +13,7 @@ import React, { useMemo, useState } from 'react';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { Label } from './ui/label';
 import { Separator } from './ui/separator';
+import { cn } from '@/lib/utils';
 
 interface TeamsScheduleProps {
   players: Player[];
@@ -65,8 +66,9 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
       return;
     }
 
-    // Sort players by skill descending for fair distribution
-    const sortedPlayers = [...presentPlayers].sort((a, b) => b.skill - a.skill);
+    // Shuffle players first, then sort by skill for fair distribution
+    const shuffledPlayers = shuffleArray(presentPlayers);
+    const sortedPlayers = [...shuffledPlayers].sort((a, b) => b.skill - a.skill);
 
     const shuffledTeamNames = shuffleArray(teamNames);
 
