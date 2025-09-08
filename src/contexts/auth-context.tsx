@@ -38,57 +38,63 @@ export function AuthProvider({children}: {children: ReactNode}) {
   const {toast} = useToast();
 
   useEffect(() => {
+    // This effect handles the result of a sign-in redirect.
+    // It should run once on component mount.
+    const handleRedirectResult = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result && result.user.email !== ALLOWED_USER) {
+          // If a user signed in, but they are not the allowed user...
+          await signOut(auth); // ...sign them out immediately...
+          setUser(null);
+          toast({
+            title: 'Access Denied',
+            description: `Only ${ALLOWED_USER} can log in.`,
+            variant: 'destructive',
+          });
+        }
+        // If the user is the correct one, or if there's no redirect result,
+        // we let onAuthStateChanged handle setting the user state.
+      } catch (error: any) {
+        // This error code means the user just landed on the page without
+        // coming from a sign-in redirect. We can safely ignore it.
+        if (error.code !== 'auth/no-user-for-redirect') {
+          console.error('Google Sign-In Redirect Error:', error);
+          toast({
+            title: 'Sign-In Failed',
+            description: 'Could not complete sign-in. Please try again.',
+            variant: 'destructive',
+          });
+        }
+      } finally {
+        // After processing the redirect, onAuthStateChanged will take over,
+        // so we don't need to set loading to false here.
+      }
+    };
+
+    handleRedirectResult();
+
+    // This listener is the source of truth for the user's sign-in state.
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-       if (currentUser && currentUser.email === ALLOWED_USER) {
+      if (currentUser && currentUser.email === ALLOWED_USER) {
         setUser(currentUser);
       } else {
         setUser(null);
-         if (currentUser) {
-           // If a user is signed in but not the allowed one, sign them out.
-           signOut(auth);
-           toast({
-             title: 'Access Denied',
-             description: `Only ${ALLOWED_USER} can log in.`,
-             variant: 'destructive',
-           });
-         }
+        if (currentUser) {
+          // This case handles if a disallowed user somehow gets here
+          // without a redirect, e.g., from a previous session.
+          signOut(auth);
+          toast({
+            title: 'Access Denied',
+            description: `Only ${ALLOWED_USER} can log in.`,
+            variant: 'destructive',
+          });
+        }
       }
       setIsLoading(false);
     });
 
     return () => unsubscribe();
-  }, [toast]);
-  
-  useEffect(() => {
-    const handleRedirectResult = async () => {
-        setIsLoading(true);
-        try {
-            const result = await getRedirectResult(auth);
-            if (result && result.user.email !== ALLOWED_USER) {
-                await signOut(auth);
-                setUser(null);
-                toast({
-                    title: 'Access Denied',
-                    description: `Only ${ALLOWED_USER} can log in.`,
-                    variant: 'destructive',
-                });
-            }
-            // Let onAuthStateChanged handle setting the user and loading state
-        } catch (error: any) {
-            // Don't show an error if user is not signed in
-            if (error.code !== 'auth/no-user-for-redirect') {
-                console.error('Google Sign-In Redirect Error:', error);
-                toast({
-                    title: 'Sign-In Failed',
-                    description: 'Could not complete sign-in. Please try again.',
-                    variant: 'destructive',
-                });
-            }
-        } finally {
-             // onAuthStateChanged will set loading to false
-        }
-    };
-    handleRedirectResult();
   }, [toast]);
 
 
