@@ -3,13 +3,16 @@
 
 import { useEffect, useState } from 'react';
 import { getPublishedData } from '@/app/actions';
-import type { Team, GameFormat } from '@/types';
+import type { Team, GameFormat, Match } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Volleyball, Users, Trophy, BookOpen, Crown, Gem, ShieldQuestion, KeyRound, Zap } from 'lucide-react';
+import { Volleyball, Users, Trophy, BookOpen, Crown, Gem, ShieldQuestion, KeyRound, Zap, Calendar, Forward } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+
 
 const formatDetails: Record<GameFormat, { title: string; description: React.ReactNode; icon: React.ElementType }> = {
   'king-of-the-court': {
@@ -120,31 +123,33 @@ const formatDetails: Record<GameFormat, { title: string; description: React.Reac
 
 export default function PublicTeamsPage() {
   const [teams, setTeams] = useState<Team[]>([]);
+  const [schedule, setSchedule] = useState<Match[]>([]);
   const [gameFormat, setGameFormat] = useState<GameFormat>('round-robin');
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function fetchData() {
-      if (teams.length === 0) {
-        setIsLoading(true);
+      setIsLoading(true);
+      try {
+        const result = await getPublishedData();
+        if (result.success && result.data) {
+          setTeams(result.data.teams || []);
+          setSchedule(result.data.schedule || []);
+          setGameFormat(result.data.format || 'round-robin');
+        } else {
+          console.error('Failed to fetch data:', result.error);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setIsLoading(false);
       }
-      const result = await getPublishedData();
-      if (result.success && result.data) {
-        setTeams(result.data.teams);
-        setGameFormat(result.data.format || 'round-robin');
-      } else {
-        console.error('Failed to fetch data:', result.error);
-      }
-      setIsLoading(false);
     }
     
-    fetchData(); // Initial fetch
-
-    const interval = setInterval(fetchData, 60000); // Poll every 60 seconds
-    return () => clearInterval(interval);
+    fetchData();
   }, []);
 
-  const renderSkeletons = () => (
+  const renderTeamSkeletons = () => (
     Array.from({ length: 4 }).map((_, index) => (
        <Card key={index} className="flex flex-col shadow-lg rounded-xl">
         <CardHeader className="p-6">
@@ -164,7 +169,18 @@ export default function PublicTeamsPage() {
     ))
   );
 
+  const renderScheduleSkeletons = () => (
+     <div className="space-y-2">
+      <Skeleton className="h-8 w-full" />
+      <Skeleton className="h-8 w-full" />
+      <Skeleton className="h-8 w-full" />
+      <Skeleton className="h-8 w-5/6" />
+    </div>
+  )
+
   const CurrentFormatIcon = formatDetails[gameFormat]?.icon || ShieldQuestion;
+  const isKOTC = gameFormat === 'king-of-the-court' || gameFormat === 'monarch-of-the-court' || gameFormat === 'king-s-ransom' || gameFormat === 'power-up-round';
+
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
@@ -173,70 +189,95 @@ export default function PublicTeamsPage() {
           <Volleyball className="h-12 w-12 text-primary" />
           <h1 className="text-4xl font-bold tracking-tight">Saeed's Shuffle</h1>
         </div>
-        <p className="hidden text-xl text-muted-foreground sm:block">Teams refresh automatically</p>
       </header>
       <main className="flex-1 p-6 md:p-8">
-        <div className="mx-auto w-full max-w-full">
+        <div className="mx-auto w-full max-w-7xl">
           {isLoading ? (
              <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {renderSkeletons()}
+              {renderTeamSkeletons()}
             </div>
           ) : teams.length > 0 ? (
-            <div className="grid grid-cols-12 gap-8">
-              <div className="col-span-12 lg:col-span-8">
-                  <div className="mb-10 text-left">
-                    <h2 className="text-7xl font-bold tracking-tight">Tonight's Teams</h2>
-                  </div>
-                  <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
-                    {teams.map((team) => (
-                      <Card key={team.name} className="flex flex-col rounded-xl border-2 border-primary/50 shadow-2xl transition-transform hover:scale-105 bg-card">
-                        <CardHeader className="p-6 bg-primary/10 rounded-t-lg">
-                          <CardTitle className="flex items-center gap-4 text-4xl font-bold text-primary">
-                            <Users className="h-10 w-10" />
-                            {team.name}
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="flex-grow p-6">
-                          <div className="space-y-6">
-                            {[...team.players]
-                              .sort((a, b) => a.name.localeCompare(b.name))
-                              .map((player) => (
-                              <div key={player.id} className="flex items-center gap-4">
-                                <Avatar className="h-16 w-16 border-4 border-white">
-                                  <AvatarFallback className="bg-primary/20 text-3xl font-bold text-primary">
-                                    {player.name.charAt(0)}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <span className="text-3xl font-medium">{player.name}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-              </div>
-              <div className="col-span-12 lg:col-span-4">
-                 <Card className="sticky top-8 rounded-xl border-2 shadow-2xl">
-                    <CardHeader className="p-6 bg-secondary/10 rounded-t-lg">
-                        <CardTitle className="flex items-center gap-4 text-4xl font-bold text-secondary-foreground">
-                            <CurrentFormatIcon className="h-10 w-10 text-secondary" />
-                            Tonight's Format
-                        </CardTitle>
+            <div className="space-y-12">
+               <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
+                {teams.map((team) => (
+                  <Card key={team.name} className="flex flex-col rounded-xl border-2 border-primary/50 shadow-2xl transition-transform hover:scale-105 bg-card">
+                    <CardHeader className="p-6 bg-primary/10 rounded-t-lg">
+                      <CardTitle className="flex items-center gap-4 text-4xl font-bold text-primary">
+                        <Users className="h-10 w-10" />
+                        {team.name}
+                      </CardTitle>
                     </CardHeader>
-                    <CardContent className="p-6 text-xl">
-                        <h3 className="font-bold text-3xl mb-4">{formatDetails[gameFormat]?.title}</h3>
-                        {formatDetails[gameFormat]?.description}
+                    <CardContent className="flex-grow p-6">
+                      <div className="space-y-6">
+                        {[...team.players]
+                          .sort((a, b) => a.name.localeCompare(b.name))
+                          .map((player) => (
+                          <div key={player.id} className="flex items-center gap-4">
+                            <Avatar className="h-16 w-16 border-4 border-white">
+                              <AvatarFallback className="bg-primary/20 text-3xl font-bold text-primary">
+                                {player.name.charAt(0)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="text-3xl font-medium">{player.name}</span>
+                          </div>
+                        ))}
+                      </div>
                     </CardContent>
-                 </Card>
+                  </Card>
+                ))}
               </div>
+
+              {schedule.length > 0 && (
+                <Card className="rounded-xl border-2 shadow-2xl">
+                  <CardHeader className="p-6 bg-muted/50 rounded-t-lg">
+                    <CardTitle className="flex items-center gap-4 text-4xl font-bold">
+                        <Calendar className="h-10 w-10 text-primary" />
+                        Tonight's Schedule
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                     {isLoading ? renderScheduleSkeletons() : (
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="w-[150px]">Court / Status</TableHead>
+                              <TableHead>Team A</TableHead>
+                              <TableHead>{ isKOTC ? 'vs Team B / Status' : 'Team B'}</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {schedule.map((match) => (
+                              <TableRow key={match.id} className="text-lg">
+                                <TableCell><Badge>{match.court}</Badge></TableCell>
+                                <TableCell className="font-medium">{match.teamA}</TableCell>
+                                <TableCell className="font-medium">{match.teamB}</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                     )}
+                  </CardContent>
+                </Card>
+              )}
+
+              <Card className="rounded-xl border-2 shadow-2xl">
+                <CardHeader className="p-6 bg-secondary/10 rounded-t-lg">
+                    <CardTitle className="flex items-center gap-4 text-4xl font-bold text-secondary-foreground">
+                        <CurrentFormatIcon className="h-10 w-10 text-secondary" />
+                        Tonight's Format
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6 text-xl">
+                    <h3 className="font-bold text-3xl mb-4">{formatDetails[gameFormat]?.title}</h3>
+                    {formatDetails[gameFormat]?.description}
+                </CardContent>
+              </Card>
+
             </div>
           ) : (
              <div className="flex h-[60vh] flex-col items-center justify-center rounded-xl border-4 border-dashed bg-muted/50 p-12 text-center">
               <h3 className="text-6xl font-bold tracking-tight">Teams Not Yet Published</h3>
               <p className="mt-6 text-3xl text-muted-foreground">The commissioner is still drafting. Check back soon!</p>
-              <Skeleton className="h-16 w-full max-w-md mt-12" />
-              <Skeleton className="h-16 w-full max-w-sm mt-4" />
             </div>
           )}
         </div>
@@ -248,3 +289,5 @@ export default function PublicTeamsPage() {
     </div>
   );
 }
+
+    
