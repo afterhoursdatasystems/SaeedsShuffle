@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { Player, Team, Match, GameFormat } from '@/types';
@@ -82,28 +83,34 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
     }
 
     // A final balancing pass: Look for highly imbalanced teams and swap players
-    // This is a simple heuristic: if a team's total skill is way off the average, try a swap.
-    for (let i = 0; i < 5; i++) { // Run the balancing pass a few times
-        const teamSkills = newTeams.map(t => t.players.reduce((sum, p) => sum + p.skill, 0));
-        const avgSkill = teamSkills.reduce((sum, s) => sum + s, 0) / numTeams;
-        
-        const strongestTeamIndex = teamSkills.indexOf(Math.max(...teamSkills));
-        const weakestTeamIndex = teamSkills.indexOf(Math.min(...teamSkills));
+    // This is a simple heuristic: if a team's average skill is way off the global average, try a swap.
+    const globalAvgSkill = players.reduce((sum, p) => sum + p.skill, 0) / players.length;
 
+    for (let i = 0; i < 5; i++) { // Run the balancing pass a few times
+        const teamAvgSkills = newTeams.map(t => t.players.reduce((sum, p) => sum + p.skill, 0) / t.players.length);
+        
+        const strongestTeamIndex = teamAvgSkills.indexOf(Math.max(...teamAvgSkills));
+        const weakestTeamIndex = teamAvgSkills.indexOf(Math.min(...teamAvgSkills));
+        
         const strongestTeam = newTeams[strongestTeamIndex];
         const weakestTeam = newTeams[weakestTeamIndex];
 
         // If the skill gap is significant, attempt a swap
-        if (teamSkills[strongestTeamIndex] > avgSkill + 2 && teamSkills[weakestTeamIndex] < avgSkill - 2) {
-            const highPlayerIndex = strongestTeam.players.findIndex(p => p.skill > avgSkill / strongestTeam.players.length);
-            const lowPlayerIndex = weakestTeam.players.findIndex(p => p.skill < avgSkill / weakestTeam.players.length);
+        if (teamAvgSkills[strongestTeamIndex] > globalAvgSkill + 1 && teamAvgSkills[weakestTeamIndex] < globalAvgSkill - 1) {
+            // Find a higher-skilled player on the strong team and a lower-skilled player on the weak team
+            const highPlayerIndex = strongestTeam.players.findIndex(p => p.skill > teamAvgSkills[strongestTeamIndex]);
+            const lowPlayerIndex = weakestTeam.players.findIndex(p => p.skill < teamAvgSkills[weakestTeamIndex]);
 
             if (highPlayerIndex !== -1 && lowPlayerIndex !== -1) {
-                const highPlayer = strongestTeam.players[highPlayerIndex];
-                const lowPlayer = weakestTeam.players[lowPlayerIndex];
+                 const highPlayer = strongestTeam.players[highPlayerIndex];
+                 const lowPlayer = weakestTeam.players[lowPlayerIndex];
+                
+                // Calculate new average skills if swapped
+                const newStrongAvg = (teamAvgSkills[strongestTeamIndex] * strongestTeam.players.length - highPlayer.skill + lowPlayer.skill) / strongestTeam.players.length;
+                const newWeakAvg = (teamAvgSkills[weakestTeamIndex] * weakestTeam.players.length - lowPlayer.skill + highPlayer.skill) / weakestTeam.players.length;
 
-                // Swap players if it makes the teams more balanced
-                if (Math.abs((teamSkills[strongestTeamIndex] - highPlayer.skill + lowPlayer.skill) - (teamSkills[weakestTeamIndex] - lowPlayer.skill + highPlayer.skill)) < Math.abs(teamSkills[strongestTeamIndex] - teamSkills[weakestTeamIndex])) {
+                // Check if the swap would make the average skills closer to each other
+                if (Math.abs(newStrongAvg - newWeakAvg) < Math.abs(teamAvgSkills[strongestTeamIndex] - teamAvgSkills[weakestTeamIndex])) {
                     [strongestTeam.players[highPlayerIndex], weakestTeam.players[lowPlayerIndex]] = [weakestTeam.players[lowPlayerIndex], strongestTeam.players[highPlayerIndex]];
                 }
             }
@@ -295,11 +302,10 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
   };
   
   const getTeamAnalysis = (team: Team) => {
-    const totalSkill = team.players.reduce((sum, p) => sum + p.skill, 0);
-    const avgSkill = team.players.length > 0 ? (totalSkill / team.players.length).toFixed(1) : '0';
+    const avgSkill = team.players.length > 0 ? (team.players.reduce((sum, p) => sum + p.skill, 0) / team.players.length).toFixed(1) : '0';
     const guyCount = team.players.filter(p => p.gender === 'Guy').length;
     const galCount = team.players.filter(p => p.gender === 'Gal').length;
-    return { totalSkill, avgSkill, guyCount, galCount };
+    return { avgSkill, guyCount, galCount };
   }
   
   const isKOTC = gameFormat === 'king-of-the-court' || gameFormat === 'monarch-of-the-court';
@@ -379,7 +385,7 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
           </CardHeader>
           <CardContent className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {teams.map((team) => {
-              const { totalSkill, avgSkill, guyCount, galCount } = getTeamAnalysis(team);
+              const { avgSkill, guyCount, galCount } = getTeamAnalysis(team);
               return (
               <Card key={team.name} className="flex flex-col">
                 <CardHeader className="p-4">
@@ -387,7 +393,9 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
                 </CardHeader>
                 <CardContent className="flex-grow p-4 pt-0">
                   <div className="space-y-3">
-                    {team.players.map(player => (
+                    {[...team.players]
+                      .sort((a, b) => a.name.localeCompare(b.name))
+                      .map(player => (
                       <div key={player.id} className="flex items-center gap-3">
                          <Avatar className="h-8 w-8 border-2 border-white">
                            <AvatarFallback className="bg-primary/20 text-primary font-bold">
@@ -402,7 +410,6 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
                 </CardContent>
                 <CardFooter className="flex-col items-start gap-2 border-t bg-muted/50 p-4 text-sm text-muted-foreground">
                     <div className="flex w-full justify-between">
-                        <div className='flex items-center gap-2'><BarChart2 className="h-4 w-4" /> Total Skill: <span className="font-bold text-foreground">{totalSkill}</span></div>
                         <div className='flex items-center gap-2'><TrendingUp className="h-4 w-4" /> Avg Skill: <span className="font-bold text-foreground">{avgSkill}</span></div>
                     </div>
                     <div className="flex items-center gap-2"><Users className="h-4 w-4" /> Gender: <span className="font-bold text-foreground">{guyCount} Guys, {galCount} Gals</span></div>

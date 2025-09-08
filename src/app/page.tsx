@@ -164,7 +164,9 @@ export default function PublicTeamsPage() {
                         </CardHeader>
                         <CardContent className="flex-grow p-6">
                           <div className="space-y-6">
-                            {team.players.map((player) => (
+                            {[...team.players]
+                              .sort((a, b) => a.name.localeCompare(b.name))
+                              .map((player) => (
                               <div key={player.id} className="flex items-center gap-4">
                                 <Avatar className="h-16 w-16 border-4 border-white">
                                   <AvatarFallback className="bg-primary/20 text-3xl font-bold text-primary">
