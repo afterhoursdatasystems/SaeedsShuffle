@@ -80,11 +80,19 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
       buckets[key] = shuffleArray(buckets[key]);
     }
     
-    // 3. Distribute players using snake draft from buckets
+    // 3. Combine buckets into a single list for drafting
+    const playersToDraft = [
+      ...buckets['8-10'],
+      ...buckets['6-7'],
+      ...buckets['4-5'],
+      ...buckets['1-3'],
+    ];
+
+    // 4. Distribute players using snake draft
     let teamIndex = 0;
     let direction = 1; // 1 for forward, -1 for backward
-
-    const draftPlayer = (player: Player) => {
+    
+    playersToDraft.forEach(player => {
         // Find the original player object to add to the team, without the adjustedSkill
         const originalPlayer = allPlayers.find(p => p.id === player.id)!;
         newTeams[teamIndex].players.push(originalPlayer);
@@ -94,11 +102,6 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
             direction *= -1;
             teamIndex += direction;
         }
-    };
-    
-    // Draft from highest to lowest bucket
-    ['8-10', '6-7', '4-5', '1-3'].forEach(bucketKey => {
-      buckets[bucketKey].forEach(draftPlayer);
     });
 
     return newTeams;
