@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Swords, Save, Users, BarChart2, TrendingUp, CalendarDays, Send, Crown, Trophy, BookOpen, Gem } from 'lucide-react';
+import { Swords, Save, Users, CalendarDays, Send, Crown, Trophy, BookOpen, Gem } from 'lucide-react';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import React, { useMemo, useState } from 'react';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
@@ -53,69 +53,48 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
   const possibleTeamsCount = Math.floor(presentPlayers.length / teamSize);
 
   const createBalancedTeams = (players: Player[], numTeams: number): Team[] => {
-    // Start with a shuffled list of players to ensure randomness from the start
-    let availablePlayers = shuffleArray(players);
     const shuffledNames = shuffleArray(teamNames);
-
     const newTeams: Team[] = Array.from({ length: numTeams }, (_, i) => ({
         name: shuffledNames[i % shuffledNames.length],
         players: [],
     }));
 
-    // Sort players by skill to ensure top players are distributed
-    availablePlayers.sort((a, b) => b.skill - a.skill);
+    const guys = shuffleArray(players.filter(p => p.gender === 'Guy')).sort((a, b) => b.skill - a.skill);
+    const gals = shuffleArray(players.filter(p => p.gender === 'Gal')).sort((a, b) => b.skill - a.skill);
 
-    // Distribute the highest-skilled players first, one to each team
-    for (let i = 0; i < numTeams; i++) {
-        if (availablePlayers.length > 0) {
-            newTeams[i].players.push(availablePlayers.shift()!);
-        }
-    }
+    const distributePlayers = (playersToDistribute: Player[], teams: Team[]) => {
+      let teamIndex = 0;
+      let direction = 1; // 1 for forward, -1 for backward (snake draft)
+
+      playersToDistribute.forEach(player => {
+          // Sort teams by the number of players they have, then by average skill
+          teams.sort((a, b) => {
+              if (a.players.length !== b.players.length) {
+                  return a.players.length - b.players.length;
+              }
+              const avgSkillA = a.players.reduce((sum, p) => sum + p.skill, 0) / (a.players.length || 1);
+              const avgSkillB = b.players.reduce((sum, p) => sum + p.skill, 0) / (b.players.length || 1);
+              return avgSkillA - avgSkillB;
+          });
+          teams[0].players.push(player);
+      });
+    };
+
+    // A simpler round-robin distribution for more randomness while trying to balance
+    const distributeRoundRobin = (playersToDistribute: Player[], teams: Team[]) => {
+        let teamIndex = 0;
+        playersToDistribute.forEach(player => {
+            teams[teamIndex].players.push(player);
+            teamIndex = (teamIndex + 1) % teams.length;
+        });
+    };
     
-    // Shuffle remaining players to add more randomness before distributing the rest
-    availablePlayers = shuffleArray(availablePlayers);
-
-    // Distribute the rest of the players, trying to balance team size
-    let teamIndex = 0;
-    while (availablePlayers.length > 0) {
-        newTeams[teamIndex % numTeams].players.push(availablePlayers.shift()!);
-        teamIndex++;
-    }
-
-    // A final balancing pass: Look for highly imbalanced teams and swap players
-    // This is a simple heuristic: if a team's average skill is way off the global average, try a swap.
-    const globalAvgSkill = players.reduce((sum, p) => sum + p.skill, 0) / players.length;
-
-    for (let i = 0; i < 5; i++) { // Run the balancing pass a few times
-        const teamAvgSkills = newTeams.map(t => t.players.reduce((sum, p) => sum + p.skill, 0) / t.players.length);
-        
-        const strongestTeamIndex = teamAvgSkills.indexOf(Math.max(...teamAvgSkills));
-        const weakestTeamIndex = teamAvgSkills.indexOf(Math.min(...teamAvgSkills));
-        
-        const strongestTeam = newTeams[strongestTeamIndex];
-        const weakestTeam = newTeams[weakestTeamIndex];
-
-        // If the skill gap is significant, attempt a swap
-        if (teamAvgSkills[strongestTeamIndex] > globalAvgSkill + 1 && teamAvgSkills[weakestTeamIndex] < globalAvgSkill - 1) {
-            // Find a higher-skilled player on the strong team and a lower-skilled player on the weak team
-            const highPlayerIndex = strongestTeam.players.findIndex(p => p.skill > teamAvgSkills[strongestTeamIndex]);
-            const lowPlayerIndex = weakestTeam.players.findIndex(p => p.skill < teamAvgSkills[weakestTeamIndex]);
-
-            if (highPlayerIndex !== -1 && lowPlayerIndex !== -1) {
-                 const highPlayer = strongestTeam.players[highPlayerIndex];
-                 const lowPlayer = weakestTeam.players[lowPlayerIndex];
-                
-                // Calculate new average skills if swapped
-                const newStrongAvg = (teamAvgSkills[strongestTeamIndex] * strongestTeam.players.length - highPlayer.skill + lowPlayer.skill) / strongestTeam.players.length;
-                const newWeakAvg = (teamAvgSkills[weakestTeamIndex] * weakestTeam.players.length - lowPlayer.skill + highPlayer.skill) / weakestTeam.players.length;
-
-                // Check if the swap would make the average skills closer to each other
-                if (Math.abs(newStrongAvg - newWeakAvg) < Math.abs(teamAvgSkills[strongestTeamIndex] - teamAvgSkills[weakestTeamIndex])) {
-                    [strongestTeam.players[highPlayerIndex], weakestTeam.players[lowPlayerIndex]] = [weakestTeam.players[lowPlayerIndex], strongestTeam.players[highPlayerIndex]];
-                }
-            }
-        }
-    }
+    // Distribute the highest skilled players first to ensure they are separated
+    distributeRoundRobin(guys.splice(0, numTeams), newTeams);
+    distributeRoundRobin(gals.splice(0, numTeams), newTeams);
+    
+    // Distribute the rest of the players
+    distributePlayers(shuffleArray([...guys, ...gals]), newTeams);
 
     return newTeams;
   }
@@ -175,8 +154,10 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
 
   const generateKOTCSchedule = (teamNames: string[]): Match[] => {
     if (teamNames.length < 2) return [];
+    
+    const shuffledTeams = shuffleArray(teamNames);
 
-    let waitingTeams = [...teamNames];
+    let waitingTeams = [...shuffledTeams];
     const kingCourtMatch: Match = {
         id: crypto.randomUUID(),
         teamA: waitingTeams.shift()!,
@@ -410,7 +391,7 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
                 </CardContent>
                 <CardFooter className="flex-col items-start gap-2 border-t bg-muted/50 p-4 text-sm text-muted-foreground">
                     <div className="flex w-full justify-between">
-                        <div className='flex items-center gap-2'><TrendingUp className="h-4 w-4" /> Avg Skill: <span className="font-bold text-foreground">{avgSkill}</span></div>
+                        <div className='flex items-center gap-2'>Avg Skill: <span className="font-bold text-foreground">{avgSkill}</span></div>
                     </div>
                     <div className="flex items-center gap-2"><Users className="h-4 w-4" /> Gender: <span className="font-bold text-foreground">{guyCount} Guys, {galCount} Gals</span></div>
                 </CardFooter>
