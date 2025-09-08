@@ -66,23 +66,26 @@ export function AuthProvider({children}: {children: ReactNode}) {
             const result = await getRedirectResult(auth);
             if (result && result.user.email !== ALLOWED_USER) {
                 await signOut(auth);
+                setUser(null);
                 toast({
                     title: 'Access Denied',
                     description: `Only ${ALLOWED_USER} can log in.`,
                     variant: 'destructive',
                 });
             }
-        } catch (error) {
-            console.error('Google Sign-In Redirect Error:', error);
-            toast({
-                title: 'Sign-In Failed',
-                description: 'Could not complete sign-in. Please try again.',
-                variant: 'destructive',
-            });
+            // Let onAuthStateChanged handle setting the user and loading state
+        } catch (error: any) {
+            // Don't show an error if user is not signed in
+            if (error.code !== 'auth/no-user-for-redirect') {
+                console.error('Google Sign-In Redirect Error:', error);
+                toast({
+                    title: 'Sign-In Failed',
+                    description: 'Could not complete sign-in. Please try again.',
+                    variant: 'destructive',
+                });
+            }
         } finally {
-            // This runs after onAuthStateChanged, so we can set loading to false here
-            // or let the onAuthStateChanged handler do it. It's safer to let
-            // onAuthStateChanged handle the final isLoading state.
+             // onAuthStateChanged will set loading to false
         }
     };
     handleRedirectResult();
@@ -91,14 +94,12 @@ export function AuthProvider({children}: {children: ReactNode}) {
 
   const login = async () => {
     const provider = new GoogleAuthProvider();
-    // Using signInWithRedirect is often more reliable than signInWithPopup
     await signInWithRedirect(auth, provider);
   };
 
   const logout = async () => {
     try {
       await signOut(auth);
-      // setUser(null) will be handled by onAuthStateChanged
     } catch (error) {
       console.error('Sign-Out Error:', error);
        toast({
