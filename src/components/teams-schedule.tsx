@@ -54,46 +54,34 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
   const presentPlayers = useMemo(() => players.filter((p) => p.present), [players]);
   const possibleTeamsCount = Math.floor(presentPlayers.length / teamSize);
   
-  const createBalancedTeams = (players: Player[], numTeams: number): Team[] => {
+  const createBalancedTeams = (allPlayers: Player[], numTeams: number): Team[] => {
     const shuffledNames = shuffleArray(teamNames);
     const newTeams: Team[] = Array.from({ length: numTeams }, (_, i) => ({
       name: shuffledNames[i % shuffledNames.length],
       players: [],
     }));
 
-    // Separate players by gender and sort by skill descending
-    const guys = players.filter(p => p.gender === 'Guy').sort((a, b) => b.skill - a.skill);
-    const gals = players.filter(p => p.gender === 'Gal').sort((a, b) => b.skill - a.skill);
+    const sortedPlayers = [...allPlayers].sort((a, b) => b.skill - a.skill);
 
-    const distributePlayersSnakeDraft = (playersToDistribute: Player[], teams: Team[]) => {
-      let teamIndex = 0;
-      let direction = 1;
+    let teamIndex = 0;
+    let direction = 1; // 1 for forward, -1 for backward
 
-      playersToDistribute.forEach(player => {
-        teams[teamIndex].players.push(player);
+    sortedPlayers.forEach(player => {
+        newTeams[teamIndex].players.push(player);
+
         teamIndex += direction;
 
-        // Reverse direction at the ends of the team list
-        if (teamIndex < 0) {
-          teamIndex = 1;
-          direction = 1;
-        } else if (teamIndex >= teams.length) {
-          teamIndex = teams.length - 2;
-          direction = -1;
+        // Change direction at the ends of the list
+        if (teamIndex >= numTeams) {
+            teamIndex = numTeams - 1;
+            direction = -1;
+        } else if (teamIndex < 0) {
+            teamIndex = 0;
+            direction = 1;
         }
-      });
-    };
-    
-    // Distribute guys and gals separately using snake draft
-    distributePlayersSnakeDraft(guys, newTeams);
-    distributePlayersSnakeDraft(gals, newTeams);
-
-    // Sort teams by average skill to see the balance
-    return newTeams.sort((a,b) => {
-        const avgA = a.players.reduce((sum, p) => sum + p.skill, 0) / (a.players.length || 1);
-        const avgB = b.players.reduce((sum, p) => sum + p.skill, 0) / (b.players.length || 1);
-        return avgA - avgB;
     });
+
+    return newTeams;
   }
 
   const handleGenerateTeams = () => {
@@ -298,12 +286,10 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
 
     const sourceTeamName = source.droppableId;
     const destTeamName = destination.droppableId;
-    const sourcePlayerId = source.draggableId;
-    const destPlayerId = destination.draggableId;
+    const sourcePlayerId = result.draggableId;
 
-    // If dropped on the same team or not on a player, do nothing.
-    if (sourceTeamName === destTeamName || !destPlayerId) {
-        return;
+    if (sourceTeamName === destTeamName) {
+        return; // Dragged within the same team
     }
 
     setTeams(currentTeams => {
@@ -313,26 +299,37 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
         const destTeam = newTeams.find((t: Team) => t.name === destTeamName);
 
         if (!sourceTeam || !destTeam) return currentTeams;
-
+        
         const sourcePlayerIndex = sourceTeam.players.findIndex((p: Player) => p.id === sourcePlayerId);
+        if (sourcePlayerIndex === -1) return currentTeams;
+
+        // Player to be moved
+        const [movedPlayer] = sourceTeam.players.splice(sourcePlayerIndex, 1);
+
+        // Find the player being dropped on (if any)
+        const destPlayerId = result.destination?.draggableId;
         const destPlayerIndex = destTeam.players.findIndex((p: Player) => p.id === destPlayerId);
 
-        if (sourcePlayerIndex === -1 || destPlayerIndex === -1) return currentTeams;
+        if(destPlayerIndex > -1) {
+            // This is a swap
+             const [swappedPlayer] = destTeam.players.splice(destPlayerIndex, 1);
+             sourceTeam.players.splice(sourcePlayerIndex, 0, swappedPlayer);
+             destTeam.players.splice(destination.index, 0, movedPlayer);
+             toast({
+                title: "Players Swapped",
+                description: `${movedPlayer.name} and ${swappedPlayer.name} have been swapped.`
+            })
+        } else {
+            // This is a move, not a swap
+            destTeam.players.splice(destination.index, 0, movedPlayer);
+            toast({
+                title: "Player Moved",
+                description: `${movedPlayer.name} has been moved to ${destTeam.name}.`
+            })
+        }
 
-        // Swap the players
-        const [sourcePlayer] = sourceTeam.players.splice(sourcePlayerIndex, 1);
-        const [destPlayer] = destTeam.players.splice(destPlayerIndex, 1);
-        
-        sourceTeam.players.splice(sourcePlayerIndex, 0, destPlayer);
-        destTeam.players.splice(destPlayerIndex, 0, sourcePlayer);
-        
         return newTeams;
     });
-
-    toast({
-        title: "Players Swapped",
-        description: "The players have been swapped between teams."
-    })
   };
 
   return (
@@ -401,7 +398,7 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <CardTitle>Tonight's Teams</CardTitle>
-                  <CardDescription>Drag and drop players between teams to swap them.</CardDescription>
+                  <CardDescription>Drag and drop players between teams to swap or move them.</CardDescription>
                 </div>
                 <Button onClick={handlePublish} disabled={isPublishing || teams.length === 0}>
                     <Send className="mr-2 h-4 w-4" />
