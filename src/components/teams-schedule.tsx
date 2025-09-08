@@ -7,13 +7,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Swords, Save, Users, BarChart2, TrendingUp, CalendarDays } from 'lucide-react';
+import { Swords, Save, Users, BarChart2, TrendingUp, CalendarDays, Send } from 'lucide-react';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import React, { useMemo, useState } from 'react';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { Label } from './ui/label';
 import { Separator } from './ui/separator';
 import { cn } from '@/lib/utils';
+import { publishTeams } from '@/app/actions';
 
 interface TeamsScheduleProps {
   players: Player[];
@@ -43,6 +44,7 @@ const shuffleArray = <T,>(array: T[]): T[] => {
 export default function TeamsSchedule({ players, teams, setTeams, schedule, setSchedule }: TeamsScheduleProps) {
   const { toast } = useToast();
   const [teamSize, setTeamSize] = useState<number>(4);
+  const [isPublishing, setIsPublishing] = useState(false);
 
   const presentPlayers = useMemo(() => players.filter((p) => p.present), [players]);
   const possibleTeamsCount = Math.floor(presentPlayers.length / teamSize);
@@ -62,10 +64,6 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
       femaleCount: 0,
     }));
 
-    const totalPlayers = shuffledPlayers.length;
-    const baseSize = Math.floor(totalPlayers / numTeams);
-    const teamsWithExtra = totalPlayers % numTeams;
-    
     const playersWithAdjusted = shuffledPlayers.map(player => ({
       ...player,
       adjustedSkill: player.gender === 'Guy' ? player.skill : player.skill - 1.2
@@ -74,6 +72,10 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
     const males = playersWithAdjusted.filter(p => p.gender === 'Guy').sort((a,b) => b.adjustedSkill - a.adjustedSkill);
     const females = playersWithAdjusted.filter(p => p.gender === 'Gal').sort((a,b) => b.adjustedSkill - a.adjustedSkill);
 
+    const totalPlayersToDraft = males.length + females.length;
+    const baseSize = Math.floor(totalPlayersToDraft / numTeams);
+    const teamsWithExtra = totalPlayersToDraft % numTeams;
+    
     let maleIndex = 0;
     let femaleIndex = 0;
     const maxRounds = baseSize + (teamsWithExtra > 0 ? 1 : 0);
@@ -218,8 +220,42 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
   
   const handleSaveAllResults = () => {
     toast({ title: "Results saved", description: "All match results have been updated." });
-  }
+  };
 
+  const handlePublishTeams = async () => {
+    if (teams.length === 0) {
+      toast({
+        title: 'No Teams Generated',
+        description: 'Please generate teams before publishing.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    setIsPublishing(true);
+    const result = await publishTeams(teams);
+    setIsPublishing(false);
+
+    if (result.success) {
+      toast({
+        title: 'Teams Published!',
+        description: (
+          <span>
+            Players can now view their teams at{' '}
+            <a href="/public/teams" target="_blank" className="underline font-bold">
+              the public dashboard
+            </a>.
+          </span>
+        ),
+      });
+    } else {
+      toast({
+        title: 'Error Publishing Teams',
+        description: result.error,
+        variant: 'destructive',
+      });
+    }
+  };
+  
   const getTeamAnalysis = (team: Team) => {
     const totalSkill = team.players.reduce((sum, p) => sum + p.skill, 0);
     const avgSkill = team.players.length > 0 ? (totalSkill / team.players.length).toFixed(1) : '0';
@@ -276,8 +312,16 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
       {teams.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Tonight's Teams</CardTitle>
-            <CardDescription>Analysis of the generated teams.</CardDescription>
+             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <CardTitle>Tonight's Teams</CardTitle>
+                  <CardDescription>Analysis of the generated teams.</CardDescription>
+                </div>
+                <Button onClick={handlePublishTeams} disabled={isPublishing || teams.length === 0}>
+                    <Send className="mr-2 h-4 w-4" />
+                    {isPublishing ? 'Publishing...' : 'Publish Teams'}
+                </Button>
+            </div>
           </CardHeader>
           <CardContent className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {teams.map((team) => {
