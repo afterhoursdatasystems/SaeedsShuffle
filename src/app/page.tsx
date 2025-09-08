@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { getPublishedData } from '@/app/actions';
-import type { Team, GameFormat, Match } from '@/types';
+import type { Team, GameFormat, GameVariant, Match } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Volleyball, Users, Trophy, BookOpen, Crown, Gem, ShieldQuestion, KeyRound, Zap, Calendar } from 'lucide-react';
@@ -12,8 +12,9 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
+type CombinedGameFormat = GameFormat | GameVariant;
 
-const formatDetails: Record<GameFormat, { title: string; description: React.ReactNode; icon: React.ElementType }> = {
+const formatDetails: Record<CombinedGameFormat, { title: string; description: React.ReactNode; icon: React.ElementType }> = {
   'king-of-the-court': {
     title: 'Continuous King of the Court',
     icon: Crown,
@@ -34,6 +35,11 @@ const formatDetails: Record<GameFormat, { title: string; description: React.Reac
         <p>This format includes The King’s Handicap Rule, Secret Missions, and the Cosmic Scramble to ensure all teams stay engaged. Teams can earn bonus points by completing their missions, and the Cosmic Scramble may be initiated by the TD to refresh team lineups and add a fun, random twist.</p>
       </div>
     ),
+  },
+   'standard': { // This is a fallback, should ideally not be used directly for display
+    title: 'King of the Court',
+    icon: Crown,
+    description: ( <p>See King of the Court for details.</p>)
   },
   'monarch-of-the-court': {
     title: 'Monarch of the Court',
@@ -123,7 +129,7 @@ const formatDetails: Record<GameFormat, { title: string; description: React.Reac
 export default function PublicTeamsPage() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [schedule, setSchedule] = useState<Match[]>([]);
-  const [gameFormat, setGameFormat] = useState<GameFormat>('round-robin');
+  const [gameFormat, setGameFormat] = useState<CombinedGameFormat>('round-robin');
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -134,7 +140,10 @@ export default function PublicTeamsPage() {
         if (result.success && result.data) {
           setTeams(result.data.teams || []);
           setSchedule(result.data.schedule || []);
-          setGameFormat(result.data.format || 'round-robin');
+          let format = result.data.format || 'round-robin';
+          // Handle old format values for backward compatibility if needed
+          if (format === 'standard') format = 'king-of-the-court';
+          setGameFormat(format as CombinedGameFormat);
         } else {
           console.error('Failed to fetch data:', result.error);
         }
@@ -177,8 +186,10 @@ export default function PublicTeamsPage() {
     </div>
   )
 
-  const CurrentFormatIcon = formatDetails[gameFormat]?.icon || ShieldQuestion;
-  const isKOTC = gameFormat === 'king-of-the-court' || gameFormat === 'monarch-of-the-court' || gameFormat === 'king-s-ransom' || gameFormat === 'power-up-round';
+  const effectiveGameFormat = gameFormat === 'standard' ? 'king-of-the-court' : gameFormat;
+  const currentFormatDetails = formatDetails[effectiveGameFormat];
+  const CurrentFormatIcon = currentFormatDetails?.icon || ShieldQuestion;
+  const isKOTC = ['king-of-the-court', 'monarch-of-the-court', 'king-s-ransom', 'power-up-round', 'standard'].includes(gameFormat);
 
 
   return (
@@ -259,7 +270,7 @@ export default function PublicTeamsPage() {
                 </Card>
               )}
 
-              <Card className="rounded-xl border-2 shadow-2xl">
+              {currentFormatDetails && <Card className="rounded-xl border-2 shadow-2xl">
                 <CardHeader className="p-6 bg-secondary/10 rounded-t-lg">
                     <CardTitle className="flex items-center gap-4 text-4xl font-bold text-secondary-foreground">
                         <CurrentFormatIcon className="h-10 w-10 text-secondary" />
@@ -267,10 +278,10 @@ export default function PublicTeamsPage() {
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="p-6 text-xl">
-                    <h3 className="font-bold text-3xl mb-4">{formatDetails[gameFormat]?.title}</h3>
-                    {formatDetails[gameFormat]?.description}
+                    <h3 className="font-bold text-3xl mb-4">{currentFormatDetails.title}</h3>
+                    {currentFormatDetails.description}
                 </CardContent>
-              </Card>
+              </Card>}
 
             </div>
           ) : (
@@ -288,5 +299,3 @@ export default function PublicTeamsPage() {
     </div>
   );
 }
-
-    

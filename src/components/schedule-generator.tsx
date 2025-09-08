@@ -1,14 +1,14 @@
 
 'use client';
 
-import type { Match, GameFormat } from '@/types';
+import type { Match, GameFormat, GameVariant } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Save, CalendarDays, Send, BookOpen, Trophy, Crown, Gem, KeyRound, Zap } from 'lucide-react';
+import { Save, CalendarDays, Send, BookOpen, Trophy, Crown } from 'lucide-react';
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { usePlayerContext } from '@/contexts/player-context';
@@ -27,7 +27,7 @@ const shuffleArray = <T,>(array: T[]): T[] => {
 
 
 export function ScheduleGenerator() {
-  const { teams, schedule, setSchedule, gameFormat, setGameFormat } = usePlayerContext();
+  const { teams, schedule, setSchedule, gameFormat, setGameFormat, gameVariant, setGameVariant } = usePlayerContext();
   const { toast } = useToast();
   const [isPublishing, setIsPublishing] = React.useState(false);
   
@@ -107,17 +107,22 @@ export function ScheduleGenerator() {
 
     const teamNamesForSchedule = teams.map(t => t.name);
     let newSchedule: Match[] = [];
+    let formatDescription = '';
 
     switch(gameFormat) {
         case 'pool-play-bracket':
         case 'round-robin':
             newSchedule = generateRoundRobinSchedule(teamNamesForSchedule);
+            formatDescription = gameFormat === 'round-robin' ? "Round Robin" : "Pool Play / Bracket";
             break;
         case 'king-of-the-court':
-        case 'monarch-of-the-court':
-        case 'king-s-ransom':
-        case 'power-up-round':
             newSchedule = generateKOTCSchedule(teamNamesForSchedule);
+            switch(gameVariant) {
+                case 'standard': formatDescription = "King of the Court"; break;
+                case 'monarch-of-the-court': formatDescription = "Monarch of the Court"; break;
+                case 'king-s-ransom': formatDescription = "King's Ransom"; break;
+                case 'power-up-round': formatDescription = "Power-Up Round"; break;
+            }
             break;
         default:
              toast({
@@ -132,7 +137,7 @@ export function ScheduleGenerator() {
     
     toast({
       title: 'Schedule Generated!',
-      description: `${newSchedule.length} matches have been created for the ${gameFormat} format.`,
+      description: `${newSchedule.length} matches have been created for the ${formatDescription} format.`,
     });
   };
   
@@ -153,8 +158,15 @@ export function ScheduleGenerator() {
       });
       return;
     }
+
+    let finalFormat: any = gameFormat;
+    if (gameFormat === 'king-of-the-court' && gameVariant !== 'standard') {
+        finalFormat = gameVariant;
+    }
+
+
     setIsPublishing(true);
-    const result = await publishData(teams, gameFormat, schedule);
+    const result = await publishData(teams, finalFormat, schedule);
     setIsPublishing(false);
 
     if (result.success) {
@@ -191,7 +203,7 @@ export function ScheduleGenerator() {
     toast({ title: "Results saved", description: "All match results have been updated." });
   };
   
-  const isKOTC = gameFormat === 'king-of-the-court' || gameFormat === 'monarch-of-the-court' || gameFormat === 'king-s-ransom' || gameFormat === 'power-up-round';
+  const isKOTC = gameFormat === 'king-of-the-court';
 
   return (
     <div className="space-y-8">
@@ -205,22 +217,37 @@ export function ScheduleGenerator() {
            </div>
         </CardHeader>
         <CardContent className="space-y-6">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-lg border p-4">
-                <div className='space-y-2'>
-                    <Label>Game Format</Label>
-                    <Select value={gameFormat} onValueChange={(val: GameFormat) => setGameFormat(val)}>
-                      <SelectTrigger className="w-full sm:w-[240px]">
-                        <SelectValue placeholder="Select a format" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="round-robin"><BookOpen className="inline-block h-4 w-4 mr-2" /> Round Robin</SelectItem>
-                        <SelectItem value="pool-play-bracket"><Trophy className="inline-block h-4 w-4 mr-2" /> Pool Play / Bracket</SelectItem>
-                        <SelectItem value="king-of-the-court"><Crown className="inline-block h-4 w-4 mr-2" /> King of the Court</SelectItem>
-                        <SelectItem value="monarch-of-the-court"><Gem className="inline-block h-4 w-4 mr-2" /> Monarch of the Court</SelectItem>
-                        <SelectItem value="king-s-ransom"><KeyRound className="inline-block h-4 w-4 mr-2" /> King's Ransom</SelectItem>
-                        <SelectItem value="power-up-round"><Zap className="inline-block h-4 w-4 mr-2" /> Power-up Round</SelectItem>
-                      </SelectContent>
-                    </Select>
+            <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between rounded-lg border p-4">
+                <div className='flex flex-col sm:flex-row gap-4'>
+                    <div className='space-y-2'>
+                        <Label>Game Format</Label>
+                        <Select value={gameFormat} onValueChange={(val: GameFormat) => setGameFormat(val)}>
+                          <SelectTrigger className="w-full sm:w-[240px]">
+                            <SelectValue placeholder="Select a format" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="king-of-the-court"><Crown className="inline-block h-4 w-4 mr-2" /> King of the Court</SelectItem>
+                            <SelectItem value="round-robin"><BookOpen className="inline-block h-4 w-4 mr-2" /> Round Robin</SelectItem>
+                            <SelectItem value="pool-play-bracket"><Trophy className="inline-block h-4 w-4 mr-2" /> Pool Play / Bracket</SelectItem>
+                          </SelectContent>
+                        </Select>
+                    </div>
+                    { isKOTC && (
+                        <div className='space-y-2'>
+                            <Label>Game Variant</Label>
+                            <Select value={gameVariant} onValueChange={(val: GameVariant) => setGameVariant(val)}>
+                              <SelectTrigger className="w-full sm:w-[240px]">
+                                <SelectValue placeholder="Select a variant" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="standard">Standard KOTC</SelectItem>
+                                <SelectItem value="monarch-of-the-court">Monarch of the Court</SelectItem>
+                                <SelectItem value="king-s-ransom">King's Ransom</SelectItem>
+                                <SelectItem value="power-up-round">Power-up Round</SelectItem>
+                              </SelectContent>
+                            </Select>
+                        </div>
+                    )}
                 </div>
                  <Button onClick={handleGenerateSchedule} variant="outline" disabled={teams.length === 0}>
                   <CalendarDays className="mr-2 h-4 w-4" />

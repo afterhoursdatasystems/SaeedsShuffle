@@ -24,10 +24,14 @@ export type Match = {
 export type GameFormat = 
   | 'round-robin' 
   | 'pool-play-bracket' 
-  | 'king-of-the-court'
+  | 'king-of-the-court';
+
+export type GameVariant = 
+  | 'standard'
   | 'monarch-of-the-court'
   | 'king-s-ransom'
   | 'power-up-round';
+
 
 export type PowerUp = {
   name: string;
