@@ -61,25 +61,35 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
       players: [],
     }));
 
-    // Introduce randomness by shuffling before sorting
-    const sortedPlayers = shuffleArray(allPlayers).sort((a, b) => b.skill - a.skill);
+    // 1. Create skill buckets
+    const buckets: { [key: string]: Player[] } = {
+      '8-10': allPlayers.filter(p => p.skill >= 8 && p.skill <= 10),
+      '6-7': allPlayers.filter(p => p.skill >= 6 && p.skill <= 7),
+      '4-5': allPlayers.filter(p => p.skill >= 4 && p.skill <= 5),
+      '1-3': allPlayers.filter(p => p.skill >= 1 && p.skill <= 3),
+    };
 
+    // 2. Shuffle each bucket for randomness
+    for (const key in buckets) {
+      buckets[key] = shuffleArray(buckets[key]);
+    }
+    
+    // 3. Distribute players using snake draft from buckets
     let teamIndex = 0;
     let direction = 1; // 1 for forward, -1 for backward
 
-    sortedPlayers.forEach(player => {
+    const draftPlayer = (player: Player) => {
         newTeams[teamIndex].players.push(player);
-
         teamIndex += direction;
-
-        // Change direction at the ends of the list
-        if (teamIndex >= numTeams) {
-            teamIndex = numTeams - 1;
-            direction = -1;
-        } else if (teamIndex < 0) {
-            teamIndex = 0;
-            direction = 1;
+        if (teamIndex >= numTeams || teamIndex < 0) {
+            direction *= -1;
+            teamIndex += direction;
         }
+    };
+    
+    // Draft from highest to lowest bucket
+    ['8-10', '6-7', '4-5', '1-3'].forEach(bucketKey => {
+      buckets[bucketKey].forEach(draftPlayer);
     });
 
     return newTeams;
