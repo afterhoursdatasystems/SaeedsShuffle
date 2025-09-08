@@ -1,12 +1,12 @@
 
 'use client';
 
-import type { Player, Team, GameFormat } from '@/types';
+import type { Player, Team } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Save, Users, Send, Crown, Trophy, BookOpen, Gem, Shuffle, KeyRound, Zap } from 'lucide-react';
+import { Save, Users, Send, Shuffle, Info } from 'lucide-react';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import React, { useMemo, useState } from 'react';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
@@ -14,7 +14,7 @@ import { Label } from './ui/label';
 import { Separator } from './ui/separator';
 import { cn } from '@/lib/utils';
 import { publishData } from '@/app/actions';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { DragDropContext, Droppable, Draggable, type DropResult } from 'react-beautiful-dnd';
 import { usePlayerContext } from '@/contexts/player-context';
 
@@ -44,7 +44,6 @@ export function TeamGenerator() {
     schedule,
     setSchedule,
     gameFormat, 
-    setGameFormat 
   } = usePlayerContext();
   const { toast } = useToast();
   const [teamSize, setTeamSize] = useState<number>(4);
@@ -222,6 +221,8 @@ export function TeamGenerator() {
         return newTeams;
     });
   };
+  
+  const isBlindDraw = gameFormat === 'blind-draw';
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
@@ -232,40 +233,50 @@ export function TeamGenerator() {
           <CardDescription>Configure the settings to generate balanced teams for the night.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-lg border p-4">
-                 <div className='space-y-2'>
-                    <Label>Team Size</Label>
-                    <RadioGroup value={String(teamSize)} onValueChange={(val) => setTeamSize(Number(val))} className="flex space-x-4">
-                        <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="3" id="3v3" />
-                            <Label htmlFor="3v3">3 vs 3</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="4" id="4v4" />
-                            <Label htmlFor="4v4">4 vs 4</Label>
-                        </div>
-                    </RadioGroup>
+            {isBlindDraw ? (
+                <Alert>
+                    <Info className="h-4 w-4" />
+                    <AlertTitle>Blind Draw Format</AlertTitle>
+                    <AlertDescription>
+                        Team generation is disabled for the "Blind Draw" format. Teams will be randomly created for each round on the Schedule page.
+                    </AlertDescription>
+                </Alert>
+            ) : (
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-lg border p-4">
+                     <div className='space-y-2'>
+                        <Label>Team Size</Label>
+                        <RadioGroup value={String(teamSize)} onValueChange={(val) => setTeamSize(Number(val))} className="flex space-x-4">
+                            <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="3" id="3v3" />
+                                <Label htmlFor="3v3">3 vs 3</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="4" id="4v4" />
+                                <Label htmlFor="4v4">4 vs 4</Label>
+                            </div>
+                        </RadioGroup>
+                    </div>
+                    <Separator orientation='vertical' className='hidden sm:block h-12' />
+                    <div className="text-center">
+                        <p className="text-sm font-medium text-muted-foreground">Present Players</p>
+                        <p className="text-2xl font-bold">{presentPlayers.length}</p>
+                    </div>
+                    <div className="text-center">
+                        <p className="text-sm font-medium text-muted-foreground">Possible Teams</p>
+                        <p className="text-2xl font-bold">{possibleTeamsCount}</p>
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-2 mt-4 sm:mt-0">
+                      <Button onClick={handleGenerateTeams}>
+                          <Shuffle className="mr-2 h-4 w-4" />
+                          Generate Teams
+                      </Button>
+                    </div>
                 </div>
-                <Separator orientation='vertical' className='hidden sm:block h-12' />
-                <div className="text-center">
-                    <p className="text-sm font-medium text-muted-foreground">Present Players</p>
-                    <p className="text-2xl font-bold">{presentPlayers.length}</p>
-                </div>
-                <div className="text-center">
-                    <p className="text-sm font-medium text-muted-foreground">Possible Teams</p>
-                    <p className="text-2xl font-bold">{possibleTeamsCount}</p>
-                </div>
-                <div className="flex flex-col sm:flex-row gap-2 mt-4 sm:mt-0">
-                  <Button onClick={handleGenerateTeams}>
-                      <Shuffle className="mr-2 h-4 w-4" />
-                      Generate Teams
-                  </Button>
-                </div>
-            </div>
+            )}
         </CardContent>
       </Card>
       
-      {teams.length > 0 && (
+      {teams.length > 0 && !isBlindDraw && (
         <Card>
           <CardHeader>
              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">

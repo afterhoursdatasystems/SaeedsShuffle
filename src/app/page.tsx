@@ -6,7 +6,7 @@ import { getPublishedData } from '@/app/actions';
 import type { Team, GameFormat, GameVariant, Match } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Volleyball, Users, Trophy, BookOpen, Crown, Gem, ShieldQuestion, KeyRound, Zap, Calendar } from 'lucide-react';
+import { Volleyball, Users, Trophy, BookOpen, Crown, Gem, ShieldQuestion, KeyRound, Zap, Calendar, Shuffle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -121,6 +121,17 @@ const formatDetails: Record<CombinedGameFormat, { title: string; description: Re
         <p className="mb-4 text-lg">A simple and fair format where every team gets to play against every other team. This is great for maximizing play time and ensuring a variety of matchups.</p>
         <h4 className="font-bold text-xl mb-2">The Concept</h4>
         <p className="mb-4">The schedule is generated so that each team plays all other teams once (or twice, depending on the setup). The winner is determined by the final standings based on wins and point differential.</p>
+       </div>
+    )
+  },
+  'blind-draw': {
+    title: 'Blind Draw',
+    icon: Shuffle,
+    description: (
+       <div>
+        <p className="mb-4 text-lg">A social and unpredictable format where teams are redrawn for every round. This format is great for mixing up players and ensuring everyone gets to play with a variety of teammates.</p>
+        <h4 className="font-bold text-xl mb-2">The Concept</h4>
+        <p className="mb-4">There are no fixed teams. Before each round of games, new teams are randomly created from the pool of present players. Players earn points individually based on their randomly-assigned team's performance, and the player with the most points at the end of the night is the champion.</p>
        </div>
     )
   },

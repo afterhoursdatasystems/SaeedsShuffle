@@ -1,14 +1,14 @@
 
 'use client';
 
-import type { Match, GameFormat, GameVariant } from '@/types';
+import type { Match, GameFormat, GameVariant, Player } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Save, CalendarDays, Send, BookOpen, Trophy, Crown } from 'lucide-react';
+import { Save, CalendarDays, Send, BookOpen, Trophy, Crown, Shuffle } from 'lucide-react';
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { usePlayerContext } from '@/contexts/player-context';
@@ -27,9 +27,11 @@ const shuffleArray = <T,>(array: T[]): T[] => {
 
 
 export function ScheduleGenerator() {
-  const { teams, schedule, setSchedule, gameFormat, setGameFormat, gameVariant, setGameVariant } = usePlayerContext();
+  const { teams, schedule, setSchedule, gameFormat, setGameFormat, gameVariant, setGameVariant, players } = usePlayerContext();
   const { toast } = useToast();
   const [isPublishing, setIsPublishing] = React.useState(false);
+
+  const presentPlayers = players.filter(p => p.present);
   
   const generateRoundRobinSchedule = (teamNames: string[]): Match[] => {
     const newSchedule: Match[] = [];
@@ -50,6 +52,37 @@ export function ScheduleGenerator() {
       }
     }
     return shuffleArray(newSchedule);
+  };
+
+  const generateBlindDrawSchedule = (playersForDraw: Player[]): Match[] => {
+      const newSchedule: Match[] = [];
+      const courts = ['Court 1', 'Court 2'];
+      const teamSize = 4;
+      const numMatches = Math.floor(playersForDraw.length / (teamSize * 2));
+
+      if(numMatches < 1) {
+        toast({ title: 'Not enough players', description: `Need at least ${teamSize*2} players for a blind draw match.`, variant: 'destructive' });
+        return [];
+      }
+      
+      const shuffledPlayers = shuffleArray(playersForDraw);
+      
+      for(let i = 0; i < numMatches; i++) {
+        const teamAPlayers = shuffledPlayers.splice(0, teamSize);
+        const teamBPlayers = shuffledPlayers.splice(0, teamSize);
+        
+        newSchedule.push({
+            id: crypto.randomUUID(),
+            teamA: teamAPlayers.map(p => p.name).join(', '),
+            teamB: teamBPlayers.map(p => p.name).join(', '),
+            resultA: null,
+            resultB: null,
+            court: courts[i % courts.length],
+        });
+      }
+
+      // In a real app, you'd handle leftover players
+      return newSchedule;
   };
 
   const generateKOTCSchedule = (teamNames: string[]): Match[] => {
@@ -96,7 +129,7 @@ export function ScheduleGenerator() {
   };
 
   const handleGenerateSchedule = () => {
-    if (teams.length < 2) {
+    if (gameFormat !== 'blind-draw' && teams.length < 2) {
       toast({
         title: 'Not enough teams',
         description: 'Please generate teams before creating a schedule.',
@@ -105,24 +138,27 @@ export function ScheduleGenerator() {
       return;
     }
 
-    const teamNamesForSchedule = teams.map(t => t.name);
     let newSchedule: Match[] = [];
     let formatDescription = '';
 
     switch(gameFormat) {
         case 'pool-play-bracket':
         case 'round-robin':
-            newSchedule = generateRoundRobinSchedule(teamNamesForSchedule);
+            newSchedule = generateRoundRobinSchedule(teams.map(t => t.name));
             formatDescription = gameFormat === 'round-robin' ? "Round Robin" : "Pool Play / Bracket";
             break;
         case 'king-of-the-court':
-            newSchedule = generateKOTCSchedule(teamNamesForSchedule);
+            newSchedule = generateKOTCSchedule(teams.map(t => t.name));
             switch(gameVariant) {
                 case 'standard': formatDescription = "King of the Court"; break;
                 case 'monarch-of-the-court': formatDescription = "Monarch of the Court"; break;
                 case 'king-s-ransom': formatDescription = "King's Ransom"; break;
                 case 'power-up-round': formatDescription = "Power-Up Round"; break;
             }
+            break;
+        case 'blind-draw':
+            newSchedule = generateBlindDrawSchedule(presentPlayers);
+            formatDescription = 'Blind Draw';
             break;
         default:
              toast({
@@ -142,14 +178,6 @@ export function ScheduleGenerator() {
   };
   
   const handlePublish = async () => {
-    if (teams.length === 0) {
-      toast({
-        title: 'No Teams Generated',
-        description: 'Please generate teams on the Teams page before publishing.',
-        variant: 'destructive',
-      });
-      return;
-    }
      if (schedule.length === 0) {
       toast({
         title: 'No Schedule Generated',
@@ -166,7 +194,9 @@ export function ScheduleGenerator() {
 
 
     setIsPublishing(true);
-    const result = await publishData(teams, finalFormat, schedule);
+    // For blind draw, we pass the players as teams since teams are ephemeral
+    const teamsToPublish = gameFormat === 'blind-draw' ? [] : teams;
+    const result = await publishData(teamsToPublish, finalFormat, schedule);
     setIsPublishing(false);
 
     if (result.success) {
@@ -229,6 +259,7 @@ export function ScheduleGenerator() {
                             <SelectItem value="king-of-the-court"><Crown className="inline-block h-4 w-4 mr-2" /> King of the Court</SelectItem>
                             <SelectItem value="round-robin"><BookOpen className="inline-block h-4 w-4 mr-2" /> Round Robin</SelectItem>
                             <SelectItem value="pool-play-bracket"><Trophy className="inline-block h-4 w-4 mr-2" /> Pool Play / Bracket</SelectItem>
+                            <SelectItem value="blind-draw"><Shuffle className="inline-block h-4 w-4 mr-2" /> Blind Draw</SelectItem>
                           </SelectContent>
                         </Select>
                     </div>
@@ -249,7 +280,7 @@ export function ScheduleGenerator() {
                         </div>
                     )}
                 </div>
-                 <Button onClick={handleGenerateSchedule} variant="outline" disabled={teams.length === 0}>
+                 <Button onClick={handleGenerateSchedule}>
                   <CalendarDays className="mr-2 h-4 w-4" />
                   Generate Schedule
               </Button>

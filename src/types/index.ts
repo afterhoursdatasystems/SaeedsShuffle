@@ -24,7 +24,8 @@ export type Match = {
 export type GameFormat = 
   | 'round-robin' 
   | 'pool-play-bracket' 
-  | 'king-of-the-court';
+  | 'king-of-the-court'
+  | 'blind-draw';
 
 export type GameVariant = 
   | 'standard'
