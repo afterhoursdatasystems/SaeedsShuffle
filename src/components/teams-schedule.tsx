@@ -39,12 +39,103 @@ const shuffleArray = <T,>(array: T[]): T[] => {
   return newArray;
 };
 
+
 export default function TeamsSchedule({ players, teams, setTeams, schedule, setSchedule }: TeamsScheduleProps) {
   const { toast } = useToast();
   const [teamSize, setTeamSize] = useState<number>(4);
 
   const presentPlayers = useMemo(() => players.filter((p) => p.present), [players]);
   const possibleTeamsCount = Math.floor(presentPlayers.length / teamSize);
+
+  const createBalancedTeams = (players: Player[], numTeams: number): Team[] => {
+    const shuffledNames = shuffleArray(teamNames);
+    
+    type TeamInternal = { name: string; players: Player[]; totalSkill: number; adjustedSkill: number; maleCount: number; femaleCount: number };
+
+    const newTeams: TeamInternal[] = Array.from({ length: numTeams }, (_, i) => ({
+      name: shuffledNames[i % shuffledNames.length],
+      players: [],
+      totalSkill: 0,
+      adjustedSkill: 0,
+      maleCount: 0,
+      femaleCount: 0,
+    }));
+
+    const totalPlayers = players.length;
+    const baseSize = Math.floor(totalPlayers / numTeams);
+    const teamsWithExtra = totalPlayers % numTeams;
+
+    const playersWithAdjusted = players.map(player => ({
+      ...player,
+      adjustedSkill: player.gender === 'Guy' ? player.skill : player.skill - 1.2
+    }));
+
+    const males = playersWithAdjusted.filter(p => p.gender === 'Guy').sort((a,b) => b.adjustedSkill - a.adjustedSkill);
+    const females = playersWithAdjusted.filter(p => p.gender === 'Gal').sort((a,b) => b.adjustedSkill - a.adjustedSkill);
+
+    let maleIndex = 0;
+    let femaleIndex = 0;
+    const maxRounds = baseSize + (teamsWithExtra > 0 ? 1 : 0);
+
+    for (let round = 0; round < maxRounds; round++) {
+      const isReverse = round % 2 === 1;
+      const order = Array.from({ length: numTeams }, (_, i) => isReverse ? numTeams - 1 - i : i);
+      
+      for (const teamIndex of order) {
+        const team = newTeams[teamIndex];
+        const targetSize = teamIndex < teamsWithExtra ? baseSize + 1 : baseSize;
+        
+        if (team.players.length >= targetSize) continue;
+
+        let candidates = [];
+        if (maleIndex < males.length) candidates.push(males[maleIndex]);
+        if (femaleIndex < females.length) candidates.push(females[femaleIndex]);
+
+        if (candidates.length === 0) break;
+
+        const lowSkillCount = team.players.filter(p => p.skill <= 3).length;
+        let preferredCandidates = candidates;
+        if (lowSkillCount >= 1) {
+            const nonLowSkill = candidates.filter(p => p.skill > 3);
+            if (nonLowSkill.length > 0) {
+                preferredCandidates = nonLowSkill;
+            }
+        }
+        
+        let playerToDraft;
+        const genderDiff = team.maleCount - team.femaleCount;
+        
+        const wantsFemale = genderDiff >= 1;
+        const wantsMale = genderDiff <= -1;
+
+        const femaleCandidate = preferredCandidates.find(p => p.gender === 'Gal');
+        const maleCandidate = preferredCandidates.find(p => p.gender === 'Guy');
+        
+        if (wantsFemale && femaleCandidate) {
+            playerToDraft = femaleCandidate;
+        } else if (wantsMale && maleCandidate) {
+            playerToDraft = maleCandidate;
+        } else {
+            preferredCandidates.sort((a,b) => b.adjustedSkill - a.adjustedSkill);
+            playerToDraft = preferredCandidates[0];
+        }
+        
+        if (playerToDraft.gender === 'Guy') {
+            maleIndex++;
+            team.maleCount++;
+        } else {
+            femaleIndex++;
+            team.femaleCount++;
+        }
+        
+        team.players.push(playerToDraft);
+        team.totalSkill += playerToDraft.skill;
+        team.adjustedSkill += playerToDraft.adjustedSkill;
+      }
+    }
+     return newTeams.map(({name, players}) => ({ name, players }));
+  }
+
 
   const handleGenerate = () => {
     if (presentPlayers.length < teamSize) {
@@ -57,38 +148,20 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
     }
 
     const numTeams = Math.floor(presentPlayers.length / teamSize);
-    if (numTeams === 0) {
+    if (numTeams < 2) {
        toast({
         title: 'Not enough players',
-        description: `Not enough players to form any ${teamSize}-player teams.`,
+        description: `Not enough players to form at least 2 teams of size ${teamSize}.`,
         variant: 'destructive',
       });
       return;
     }
-
-    // Shuffle players first, then sort by skill for fair distribution
-    const shuffledPlayers = shuffleArray(presentPlayers);
-    const sortedPlayers = [...shuffledPlayers].sort((a, b) => b.skill - a.skill);
-
-    const shuffledTeamNames = shuffleArray(teamNames);
-
-    const newTeams: Team[] = Array.from({ length: numTeams }, (_, i) => ({
-      name: shuffledTeamNames[i % shuffledTeamNames.length],
-      players: [],
-    }));
     
-    // Snake draft distribution
-    let direction = 1;
-    let teamIndex = 0;
-    sortedPlayers.slice(0, numTeams * teamSize).forEach(player => {
-        newTeams[teamIndex].players.push(player);
-        teamIndex += direction;
-        if (teamIndex < 0 || teamIndex >= numTeams) {
-            direction *= -1;
-            teamIndex += direction;
-        }
-    });
-
+    // Clear previous teams before generating new ones
+    setTeams([]);
+    setSchedule([]);
+    
+    const newTeams = createBalancedTeams(presentPlayers, numTeams);
     setTeams(newTeams);
 
     // Round Robin schedule generation
@@ -136,7 +209,7 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
 
   const getTeamAnalysis = (team: Team) => {
     const totalSkill = team.players.reduce((sum, p) => sum + p.skill, 0);
-    const avgSkill = (totalSkill / team.players.length).toFixed(1);
+    const avgSkill = team.players.length > 0 ? (totalSkill / team.players.length).toFixed(1) : '0';
     const guyCount = team.players.filter(p => p.gender === 'Guy').length;
     const galCount = team.players.filter(p => p.gender === 'Gal').length;
     return { totalSkill, avgSkill, guyCount, galCount };
