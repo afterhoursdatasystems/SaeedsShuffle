@@ -15,7 +15,10 @@ export default function PublicTeamsPage() {
 
   useEffect(() => {
     async function fetchTeams() {
-      setIsLoading(true);
+      // Don't show loading skeleton on subsequent polls
+      if (teams.length === 0) {
+        setIsLoading(true);
+      }
       const result = await getPublishedTeams();
       if (result.success && result.data) {
         setTeams(result.data);
@@ -24,11 +27,12 @@ export default function PublicTeamsPage() {
       }
       setIsLoading(false);
     }
-    fetchTeams();
+    
+    fetchTeams(); // Initial fetch
 
     const interval = setInterval(fetchTeams, 15000); // Poll every 15 seconds
     return () => clearInterval(interval);
-  }, []);
+  }, []); // Empty dependency array ensures this effect runs only once on mount
 
   const getTeamAnalysis = (team: Team) => {
     const totalSkill = team.players.reduce((sum, p) => sum + p.skill, 0);
