@@ -61,7 +61,8 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
       players: [],
     }));
 
-    const sortedPlayers = [...allPlayers].sort((a, b) => b.skill - a.skill);
+    // Introduce randomness by shuffling before sorting
+    const sortedPlayers = shuffleArray(allPlayers).sort((a, b) => b.skill - a.skill);
 
     let teamIndex = 0;
     let direction = 1; // 1 for forward, -1 for backward
