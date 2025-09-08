@@ -1,8 +1,8 @@
 export type Player = {
   id: string;
   name: string;
-  skill: 'Beginner' | 'Intermediate' | 'Advanced';
-  gender: 'Male' | 'Female' | 'Other';
+  skill: number;
+  gender: 'Guy' | 'Gal';
   present: boolean;
 };
 

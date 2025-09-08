@@ -140,7 +140,7 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
                            </AvatarFallback>
                          </Avatar>
                         <span className="font-medium">{player.name}</span>
-                        <Badge variant="outline" className="ml-auto">{player.skill.charAt(0)}</Badge>
+                        <Badge variant="outline" className="ml-auto">{player.skill}/10</Badge>
                       </div>
                     ))}
                   </div>

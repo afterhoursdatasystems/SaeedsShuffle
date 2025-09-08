@@ -37,13 +37,6 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -52,11 +45,12 @@ import { Plus, Trash, Pencil, MoreVertical } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from './ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
+import { Slider } from './ui/slider';
 
 const playerSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
-  skill: z.enum(['Beginner', 'Intermediate', 'Advanced']),
-  gender: z.enum(['Male', 'Female', 'Other']),
+  skill: z.number().min(1).max(10),
+  gender: z.enum(['Guy', 'Gal']),
 });
 
 type PlayerFormValues = z.infer<typeof playerSchema>;
@@ -75,8 +69,8 @@ export default function PlayerManagement({ players, setPlayers }: PlayerManageme
     resolver: zodResolver(playerSchema),
     defaultValues: {
       name: '',
-      skill: 'Intermediate',
-      gender: 'Other',
+      skill: 5,
+      gender: 'Gal',
     },
   });
 
@@ -145,7 +139,7 @@ export default function PlayerManagement({ players, setPlayers }: PlayerManageme
                 <DialogTitle>{editingPlayer ? 'Edit Player' : 'Add New Player'}</DialogTitle>
               </DialogHeader>
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 py-4">
                   <FormField control={form.control} name="name" render={({ field }) => (
                     <FormItem>
                       <FormLabel>Player Name</FormLabel>
@@ -155,15 +149,16 @@ export default function PlayerManagement({ players, setPlayers }: PlayerManageme
                   )} />
                   <FormField control={form.control} name="skill" render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Skill Level</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl><SelectTrigger><SelectValue placeholder="Select skill level" /></SelectTrigger></FormControl>
-                        <SelectContent>
-                          <SelectItem value="Beginner">Beginner</SelectItem>
-                          <SelectItem value="Intermediate">Intermediate</SelectItem>
-                          <SelectItem value="Advanced">Advanced</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <FormLabel>Skill Level: {field.value}</FormLabel>
+                      <FormControl>
+                        <Slider
+                          min={1}
+                          max={10}
+                          step={1}
+                          defaultValue={[field.value]}
+                          onValueChange={(vals) => field.onChange(vals[0])}
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )} />
@@ -173,16 +168,12 @@ export default function PlayerManagement({ players, setPlayers }: PlayerManageme
                       <FormControl>
                         <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex space-x-4">
                           <FormItem className="flex items-center space-x-2 space-y-0">
-                            <FormControl><RadioGroupItem value="Male" /></FormControl>
-                            <FormLabel className="font-normal">Male</FormLabel>
+                            <FormControl><RadioGroupItem value="Guy" /></FormControl>
+                            <FormLabel className="font-normal">Guy</FormLabel>
                           </FormItem>
                           <FormItem className="flex items-center space-x-2 space-y-0">
-                            <FormControl><RadioGroupItem value="Female" /></FormControl>
-                            <FormLabel className="font-normal">Female</FormLabel>
-                          </FormItem>
-                           <FormItem className="flex items-center space-x-2 space-y-0">
-                            <FormControl><RadioGroupItem value="Other" /></FormControl>
-                            <FormLabel className="font-normal">Other</FormLabel>
+                            <FormControl><RadioGroupItem value="Gal" /></FormControl>
+                            <FormLabel className="font-normal">Gal</FormLabel>
                           </FormItem>
                         </RadioGroup>
                       </FormControl>
@@ -223,13 +214,13 @@ export default function PlayerManagement({ players, setPlayers }: PlayerManageme
                   </TableCell>
                   <TableCell className="font-medium">{player.name}</TableCell>
                   <TableCell className="hidden md:table-cell">
-                    <Badge variant={
-                      player.skill === 'Advanced' ? 'destructive' :
-                      player.skill === 'Intermediate' ? 'secondary' : 'default'
+                     <Badge variant={
+                      player.skill > 7 ? 'destructive' :
+                      player.skill > 4 ? 'secondary' : 'default'
                     } className={
-                      player.skill === 'Beginner' ? 'bg-blue-500 text-white' : ''
+                      player.skill <= 4 ? 'bg-blue-500 text-white' : ''
                     }>
-                      {player.skill}
+                      {player.skill} / 10
                     </Badge>
                   </TableCell>
                   <TableCell className="hidden sm:table-cell">{player.gender}</TableCell>

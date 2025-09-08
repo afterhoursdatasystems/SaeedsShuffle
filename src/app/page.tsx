@@ -12,14 +12,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Users, ClipboardList, Bot } from 'lucide-react';
 
 const MOCK_PLAYERS: Player[] = [
-  { id: '1', name: 'Saeed', skill: 'Advanced', gender: 'Male', present: true },
-  { id: '2', name: 'John Doe', skill: 'Intermediate', gender: 'Male', present: true },
-  { id: '3', name: 'Jane Smith', skill: 'Beginner', gender: 'Female', present: true },
-  { id: '4', name: 'Alex Ray', skill: 'Advanced', gender: 'Other', present: true },
-  { id: '5', name: 'Emily White', skill: 'Intermediate', gender: 'Female', present: false },
-  { id: '6', name: 'Michael Brown', skill: 'Advanced', gender: 'Male', present: true },
-  { id: '7', name: 'Sarah Green', skill: 'Beginner', gender: 'Female', present: true },
-  { id: '8', name: 'Chris Lee', skill: 'Intermediate', gender: 'Male', present: true },
+  { id: '1', name: 'Saeed', skill: 9, gender: 'Guy', present: true },
+  { id: '2', name: 'John Doe', skill: 6, gender: 'Guy', present: true },
+  { id: '3', name: 'Jane Smith', skill: 3, gender: 'Gal', present: true },
+  { id: '4', name: 'Alex Ray', skill: 8, gender: 'Guy', present: true },
+  { id: '5', name: 'Emily White', skill: 7, gender: 'Gal', present: false },
+  { id: '6', name: 'Michael Brown', skill: 9, gender: 'Guy', present: true },
+  { id: '7', name: 'Sarah Green', skill: 4, gender: 'Gal', present: true },
+  { id: '8', name: 'Chris Lee', skill: 6, gender: 'Guy', present: true },
 ];
 
 export default function DashboardPage() {
