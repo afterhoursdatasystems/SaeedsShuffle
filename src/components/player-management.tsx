@@ -41,7 +41,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Plus, Trash, Pencil, MoreVertical, Users, BarChart2, TrendingUp } from 'lucide-react';
+import { Plus, Trash, Pencil, MoreVertical, ChevronsUpDown, ArrowDown, ArrowUp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from './ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
@@ -62,10 +62,14 @@ interface PlayerManagementProps {
   setPlayers: React.Dispatch<React.SetStateAction<Player[]>>;
 }
 
+type SortKey = keyof Player | 'present';
+type SortDirection = 'asc' | 'desc';
+
 export default function PlayerManagement({ players, setPlayers }: PlayerManagementProps) {
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
+  const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: SortDirection } | null>({ key: 'name', direction: 'asc' });
 
   const form = useForm<PlayerFormValues>({
     resolver: zodResolver(playerSchema),
@@ -120,6 +124,37 @@ export default function PlayerManagement({ players, setPlayers }: PlayerManageme
     const averageSkill = presentPlayersCount > 0 ? (totalSkill / presentPlayersCount).toFixed(1) : '0';
     return { presentPlayers, presentPlayersCount, presentGuys, presentGals, averageSkill };
   }, [players]);
+  
+  const sortedPlayers = useMemo(() => {
+    let sortablePlayers = [...players];
+    if (sortConfig !== null) {
+      sortablePlayers.sort((a, b) => {
+        if (a[sortConfig.key] < b[sortConfig.key]) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (a[sortConfig.key] > b[sortConfig.key]) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortablePlayers;
+  }, [players, sortConfig]);
+
+  const requestSort = (key: SortKey) => {
+    let direction: SortDirection = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+  
+  const getSortIcon = (key: SortKey) => {
+    if (!sortConfig || sortConfig.key !== key) {
+      return <ChevronsUpDown className="ml-2 h-4 w-4" />;
+    }
+    return sortConfig.direction === 'asc' ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" />;
+  };
 
   const getSkillBadgeClass = (skill: number) => {
     const colors = [
@@ -250,15 +285,35 @@ export default function PlayerManagement({ players, setPlayers }: PlayerManageme
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Present</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead className="hidden md:table-cell">Skill Level</TableHead>
-                  <TableHead className="hidden sm:table-cell">Gender</TableHead>
+                  <TableHead>
+                    <Button variant="ghost" onClick={() => requestSort('present')} className="px-0">
+                      Present
+                      {getSortIcon('present')}
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                    <Button variant="ghost" onClick={() => requestSort('name')} className="px-0">
+                      Name
+                      {getSortIcon('name')}
+                    </Button>
+                  </TableHead>
+                  <TableHead className="hidden md:table-cell">
+                    <Button variant="ghost" onClick={() => requestSort('skill')} className="px-0">
+                      Skill Level
+                      {getSortIcon('skill')}
+                    </Button>
+                  </TableHead>
+                  <TableHead className="hidden sm:table-cell">
+                    <Button variant="ghost" onClick={() => requestSort('gender')} className="px-0">
+                      Gender
+                      {getSortIcon('gender')}
+                    </Button>
+                  </TableHead>
                   <TableHead><span className="sr-only">Actions</span></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {players.map((player) => (
+                {sortedPlayers.map((player) => (
                   <TableRow key={player.id}>
                     <TableCell>
                       <Switch
