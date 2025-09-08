@@ -233,22 +233,6 @@ export function TeamGenerator() {
         </CardHeader>
         <CardContent className="space-y-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-lg border p-4">
-                <div className='space-y-2'>
-                    <Label>Game Format</Label>
-                    <Select value={gameFormat} onValueChange={(val: GameFormat) => setGameFormat(val)}>
-                      <SelectTrigger className="w-full sm:w-[240px]">
-                        <SelectValue placeholder="Select a format" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="round-robin"><BookOpen className="inline-block h-4 w-4 mr-2" /> Round Robin</SelectItem>
-                        <SelectItem value="pool-play-bracket"><Trophy className="inline-block h-4 w-4 mr-2" /> Pool Play / Bracket</SelectItem>
-                        <SelectItem value="king-of-the-court"><Crown className="inline-block h-4 w-4 mr-2" /> King of the Court</SelectItem>
-                        <SelectItem value="monarch-of-the-court"><Gem className="inline-block h-4 w-4 mr-2" /> Monarch of the Court</SelectItem>
-                        <SelectItem value="king-s-ransom"><KeyRound className="inline-block h-4 w-4 mr-2" /> King's Ransom</SelectItem>
-                        <SelectItem value="power-up-round"><Zap className="inline-block h-4 w-4 mr-2" /> Power-up Round</SelectItem>
-                      </SelectContent>
-                    </Select>
-                </div>
                  <div className='space-y-2'>
                     <Label>Team Size</Label>
                     <RadioGroup value={String(teamSize)} onValueChange={(val) => setTeamSize(Number(val))} className="flex space-x-4">

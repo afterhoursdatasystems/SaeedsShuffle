@@ -1,18 +1,20 @@
 
 'use client';
 
-import type { Match } from '@/types';
+import type { Match, GameFormat } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Save, CalendarDays, Send } from 'lucide-react';
+import { Save, CalendarDays, Send, BookOpen, Trophy, Crown, Gem, KeyRound, Zap } from 'lucide-react';
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { usePlayerContext } from '@/contexts/player-context';
 import { publishData } from '@/app/actions';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Label } from './ui/label';
 
 const shuffleArray = <T,>(array: T[]): T[] => {
   const newArray = [...array];
@@ -25,7 +27,7 @@ const shuffleArray = <T,>(array: T[]): T[] => {
 
 
 export function ScheduleGenerator() {
-  const { teams, schedule, setSchedule, gameFormat } = usePlayerContext();
+  const { teams, schedule, setSchedule, gameFormat, setGameFormat } = usePlayerContext();
   const { toast } = useToast();
   const [isPublishing, setIsPublishing] = React.useState(false);
   
@@ -200,12 +202,32 @@ export function ScheduleGenerator() {
                 <CardTitle>Schedule Generation</CardTitle>
                 <CardDescription>Generate the match schedule for the chosen game format.</CardDescription>
               </div>
-               <Button onClick={handleGenerateSchedule} variant="outline" disabled={teams.length === 0}>
+           </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-lg border p-4">
+                <div className='space-y-2'>
+                    <Label>Game Format</Label>
+                    <Select value={gameFormat} onValueChange={(val: GameFormat) => setGameFormat(val)}>
+                      <SelectTrigger className="w-full sm:w-[240px]">
+                        <SelectValue placeholder="Select a format" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="round-robin"><BookOpen className="inline-block h-4 w-4 mr-2" /> Round Robin</SelectItem>
+                        <SelectItem value="pool-play-bracket"><Trophy className="inline-block h-4 w-4 mr-2" /> Pool Play / Bracket</SelectItem>
+                        <SelectItem value="king-of-the-court"><Crown className="inline-block h-4 w-4 mr-2" /> King of the Court</SelectItem>
+                        <SelectItem value="monarch-of-the-court"><Gem className="inline-block h-4 w-4 mr-2" /> Monarch of the Court</SelectItem>
+                        <SelectItem value="king-s-ransom"><KeyRound className="inline-block h-4 w-4 mr-2" /> King's Ransom</SelectItem>
+                        <SelectItem value="power-up-round"><Zap className="inline-block h-4 w-4 mr-2" /> Power-up Round</SelectItem>
+                      </SelectContent>
+                    </Select>
+                </div>
+                 <Button onClick={handleGenerateSchedule} variant="outline" disabled={teams.length === 0}>
                   <CalendarDays className="mr-2 h-4 w-4" />
                   Generate Schedule
               </Button>
-           </div>
-        </CardHeader>
+            </div>
+        </CardContent>
        </Card>
 
       {schedule.length > 0 && (
