@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import type { Player, Team, Match, GameFormat } from '@/types';
@@ -439,7 +438,7 @@ export default function TeamsSchedule({ teams, setTeams, schedule, setSchedule }
             {teams.map((team) => {
               const { avgSkill, guyCount, galCount } = getTeamAnalysis(team);
               return (
-              <Droppable droppableId={team.name} key={team.name} isDropDisabled={false} isCombineEnabled={false}>
+              <Droppable droppableId={team.name} key={team.name} isDropDisabled={false} isCombineEnabled={false} ignoreContainerClipping={false}>
                 {(provided) => (
                   <Card 
                     ref={provided.innerRef}
@@ -555,3 +554,5 @@ export default function TeamsSchedule({ teams, setTeams, schedule, setSchedule }
     </DragDropContext>
   );
 }
+
+    
