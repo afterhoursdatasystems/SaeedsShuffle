@@ -83,7 +83,7 @@ export default function DashboardPage() {
             </TabsTrigger>
           </TabsList>
           <TabsContent value="players" className="mt-6">
-            <PlayerManagement players={players} setPlayers={setPlayers} />
+            <PlayerManagement players={players} setPlayers={setPlayers} teams={teams} />
           </TabsContent>
           <TabsContent value="schedule" className="mt-6">
             <TeamsSchedule

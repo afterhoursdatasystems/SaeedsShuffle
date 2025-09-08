@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import type { Player } from '@/types';
+import type { Player, Team } from '@/types';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -41,7 +41,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Plus, Trash, Pencil, MoreVertical, ChevronsUpDown, ArrowDown, ArrowUp } from 'lucide-react';
+import { Plus, Trash, Pencil, MoreVertical, ChevronsUpDown, ArrowDown, ArrowUp, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from './ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
@@ -60,12 +60,13 @@ type PlayerFormValues = z.infer<typeof playerSchema>;
 interface PlayerManagementProps {
   players: Player[];
   setPlayers: React.Dispatch<React.SetStateAction<Player[]>>;
+  teams: Team[];
 }
 
-type SortKey = keyof Player | 'present';
+type SortKey = keyof Player | 'present' | 'team';
 type SortDirection = 'asc' | 'desc';
 
-export default function PlayerManagement({ players, setPlayers }: PlayerManagementProps) {
+export default function PlayerManagement({ players, setPlayers, teams }: PlayerManagementProps) {
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
@@ -79,6 +80,17 @@ export default function PlayerManagement({ players, setPlayers }: PlayerManageme
       gender: 'Gal',
     },
   });
+  
+  const playerTeamMap = useMemo(() => {
+    const map = new Map<string, string>();
+    teams.forEach(team => {
+      team.players.forEach(player => {
+        map.set(player.id, team.name);
+      });
+    });
+    return map;
+  }, [teams]);
+
 
   const handleTogglePresent = (id: string) => {
     setPlayers(
@@ -129,17 +141,27 @@ export default function PlayerManagement({ players, setPlayers }: PlayerManageme
     let sortablePlayers = [...players];
     if (sortConfig !== null) {
       sortablePlayers.sort((a, b) => {
-        if (a[sortConfig.key] < b[sortConfig.key]) {
+        let aValue, bValue;
+        
+        if(sortConfig.key === 'team') {
+          aValue = playerTeamMap.get(a.id) || 'zzz'; // Unassigned players sort last
+          bValue = playerTeamMap.get(b.id) || 'zzz';
+        } else {
+          aValue = a[sortConfig.key as keyof Player];
+          bValue = b[sortConfig.key as keyof Player];
+        }
+
+        if (aValue < bValue) {
           return sortConfig.direction === 'asc' ? -1 : 1;
         }
-        if (a[sortConfig.key] > b[sortConfig.key]) {
+        if (aValue > bValue) {
           return sortConfig.direction === 'asc' ? 1 : -1;
         }
         return 0;
       });
     }
     return sortablePlayers;
-  }, [players, sortConfig]);
+  }, [players, sortConfig, playerTeamMap]);
 
   const requestSort = (key: SortKey) => {
     let direction: SortDirection = 'asc';
@@ -309,6 +331,12 @@ export default function PlayerManagement({ players, setPlayers }: PlayerManageme
                       {getSortIcon('gender')}
                     </Button>
                   </TableHead>
+                  <TableHead className="hidden sm:table-cell">
+                    <Button variant="ghost" onClick={() => requestSort('team')} className="px-0">
+                      Team
+                      {getSortIcon('team')}
+                    </Button>
+                  </TableHead>
                   <TableHead><span className="sr-only">Actions</span></TableHead>
                 </TableRow>
               </TableHeader>
@@ -342,6 +370,13 @@ export default function PlayerManagement({ players, setPlayers }: PlayerManageme
                       >
                         {player.gender}
                       </span>
+                    </TableCell>
+                     <TableCell className="hidden sm:table-cell">
+                      {playerTeamMap.get(player.id) ? (
+                        <Badge variant="secondary" className="whitespace-nowrap">{playerTeamMap.get(player.id)}</Badge>
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
+                      )}
                     </TableCell>
                      <TableCell className="text-right">
                         <DropdownMenu>
