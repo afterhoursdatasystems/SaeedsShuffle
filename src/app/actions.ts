@@ -1,13 +1,14 @@
 'use server';
 
 import { simulateLeagueStandings, type SimulateLeagueStandingsInput } from '@/ai/flows/simulate-league-standings';
-import type { Team, GameFormat } from '@/types';
+import type { Team, GameFormat, Match } from '@/types';
 
 // Using a simple in-memory store for this prototype.
 // In a real application, you would use a database.
-let publishedData: { teams: Team[], format: GameFormat } = {
+let publishedData: { teams: Team[], format: GameFormat, schedule: Match[] } = {
     teams: [],
-    format: 'round-robin'
+    format: 'round-robin',
+    schedule: []
 };
 
 export async function getSimulatedStandings(input: SimulateLeagueStandingsInput) {
@@ -20,10 +21,10 @@ export async function getSimulatedStandings(input: SimulateLeagueStandingsInput)
     }
 }
 
-export async function publishData(teams: Team[], format: GameFormat) {
+export async function publishData(teams: Team[], format: GameFormat, schedule: Match[]) {
     try {
-        publishedData = { teams, format };
-        return { success: true, message: 'Teams and format published successfully!' };
+        publishedData = { teams, format, schedule };
+        return { success: true, message: 'Teams, format, and schedule published successfully!' };
     } catch (error) {
         console.error('Publish Data Error:', error);
         return { success: false, error: 'Failed to publish data.' };

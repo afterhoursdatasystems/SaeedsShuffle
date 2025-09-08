@@ -269,7 +269,7 @@ export default function TeamsSchedule({ teams, setTeams, schedule, setSchedule }
       return;
     }
     setIsPublishing(true);
-    const result = await publishData(teams, gameFormat);
+    const result = await publishData(teams, gameFormat, schedule);
     setIsPublishing(false);
 
     if (result.success) {
@@ -554,5 +554,3 @@ export default function TeamsSchedule({ teams, setTeams, schedule, setSchedule }
     </DragDropContext>
   );
 }
-
-    
