@@ -113,10 +113,19 @@ export default function PlayerManagement({ players, setPlayers }: PlayerManageme
   const presentPlayersCount = players.filter(p => p.present).length;
 
   const getSkillBadgeClass = (skill: number) => {
-    if (skill <= 3) return 'from-blue-400 to-blue-600';
-    if (skill <= 5) return 'from-yellow-400 to-yellow-600';
-    if (skill <= 7) return 'from-orange-400 to-orange-600';
-    return 'from-red-500 to-red-700';
+    const colors = [
+      'bg-slate-200 text-slate-800', // 1
+      'bg-gray-300 text-gray-800',   // 2
+      'bg-blue-300 text-blue-800',   // 3
+      'bg-sky-300 text-sky-800',     // 4
+      'bg-green-400 text-green-900', // 5
+      'bg-lime-400 text-lime-900',   // 6
+      'bg-yellow-400 text-yellow-900',// 7
+      'bg-amber-500 text-white',      // 8
+      'bg-orange-500 text-white',    // 9
+      'bg-red-600 text-white',       // 10
+    ];
+    return colors[skill - 1] || colors[0];
   };
 
   return (
@@ -224,7 +233,7 @@ export default function PlayerManagement({ players, setPlayers }: PlayerManageme
                   <TableCell className="hidden md:table-cell">
                      <Badge
                       className={cn(
-                        'bg-gradient-to-r text-white border-none',
+                        'border-none',
                         getSkillBadgeClass(player.skill)
                       )}
                     >
