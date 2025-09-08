@@ -72,7 +72,7 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
       '8-10': playersWithAdjustedSkill.filter(p => p.adjustedSkill >= 8 && p.adjustedSkill <= 10),
       '6-7': playersWithAdjustedSkill.filter(p => p.adjustedSkill >= 6 && p.adjustedSkill <= 7),
       '4-5': playersWithAdjustedSkill.filter(p => p.adjustedSkill >= 4 && p.adjustedSkill <= 5),
-      '1-3': playersWithAdjustedSkill.filter(p => p.adjustedSkill >= 1 && p.adjustedSkill <= 3),
+      '1-3': playersWithAdjustedSkill.filter(p => p.adjustedSkill <= 3),
     };
 
     // 2. Shuffle each bucket for randomness
