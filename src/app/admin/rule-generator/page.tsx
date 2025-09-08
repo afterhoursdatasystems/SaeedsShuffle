@@ -14,21 +14,16 @@ const allPowerUps: PowerUp[] = [
   { name: 'The Equalizer', description: "The opponent's highest-skilled player must serve underhand for the entire game." },
   { name: 'Secret Weapon', description: 'Choose one player on your team; their points are worth double for the first 5 points of the game.' },
   { name: 'Triple Threat', description: "For the next three serves, your team's serves cannot be returned over the net on the first touch." },
-  { name: 'Net Guardian', description: 'For one rally, the opposing team cannot tip the ball over the net. All attacks must be full swings.' },
   { name: 'Gender Bender', description: 'The next point must be scored by a player of the opposite gender of the person who just scored.' },
-  { name: 'Silent Serve', description: 'The server must serve the ball without making a sound. Any grunt or noise results in a lost point.' },
   { name: 'One-Handed Wonder', description: 'One player on the opposing team must play with one hand behind their back for the next rally.' },
-  { name: 'Teleport', description: 'Swap positions with any other player on the court instantly, just once.' },
   { name: 'Rally Stopper', description: 'Your team can choose to end a rally and replay the point, once per game.' },
   { name: 'Ace In The Hole', description: 'If your team serves an ace, you get 3 points instead of 1.' },
   { name: 'The Wall', description: "For the next rally, your team's blocks are worth 2 points." },
   { name: 'Butterfingers', description: 'The opposing team is not allowed to set the ball for the next two rallies (must bump-set).' },
-  { name: 'Time Warp', description: 'Add 3 minutes to the game clock.' },
   { name: 'Vampire', description: 'Steal one point from the opposing team and add it to your score.' },
   { name: 'Frozen', description: 'Pick a player on the other team. They cannot jump for the next rally.' },
   { name: 'Mimic', description: 'For the next rally, the opposing team must mimic your team\'s formation.' },
   { name: 'Golden Touch', description: 'For the next rally, any point scored by your designated "golden" player is worth 3 points.' },
-  { name: 'Invisibility', description: 'One of your players can be "invisible" for one serve receive, meaning they don\'t have to play the ball.' },
 ];
 
 export default function RuleGeneratorPage() {
