@@ -64,8 +64,10 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
     const totalPlayers = players.length;
     const baseSize = Math.floor(totalPlayers / numTeams);
     const teamsWithExtra = totalPlayers % numTeams;
+    
+    const shuffledPlayers = shuffleArray(players);
 
-    const playersWithAdjusted = players.map(player => ({
+    const playersWithAdjusted = shuffledPlayers.map(player => ({
       ...player,
       adjustedSkill: player.gender === 'Guy' ? player.skill : player.skill - 1.2
     }));
