@@ -29,7 +29,7 @@ const MOCK_PLAYERS: Player[] = [
   { id: '15', name: 'Stephen Jaqua', gender: 'Guy', skill: 4, present: true },
   { id: '16', name: 'Lindsey Victoria', gender: 'Gal', skill: 7, present: true },
   { id: '17', name: 'Shaylyn Murphy', gender: 'Gal', skill: 8, present: true },
-  { id: '18', name: 'William Van Meter', gender 'Guy', skill: 3, present: true },
+  { id: '18', name: 'William Van Meter', gender: 'Guy', skill: 3, present: true },
   { id: '19', name: 'Colleen Palman', gender: 'Gal', skill: 2, present: true },
   { id: '20', name: 'Rachel Nystrom', gender: 'Gal', skill: 8, present: true },
   { id: '21', name: 'Pat Sobotka', gender: 'Guy', skill: 6, present: true },
