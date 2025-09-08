@@ -6,7 +6,7 @@ import { getPublishedData } from '@/app/actions';
 import type { Team, GameFormat } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Volleyball, Users, Trophy, BookOpen, Crown, Gem, ShieldQuestion } from 'lucide-react';
+import { Volleyball, Users, Trophy, BookOpen, Crown, Gem, ShieldQuestion, KeyRound, Zap } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
@@ -55,6 +55,40 @@ const formatDetails: Record<GameFormat, { title: string; description: React.Reac
         </ul>
         <h4 className="font-bold text-xl mt-4 mb-2">Fair Play Inclusions</h4>
         <p>To keep the monarchy from becoming a tyranny, this format incorporates The King’s Handicap Rule, Secret Missions, and the Cosmic Scramble. A struggling team can still achieve victory by completing their mission, and the Cosmic Scramble ensures that even a dominant Monarch’s roster isn’t safe from a fun, random shake-up.</p>
+      </div>
+    ),
+  },
+    'king-s-ransom': {
+    title: 'King\'s Ransom',
+    icon: KeyRound,
+    description: (
+      <div>
+        <p className="mb-4 text-lg">A dramatic and strategic KOTC format where team rosters are not safe. It includes both a player “steal” mechanic and a handicap for dominant teams.</p>
+        <h4 className="font-bold text-xl mb-2">The Concept</h4>
+        <p className="mb-4">Win the King Court and defend your crown, but be prepared for your team to change. Losing teams can force a player trade, and dominant teams will face a progressive handicap.</p>
+        <h4 className="font-bold text-xl mb-2">The Flow of Play</h4>
+         <ul className="list-disc pl-5 space-y-2">
+            <li>The tournament follows the standard KOTC winner-stays-on format.</li>
+            <li><strong>The Ransom Rule:</strong> After you lose a match on the King Court, your team has the option to declare a “ransom”. You can force a one-for-one player trade with the winning team that just beat you. The newly-formed winning team must then defend the court with their new player.</li>
+        </ul>
+      </div>
+    ),
+  },
+  'power-up-round': {
+    title: 'Power-Up Round',
+    icon: Zap,
+    description: (
+       <div>
+        <p className="mb-4 text-lg">A fun, arcade-like twist on the classic KOTC format where teams get random advantages.</p>
+        <h4 className="font-bold text-xl mb-2">The Concept</h4>
+        <p className="mb-4">Before each match on the King's Court, the challenging team gets a random power-up for that game only, giving them a unique edge.</p>
+        <h4 className="font-bold text-xl mb-2">Example Power-Ups</h4>
+        <ul className="list-disc pl-5 space-y-2">
+            <li><strong>Point Boost:</strong> Start the game with a 2-point lead.</li>
+            <li><strong>Serve Advantage:</strong> Get one "do-over" on a missed serve during the match.</li>
+            <li><strong>The Equalizer:</strong> The opponent's highest-skilled player must serve underhand for the entire game.</li>
+            <li><strong>Secret Weapon:</strong> Choose one player on your team; their points are worth double for the first 5 points of the game.</li>
+        </ul>
       </div>
     ),
   },

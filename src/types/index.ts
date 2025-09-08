@@ -24,4 +24,6 @@ export type GameFormat =
   | 'round-robin' 
   | 'pool-play-bracket' 
   | 'king-of-the-court'
-  | 'monarch-of-the-court';
+  | 'monarch-of-the-court'
+  | 'king-s-ransom'
+  | 'power-up-round';

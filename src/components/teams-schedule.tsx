@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Swords, Save, Users, CalendarDays, Send, Crown, Trophy, BookOpen, Gem, Shuffle } from 'lucide-react';
+import { Swords, Save, Users, CalendarDays, Send, Crown, Trophy, BookOpen, Gem, Shuffle, KeyRound, Zap } from 'lucide-react';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import React, { useMemo, useState } from 'react';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
@@ -221,6 +221,8 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
             break;
         case 'king-of-the-court':
         case 'monarch-of-the-court':
+        case 'king-s-ransom':
+        case 'power-up-round':
             newSchedule = generateKOTCSchedule(teamNamesForSchedule);
             break;
         default:
@@ -294,7 +296,7 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
     return { avgSkill, guyCount, galCount };
   }
   
-  const isKOTC = gameFormat === 'king-of-the-court' || gameFormat === 'monarch-of-the-court';
+  const isKOTC = gameFormat === 'king-of-the-court' || gameFormat === 'monarch-of-the-court' || gameFormat === 'king-s-ransom' || gameFormat === 'power-up-round';
 
   const onDragEnd = (result: DropResult) => {
     const { source, destination } = result;
@@ -373,6 +375,8 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
                         <SelectItem value="pool-play-bracket"><Trophy className="inline-block h-4 w-4 mr-2" /> Pool Play / Bracket</SelectItem>
                         <SelectItem value="king-of-the-court"><Crown className="inline-block h-4 w-4 mr-2" /> King of the Court</SelectItem>
                         <SelectItem value="monarch-of-the-court"><Gem className="inline-block h-4 w-4 mr-2" /> Monarch of the Court</SelectItem>
+                        <SelectItem value="king-s-ransom"><KeyRound className="inline-block h-4 w-4 mr-2" /> King's Ransom</SelectItem>
+                        <SelectItem value="power-up-round"><Zap className="inline-block h-4 w-4 mr-2" /> Power-up Round</SelectItem>
                       </SelectContent>
                     </Select>
                 </div>
