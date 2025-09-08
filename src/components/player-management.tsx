@@ -72,10 +72,13 @@ const stringToPastelColor = (str: string) => {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    hash = hash & hash; // Ensure hash is a 32bit integer
   }
-  const h = hash % 360;
+  // Use a prime number to multiply the hash, ensuring a wider distribution.
+  const h = (hash * 131) % 360;
   return `hsl(${h}, 70%, 85%)`;
 };
+
 
 export default function PlayerManagement({ teams }: PlayerManagementProps) {
   const { players, setPlayers, togglePlayerPresence } = usePlayerContext();
@@ -426,3 +429,5 @@ export default function PlayerManagement({ teams }: PlayerManagementProps) {
     </div>
   );
 }
+
+    
