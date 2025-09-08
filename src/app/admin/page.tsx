@@ -1,9 +1,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/auth-context';
+import { useState } from 'react';
 import type { Team, Match } from '@/types';
 import AppHeader from '@/components/app-header';
 import PlayerManagement from '@/components/player-management';
@@ -11,35 +9,8 @@ import TeamsSchedule from '@/components/teams-schedule';
 import Simulation from '@/components/simulation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Users, ClipboardList, Bot } from 'lucide-react';
-import { PlayerProvider } from '@/contexts/player-context';
 
 export default function AdminPage() {
-  const { isAuthenticated, isLoading } = useAuth();
-  const router = useRouter();
- 
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.push('/login');
-    }
-  }, [isAuthenticated, isLoading, router]);
-
-  if (isLoading || !isAuthenticated) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-      </div>
-    );
-  }
-
-  return (
-    <PlayerProvider>
-      <AdminDashboard />
-    </PlayerProvider>
-  );
-}
-
-
-function AdminDashboard() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [schedule, setSchedule] = useState<Match[]>([]);
 

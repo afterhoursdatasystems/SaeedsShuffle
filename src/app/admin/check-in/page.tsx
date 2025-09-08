@@ -1,10 +1,7 @@
 
 'use client';
 
-import { useAuth } from '@/contexts/auth-context';
 import { usePlayerContext } from '@/contexts/player-context';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, CheckCircle, XCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -12,17 +9,9 @@ import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
 export default function CheckinPage() {
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { players, togglePlayerPresence, isLoading: playersLoading } = usePlayerContext();
-  const router = useRouter();
 
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      router.push('/login');
-    }
-  }, [isAuthenticated, authLoading, router]);
-
-  if (authLoading || playersLoading || !isAuthenticated) {
+  if (playersLoading) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
