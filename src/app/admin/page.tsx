@@ -8,7 +8,7 @@ import PlayerManagement from '@/components/player-management';
 import TeamsSchedule from '@/components/teams-schedule';
 import Simulation from '@/components/simulation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, ClipboardList, Bot } from 'lucide-react';
+import { Users, ClipboardList, Bot, Zap } from 'lucide-react';
 
 export default function AdminPage() {
   const [teams, setTeams] = useState<Team[]>([]);
@@ -19,7 +19,7 @@ export default function AdminPage() {
       <AppHeader />
       <main className="flex-1 p-4 sm:p-6 md:p-8">
         <Tabs defaultValue="players" className="w-full">
-          <TabsList className="grid w-full grid-cols-1 sm:w-auto sm:grid-cols-3">
+          <TabsList className="grid w-full grid-cols-1 sm:w-auto sm:grid-cols-4">
             <TabsTrigger value="players">
               <Users className="mr-2 h-4 w-4" />
               Players
@@ -31,6 +31,10 @@ export default function AdminPage() {
             <TabsTrigger value="simulate">
               <Bot className="mr-2 h-4 w-4" />
               Simulate Standings
+            </TabsTrigger>
+            <TabsTrigger value="rules">
+              <Zap className="mr-2 h-4 w-4" />
+              Rule Generator
             </TabsTrigger>
           </TabsList>
           <TabsContent value="players" className="mt-6">
@@ -46,6 +50,9 @@ export default function AdminPage() {
           </TabsContent>
           <TabsContent value="simulate" className="mt-6">
             <Simulation schedule={schedule} />
+          </TabsContent>
+          <TabsContent value="rules" className="mt-6">
+             <iframe src="/admin/rule-generator" className="w-full h-[80vh] border-0" />
           </TabsContent>
         </Tabs>
       </main>

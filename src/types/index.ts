@@ -1,3 +1,4 @@
+
 export type Player = {
   id: string;
   name: string;
@@ -27,3 +28,8 @@ export type GameFormat =
   | 'monarch-of-the-court'
   | 'king-s-ransom'
   | 'power-up-round';
+
+export type PowerUp = {
+  name: string;
+  description: string;
+};
