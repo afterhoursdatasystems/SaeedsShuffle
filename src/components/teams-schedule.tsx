@@ -61,12 +61,18 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
       players: [],
     }));
 
-    // 1. Create skill buckets
+    // Create a temporary list of players with an adjusted skill for drafting
+    const playersWithAdjustedSkill = allPlayers.map(p => ({
+        ...p,
+        adjustedSkill: p.gender === 'Gal' ? p.skill - 1 : p.skill,
+    }));
+
+    // 1. Create skill buckets based on adjusted skill
     const buckets: { [key: string]: Player[] } = {
-      '8-10': allPlayers.filter(p => p.skill >= 8 && p.skill <= 10),
-      '6-7': allPlayers.filter(p => p.skill >= 6 && p.skill <= 7),
-      '4-5': allPlayers.filter(p => p.skill >= 4 && p.skill <= 5),
-      '1-3': allPlayers.filter(p => p.skill >= 1 && p.skill <= 3),
+      '8-10': playersWithAdjustedSkill.filter(p => p.adjustedSkill >= 8 && p.adjustedSkill <= 10),
+      '6-7': playersWithAdjustedSkill.filter(p => p.adjustedSkill >= 6 && p.adjustedSkill <= 7),
+      '4-5': playersWithAdjustedSkill.filter(p => p.adjustedSkill >= 4 && p.adjustedSkill <= 5),
+      '1-3': playersWithAdjustedSkill.filter(p => p.adjustedSkill >= 1 && p.adjustedSkill <= 3),
     };
 
     // 2. Shuffle each bucket for randomness
@@ -79,7 +85,10 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
     let direction = 1; // 1 for forward, -1 for backward
 
     const draftPlayer = (player: Player) => {
-        newTeams[teamIndex].players.push(player);
+        // Find the original player object to add to the team, without the adjustedSkill
+        const originalPlayer = allPlayers.find(p => p.id === player.id)!;
+        newTeams[teamIndex].players.push(originalPlayer);
+        
         teamIndex += direction;
         if (teamIndex >= numTeams || teamIndex < 0) {
             direction *= -1;
