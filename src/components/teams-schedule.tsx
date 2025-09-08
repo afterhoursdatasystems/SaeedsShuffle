@@ -437,7 +437,7 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
             {teams.map((team) => {
               const { avgSkill, guyCount, galCount } = getTeamAnalysis(team);
               return (
-              <Droppable droppableId={team.name} key={team.name} isDropDisabled={false}>
+              <Droppable droppableId={team.name} key={team.name} isDropDisabled={false} isCombineEnabled={false}>
                 {(provided) => (
                   <Card 
                     ref={provided.innerRef}
