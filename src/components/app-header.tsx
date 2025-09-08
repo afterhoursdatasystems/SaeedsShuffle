@@ -1,9 +1,11 @@
+
 'use client';
 
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { LogOut, Volleyball } from 'lucide-react';
+import { LogOut, Volleyball, LayoutDashboard } from 'lucide-react';
+import Link from 'next/link';
 
 export default function AppHeader() {
   const { logout } = useAuth();
@@ -20,10 +22,18 @@ export default function AppHeader() {
         <Volleyball className="h-7 w-7 text-primary" />
         <h1 className="text-xl font-bold tracking-tight">Saeed's Shuffle</h1>
       </div>
-      <Button variant="ghost" size="sm" onClick={handleLogout}>
-        <LogOut className="mr-2 h-4 w-4" />
-        Logout
-      </Button>
+      <div className="flex items-center gap-2">
+        <Button asChild variant="outline" size="sm">
+            <Link href="/" target="_blank">
+                <LayoutDashboard className="mr-2 h-4 w-4" />
+                Public Dashboard
+            </Link>
+        </Button>
+        <Button variant="ghost" size="sm" onClick={handleLogout}>
+          <LogOut className="mr-2 h-4 w-4" />
+          Logout
+        </Button>
+      </div>
     </header>
   );
 }
