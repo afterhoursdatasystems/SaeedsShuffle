@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { Player } from '@/types';
 import { Button } from '@/components/ui/button';
 import {
@@ -41,12 +41,13 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Plus, Trash, Pencil, MoreVertical } from 'lucide-react';
+import { Plus, Trash, Pencil, MoreVertical, Users, BarChart2, TrendingUp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from './ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
 import { Slider } from './ui/slider';
 import { cn } from '@/lib/utils';
+import { Separator } from './ui/separator';
 
 const playerSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
@@ -110,7 +111,15 @@ export default function PlayerManagement({ players, setPlayers }: PlayerManageme
     toast({ title: "Player removed", variant: "destructive", description: "The player has been removed." });
   };
   
-  const presentPlayersCount = players.filter(p => p.present).length;
+  const { presentPlayers, presentPlayersCount, presentGuys, presentGals, averageSkill } = useMemo(() => {
+    const presentPlayers = players.filter(p => p.present);
+    const presentPlayersCount = presentPlayers.length;
+    const presentGuys = presentPlayers.filter(p => p.gender === 'Guy').length;
+    const presentGals = presentPlayers.filter(p => p.gender === 'Gal').length;
+    const totalSkill = presentPlayers.reduce((sum, p) => sum + p.skill, 0);
+    const averageSkill = presentPlayersCount > 0 ? (totalSkill / presentPlayersCount).toFixed(1) : '0';
+    return { presentPlayers, presentPlayersCount, presentGuys, presentGals, averageSkill };
+  }, [players]);
 
   const getSkillBadgeClass = (skill: number) => {
     const colors = [
@@ -129,153 +138,183 @@ export default function PlayerManagement({ players, setPlayers }: PlayerManageme
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <CardTitle>Player Management</CardTitle>
-            <CardDescription>
-              {presentPlayersCount} of {players.length} players checked in.
-            </CardDescription>
+    <div className="space-y-6">
+       <Card>
+          <CardHeader>
+            <CardTitle>Nightly Check-in</CardTitle>
+            <CardDescription>A quick look at tonight's player stats.</CardDescription>
+          </CardHeader>
+          <CardContent>
+             <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-around rounded-lg border p-4">
+                <div className="text-center">
+                    <p className="text-sm font-medium text-muted-foreground">Present Players</p>
+                    <p className="text-3xl font-bold">{presentPlayersCount}</p>
+                </div>
+                <Separator orientation='vertical' className='hidden sm:block h-12' />
+                <div className="text-center">
+                    <p className="text-sm font-medium text-muted-foreground">Gender Breakdown</p>
+                    <p className="text-3xl font-bold">
+                      <span className="text-blue-500">{presentGuys}</span>
+                      <span className="mx-2 text-muted-foreground">/</span> 
+                      <span className="text-pink-500">{presentGals}</span>
+                    </p>
+                </div>
+                 <Separator orientation='vertical' className='hidden sm:block h-12' />
+                <div className="text-center">
+                    <p className="text-sm font-medium text-muted-foreground">Average Skill</p>
+                    <p className="text-3xl font-bold">{averageSkill}</p>
+                </div>
+            </div>
+          </CardContent>
+        </Card>
+      <Card>
+        <CardHeader>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <CardTitle>Player Management</CardTitle>
+              <CardDescription>
+                {presentPlayersCount} of {players.length} players checked in.
+              </CardDescription>
+            </div>
+            <Dialog open={open} onOpenChange={(isOpen) => {
+              setOpen(isOpen);
+              if (!isOpen) {
+                form.reset();
+                setEditingPlayer(null);
+              }
+            }}>
+              <DialogTrigger asChild>
+                <Button className="mt-4 sm:mt-0">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Player
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>{editingPlayer ? 'Edit Player' : 'Add New Player'}</DialogTitle>
+                </DialogHeader>
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 py-4">
+                    <FormField control={form.control} name="name" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Player Name</FormLabel>
+                        <FormControl><Input placeholder="Saeed" {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                    <FormField control={form.control} name="skill" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Skill Level: {field.value}</FormLabel>
+                        <FormControl>
+                          <Slider
+                            min={1}
+                            max={10}
+                            step={1}
+                            defaultValue={[field.value]}
+                            onValueChange={(vals) => field.onChange(vals[0])}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                    <FormField control={form.control} name="gender" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Gender</FormLabel>
+                        <FormControl>
+                          <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex space-x-4">
+                            <FormItem className="flex items-center space-x-2 space-y-0">
+                              <FormControl><RadioGroupItem value="Guy" /></FormControl>
+                              <FormLabel className="font-normal">Guy</FormLabel>
+                            </FormItem>
+                            <FormItem className="flex items-center space-x-2 space-y-0">
+                              <FormControl><RadioGroupItem value="Gal" /></FormControl>
+                              <FormLabel className="font-normal">Gal</FormLabel>
+                            </FormItem>
+                          </RadioGroup>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                    <DialogFooter>
+                      <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+                      <Button type="submit">{editingPlayer ? 'Save Changes' : 'Add Player'}</Button>
+                    </DialogFooter>
+                  </form>
+                </Form>
+              </DialogContent>
+            </Dialog>
           </div>
-          <Dialog open={open} onOpenChange={(isOpen) => {
-            setOpen(isOpen);
-            if (!isOpen) {
-              form.reset();
-              setEditingPlayer(null);
-            }
-          }}>
-            <DialogTrigger asChild>
-              <Button className="mt-4 sm:mt-0">
-                <Plus className="mr-2 h-4 w-4" />
-                Add Player
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>{editingPlayer ? 'Edit Player' : 'Add New Player'}</DialogTitle>
-              </DialogHeader>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 py-4">
-                  <FormField control={form.control} name="name" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Player Name</FormLabel>
-                      <FormControl><Input placeholder="Saeed" {...field} /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                  <FormField control={form.control} name="skill" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Skill Level: {field.value}</FormLabel>
-                      <FormControl>
-                        <Slider
-                          min={1}
-                          max={10}
-                          step={1}
-                          defaultValue={[field.value]}
-                          onValueChange={(vals) => field.onChange(vals[0])}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                  <FormField control={form.control} name="gender" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Gender</FormLabel>
-                      <FormControl>
-                        <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex space-x-4">
-                          <FormItem className="flex items-center space-x-2 space-y-0">
-                            <FormControl><RadioGroupItem value="Guy" /></FormControl>
-                            <FormLabel className="font-normal">Guy</FormLabel>
-                          </FormItem>
-                          <FormItem className="flex items-center space-x-2 space-y-0">
-                            <FormControl><RadioGroupItem value="Gal" /></FormControl>
-                            <FormLabel className="font-normal">Gal</FormLabel>
-                          </FormItem>
-                        </RadioGroup>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                  <DialogFooter>
-                    <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
-                    <Button type="submit">{editingPlayer ? 'Save Changes' : 'Add Player'}</Button>
-                  </DialogFooter>
-                </form>
-              </Form>
-            </DialogContent>
-          </Dialog>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Present</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead className="hidden md:table-cell">Skill Level</TableHead>
-                <TableHead className="hidden sm:table-cell">Gender</TableHead>
-                <TableHead><span className="sr-only">Actions</span></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {players.map((player) => (
-                <TableRow key={player.id}>
-                  <TableCell>
-                    <Switch
-                      checked={player.present}
-                      onCheckedChange={() => handleTogglePresent(player.id)}
-                      aria-label={`${player.name} presence`}
-                    />
-                  </TableCell>
-                  <TableCell className="font-medium">{player.name}</TableCell>
-                  <TableCell className="hidden md:table-cell">
-                     <Badge
-                      className={cn(
-                        'border-none',
-                        getSkillBadgeClass(player.skill)
-                      )}
-                    >
-                      {player.skill}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell">
-                     <span
-                      className={cn(
-                        'rounded-full px-2 py-0.5 text-xs font-semibold',
-                        player.gender === 'Guy' ? 'bg-blue-100 text-blue-800' : 'bg-pink-100 text-pink-800'
-                      )}
-                    >
-                      {player.gender}
-                    </span>
-                  </TableCell>
-                   <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Open menu</span>
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleEdit(player)}>
-                            <Pencil className="mr-2 h-4 w-4" />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleDelete(player.id)} className="text-destructive">
-                             <Trash className="mr-2 h-4 w-4" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                  </TableCell>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Present</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead className="hidden md:table-cell">Skill Level</TableHead>
+                  <TableHead className="hidden sm:table-cell">Gender</TableHead>
+                  <TableHead><span className="sr-only">Actions</span></TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </CardContent>
-    </Card>
+              </TableHeader>
+              <TableBody>
+                {players.map((player) => (
+                  <TableRow key={player.id}>
+                    <TableCell>
+                      <Switch
+                        checked={player.present}
+                        onCheckedChange={() => handleTogglePresent(player.id)}
+                        aria-label={`${player.name} presence`}
+                      />
+                    </TableCell>
+                    <TableCell className="font-medium">{player.name}</TableCell>
+                    <TableCell className="hidden md:table-cell">
+                       <Badge
+                        className={cn(
+                          'border-none',
+                          getSkillBadgeClass(player.skill)
+                        )}
+                      >
+                        {player.skill}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell">
+                       <span
+                        className={cn(
+                          'rounded-full px-2 py-0.5 text-xs font-semibold',
+                          player.gender === 'Guy' ? 'bg-blue-100 text-blue-800' : 'bg-pink-100 text-pink-800'
+                        )}
+                      >
+                        {player.gender}
+                      </span>
+                    </TableCell>
+                     <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">Open menu</span>
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleEdit(player)}>
+                              <Pencil className="mr-2 h-4 w-4" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleDelete(player.id)} className="text-destructive">
+                               <Trash className="mr-2 h-4 w-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
