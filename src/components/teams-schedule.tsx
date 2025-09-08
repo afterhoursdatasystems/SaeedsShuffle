@@ -241,7 +241,7 @@ export default function TeamsSchedule({ players, teams, setTeams, schedule, setS
         description: (
           <span>
             Players can now view their teams at{' '}
-            <a href="/public/teams" target="_blank" className="underline font-bold">
+            <a href="/" target="_blank" className="underline font-bold">
               the public dashboard
             </a>.
           </span>

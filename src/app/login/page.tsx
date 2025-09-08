@@ -15,14 +15,14 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.push('/');
+      router.push('/admin');
     }
   }, [isAuthenticated, router]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     login();
-    router.push('/');
+    router.push('/admin');
   };
 
   return (
