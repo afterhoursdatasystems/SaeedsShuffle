@@ -1,50 +1,99 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  type ReactNode,
+} from 'react';
+import {
+  getAuth,
+  onAuthStateChanged,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+  type User,
+} from 'firebase/auth';
+import {app} from '@/lib/firebase';
+import {useToast} from '@/hooks/use-toast';
+
+const ALLOWED_USER = 'matt@afterhoursds.com';
 
 interface AuthContextType {
   isAuthenticated: boolean;
+  user: User | null;
   isLoading: boolean;
   login: () => void;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const auth = getAuth(app);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+export function AuthProvider({children}: {children: ReactNode}) {
+  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const {toast} = useToast();
 
   useEffect(() => {
-    try {
-      const authStatus = sessionStorage.getItem('isAuthenticated') === 'true';
-      setIsAuthenticated(authStatus);
-    } catch (e) {
-      console.error('Could not access session storage:', e);
-    }
-    setIsLoading(false);
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser && currentUser.email === ALLOWED_USER) {
+        setUser(currentUser);
+      } else {
+        setUser(null);
+        if (currentUser) {
+          // If a user is signed in but not the allowed one, sign them out.
+          signOut(auth);
+        }
+      }
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  const login = () => {
+  const login = async () => {
+    const provider = new GoogleAuthProvider();
     try {
-      sessionStorage.setItem('isAuthenticated', 'true');
-      setIsAuthenticated(true);
-    } catch (e) {
-      console.error('Could not access session storage:', e);
+      const result = await signInWithPopup(auth, provider);
+      if (result.user.email !== ALLOWED_USER) {
+        await signOut(auth);
+        toast({
+          title: 'Access Denied',
+          description: `Only ${ALLOWED_USER} can log in.`,
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Google Sign-In Error:', error);
+      toast({
+        title: 'Sign-In Failed',
+        description:
+          'Could not sign you in with Google. Please try again.',
+        variant: 'destructive',
+      });
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
     try {
-      sessionStorage.removeItem('isAuthenticated');
-      setIsAuthenticated(false);
-    } catch (e) {
-      console.error('Could not access session storage:', e);
+      await signOut(auth);
+    } catch (error) {
+      console.error('Sign-Out Error:', error);
     }
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, isLoading, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        isAuthenticated: !isLoading && !!user,
+        user,
+        isLoading,
+        login,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

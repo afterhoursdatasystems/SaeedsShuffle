@@ -29,7 +29,7 @@ const MOCK_PLAYERS: Player[] = [
   { id: '15', name: 'Stephen Jaqua', gender: 'Guy', skill: 4, present: true },
   { id: '16', name: 'Lindsey Victoria', gender: 'Gal', skill: 7, present: true },
   { id: '17', name: 'Shaylyn Murphy', gender: 'Gal', skill: 8, present: true },
-  { id: '18', name: 'William Van Meter', gender: 'Guy', skill: 3, present: true },
+  { id: '18', name: 'William Van Meter', gender 'Guy', skill: 3, present: true },
   { id: '19', name: 'Colleen Palman', gender: 'Gal', skill: 2, present: true },
   { id: '20', name: 'Rachel Nystrom', gender: 'Gal', skill: 8, present: true },
   { id: '21', name: 'Pat Sobotka', gender: 'Guy', skill: 6, present: true },
@@ -43,21 +43,19 @@ const MOCK_PLAYERS: Player[] = [
 ];
 
 export default function DashboardPage() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
-  const [isClient, setIsClient] = useState(false);
   const [players, setPlayers] = useState<Player[]>(MOCK_PLAYERS);
   const [teams, setTeams] = useState<Team[]>([]);
   const [schedule, setSchedule] = useState<Match[]>([]);
 
   useEffect(() => {
-    setIsClient(true);
-    if (!isAuthenticated) {
+    if (!isLoading && !isAuthenticated) {
       router.push('/login');
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, isLoading, router]);
 
-  if (!isClient || !isAuthenticated) {
+  if (isLoading || !isAuthenticated) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
