@@ -212,14 +212,14 @@ export default function PublicTeamsPage() {
         </div>
       </header>
       <main className="flex-1 p-6 md:p-8">
-        <div className="mx-auto w-full max-w-7xl">
+        <div className="mx-auto w-full">
           {isLoading ? (
-             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
               {renderTeamSkeletons()}
             </div>
           ) : teams.length > 0 ? (
             <div className="space-y-12">
-               <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
+               <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
                 {teams.map((team) => (
                   <Card key={team.name} className="flex flex-col rounded-xl border-2 border-primary/50 shadow-2xl transition-transform hover:scale-105 bg-card">
                     <CardHeader className="p-6 bg-primary/10 rounded-t-lg">
