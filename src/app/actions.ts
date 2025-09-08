@@ -2,7 +2,6 @@
 'use server';
 
 import { simulateLeagueStandings, type SimulateLeagueStandingsInput } from '@/ai/flows/simulate-league-standings';
-import { generatePowerUps, type GeneratePowerUpsInput } from '@/ai/flows/generate-power-ups';
 import type { Team, GameFormat, Match } from '@/types';
 
 // Using a simple in-memory store for this prototype.
@@ -20,16 +19,6 @@ export async function getSimulatedStandings(input: SimulateLeagueStandingsInput)
     } catch (error) {
         console.error('AI Simulation Error:', error);
         return { success: false, error: 'Failed to simulate standings due to an internal error.' };
-    }
-}
-
-export async function getGeneratedPowerUps(input: GeneratePowerUpsInput) {
-    try {
-        const result = await generatePowerUps(input);
-        return { success: true, data: result };
-    } catch (error) {
-        console.error('AI Generation Error:', error);
-        return { success: false, error: 'Failed to generate power-ups due to an internal error.' };
     }
 }
 

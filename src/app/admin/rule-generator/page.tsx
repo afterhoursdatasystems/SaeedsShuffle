@@ -3,12 +3,43 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { getGeneratedPowerUps } from '@/app/actions';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Wand2, RefreshCw } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
 import type { PowerUp } from '@/types';
+
+const allPowerUps: PowerUp[] = [
+  { name: 'Point Boost', description: 'Start the next game with a 2-point lead.' },
+  { name: 'Serve Advantage', description: 'Get one "do-over" on a missed serve during the next match.' },
+  { name: 'The Equalizer', description: "The opponent's highest-skilled player must serve underhand for the entire game." },
+  { name: 'Secret Weapon', description: 'Choose one player on your team; their points are worth double for the first 5 points of the game.' },
+  { name: 'Triple Threat', description: "For the next three serves, your team's serves cannot be returned over the net on the first touch." },
+  { name: 'Net Guardian', description: 'For one rally, the opposing team cannot tip the ball over the net. All attacks must be full swings.' },
+  { name: 'Gender Bender', description: 'The next point must be scored by a player of the opposite gender of the person who just scored.' },
+  { name: 'Silent Serve', description: 'The server must serve the ball without making a sound. Any grunt or noise results in a lost point.' },
+  { name: 'One-Handed Wonder', description: 'One player on the opposing team must play with one hand behind their back for the next rally.' },
+  { name: 'Teleport', description: 'Swap positions with any other player on the court instantly, just once.' },
+  { name: 'Rally Stopper', description: 'Your team can choose to end a rally and replay the point, once per game.' },
+  { name: 'Ace In The Hole', description: 'If your team serves an ace, you get 3 points instead of 1.' },
+  { name: 'The Wall', description: "For the next rally, your team's blocks are worth 2 points." },
+  { name: 'Butterfingers', description: 'The opposing team is not allowed to set the ball for the next two rallies (must bump-set).' },
+  { name: 'Time Warp', description: 'Add 3 minutes to the game clock.' },
+  { name: 'Vampire', description: 'Steal one point from the opposing team and add it to your score.' },
+  { name: 'Frozen', description: 'Pick a player on the other team. They cannot jump for the next rally.' },
+  { name: 'Mimic', description: 'For the next rally, the opposing team must mimic your team\'s formation.' },
+  { name: 'Golden Touch', description: 'For the next rally, any point scored by your designated "golden" player is worth 3 points.' },
+  { name: 'Invisibility', description: 'One of your players can be "invisible" for one serve receive, meaning they don\'t have to play the ball.' },
+];
+
+const shuffleArray = (array: PowerUp[]) => {
+  const newArray = [...array];
+  for (let i = newArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+  }
+  return newArray;
+};
+
 
 export default function RuleGeneratorPage() {
   const { toast } = useToast();
@@ -18,41 +49,20 @@ export default function RuleGeneratorPage() {
   const handleGenerate = async () => {
     setIsLoading(true);
     setPowerUps([]);
-    try {
-      const result = await getGeneratedPowerUps({ gameType: 'Power-Up Round' });
-      if (result.success && result.data) {
-        setPowerUps(result.data.powerUps);
-        toast({
-          title: 'Power-Ups Generated!',
-          description: 'Here are some fresh ideas for your game.',
-        });
-      } else {
-        throw new Error(result.error || 'Failed to generate power-ups.');
-      }
-    } catch (error: any) {
-      toast({
-        title: 'Generation Failed',
-        description: error.message,
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
-  const renderSkeletons = () => (
-    Array.from({ length: 4 }).map((_, index) => (
-      <Card key={index}>
-        <CardHeader>
-          <Skeleton className="h-6 w-1/2 rounded-md" />
-        </CardHeader>
-        <CardContent>
-          <Skeleton className="h-4 w-full mb-2 rounded-md" />
-          <Skeleton className="h-4 w-5/6 rounded-md" />
-        </CardContent>
-      </Card>
-    ))
-  );
+    // Simulate a brief loading period for better UX
+    setTimeout(() => {
+      const shuffled = shuffleArray(allPowerUps);
+      const selectedPowerUps = shuffled.slice(0, 4);
+      setPowerUps(selectedPowerUps);
+      
+      toast({
+        title: 'Power-Ups Generated!',
+        description: 'Here are some random power-ups for your game.',
+      });
+      setIsLoading(false);
+    }, 500); // 500ms delay
+  };
 
   return (
     <div className="min-h-screen bg-muted/40 p-4 sm:p-6 md:p-8">
@@ -61,7 +71,7 @@ export default function RuleGeneratorPage() {
           <Wand2 className="h-12 w-12 text-primary mb-4" />
           <h1 className="text-4xl font-bold">Rule Generator</h1>
           <p className="text-muted-foreground mt-2">
-            Generate creative power-ups for your tournament to keep things exciting!
+            Generate random power-ups for your tournament to keep things exciting!
           </p>
         </header>
 
@@ -72,14 +82,12 @@ export default function RuleGeneratorPage() {
             ) : (
               <Wand2 className="mr-2 h-5 w-5" />
             )}
-            {isLoading ? 'Generating Ideas...' : 'Generate New Power-Ups'}
+            {isLoading ? 'Generating...' : 'Generate New Power-Ups'}
           </Button>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
-          {isLoading ? (
-            renderSkeletons()
-          ) : powerUps.length > 0 ? (
+          {powerUps.length > 0 ? (
             powerUps.map((powerUp, index) => (
               <Card key={index} className="shadow-lg transition-transform hover:scale-105">
                 <CardHeader>
