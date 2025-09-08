@@ -9,6 +9,7 @@ import {
 } from 'react';
 
 const ALLOWED_USER = 'matt@saeedsvolleyball.com';
+const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_LEAGUE_COMMISSIONER_PASSWORD;
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -48,8 +49,14 @@ export function AuthProvider({children}: {children: ReactNode}) {
       throw new Error(`Only ${ALLOWED_USER} can log in.`);
     }
 
-    // For now, we are only checking the username.
-    // You can add a password check here if needed.
+    if (!ADMIN_PASSWORD) {
+        console.error("Admin password environment variable is not set.");
+        throw new Error("Login system is not configured correctly. Please contact support.");
+    }
+
+    if (pass !== ADMIN_PASSWORD) {
+        throw new Error("The password you entered is incorrect.");
+    }
     
     setIsAuthenticated(true);
     // Persist login state to sessionStorage
