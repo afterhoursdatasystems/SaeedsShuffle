@@ -7,120 +7,74 @@ import {
   useEffect,
   type ReactNode,
 } from 'react';
-import {
-  getAuth,
-  onAuthStateChanged,
-  GoogleAuthProvider,
-  signInWithRedirect,
-  getRedirectResult,
-  signOut,
-  type User,
-} from 'firebase/auth';
-import {app} from '@/lib/firebase';
-import {useToast} from '@/hooks/use-toast';
 
-const ALLOWED_USER = 'matt@afterhoursds.com';
+const ALLOWED_USER = 'matt@saeedsvolleyball.com';
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  user: User | null;
   isLoading: boolean;
-  login: () => void;
+  login: (email: string, pass: string) => void;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-const auth = getAuth(app);
+
+// A key for storing the auth state in sessionStorage
+const AUTH_STORAGE_KEY = 'saeeds-shuffle-auth';
 
 export function AuthProvider({children}: {children: ReactNode}) {
-  const [user, setUser] = useState<User | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const {toast} = useToast();
 
   useEffect(() => {
-    // This effect handles the result of a sign-in redirect.
-    // It should run once on component mount.
-    const handleRedirectResult = async () => {
-      try {
-        const result = await getRedirectResult(auth);
-        if (result && result.user.email !== ALLOWED_USER) {
-          // If a user signed in, but they are not the allowed user...
-          await signOut(auth); // ...sign them out immediately...
-          setUser(null);
-          toast({
-            title: 'Access Denied',
-            description: `Only ${ALLOWED_USER} can log in.`,
-            variant: 'destructive',
-          });
-        }
-        // If the user is the correct one, or if there's no redirect result,
-        // we let onAuthStateChanged handle setting the user state.
-      } catch (error: any) {
-        // This error code means the user just landed on the page without
-        // coming from a sign-in redirect. We can safely ignore it.
-        if (error.code !== 'auth/no-user-for-redirect') {
-          console.error('Google Sign-In Redirect Error:', error);
-          toast({
-            title: 'Sign-In Failed',
-            description: 'Could not complete sign-in. Please try again.',
-            variant: 'destructive',
-          });
-        }
-      } finally {
-        // After processing the redirect, onAuthStateChanged will take over,
-        // so we don't need to set loading to false here.
-      }
-    };
-
-    handleRedirectResult();
-
-    // This listener is the source of truth for the user's sign-in state.
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (currentUser && currentUser.email === ALLOWED_USER) {
-        setUser(currentUser);
-      } else {
-        setUser(null);
-        if (currentUser) {
-          // This case handles if a disallowed user somehow gets here
-          // without a redirect, e.g., from a previous session.
-          signOut(auth);
-          toast({
-            title: 'Access Denied',
-            description: `Only ${ALLOWED_USER} can log in.`,
-            variant: 'destructive',
-          });
+    // Check sessionStorage for persisted login state on mount
+    try {
+      const storedAuth = sessionStorage.getItem(AUTH_STORAGE_KEY);
+      if (storedAuth) {
+        const authData = JSON.parse(storedAuth);
+        // A simple check to re-validate. In a real app, you might check a token's expiry.
+        if (authData.isAuthenticated && authData.email === ALLOWED_USER) {
+          setIsAuthenticated(true);
         }
       }
-      setIsLoading(false);
-    });
+    } catch (error) {
+        console.error("Could not parse auth state from storage", error);
+    }
+    setIsLoading(false);
+  }, []);
 
-    return () => unsubscribe();
-  }, [toast]);
+  const login = (email: string, pass: string) => {
+    if (email.toLowerCase() !== ALLOWED_USER) {
+      throw new Error(`Only ${ALLOWED_USER} can log in.`);
+    }
 
-
-  const login = async () => {
-    const provider = new GoogleAuthProvider();
-    await signInWithRedirect(auth, provider);
+    // For now, we are only checking the username.
+    // You can add a password check here if needed.
+    
+    setIsAuthenticated(true);
+    // Persist login state to sessionStorage
+    try {
+        const authData = { isAuthenticated: true, email };
+        sessionStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authData));
+    } catch (error) {
+        console.error("Could not save auth state to storage", error);
+    }
   };
 
-  const logout = async () => {
+  const logout = () => {
+    setIsAuthenticated(false);
+    // Clear persisted login state
     try {
-      await signOut(auth);
+        sessionStorage.removeItem(AUTH_STORAGE_KEY);
     } catch (error) {
-      console.error('Sign-Out Error:', error);
-       toast({
-        title: 'Sign-Out Failed',
-        description: 'Could not sign you out. Please try again.',
-        variant: 'destructive',
-      });
+        console.error("Could not remove auth state from storage", error);
     }
   };
 
   return (
     <AuthContext.Provider
       value={{
-        isAuthenticated: !isLoading && !!user,
-        user,
+        isAuthenticated: !isLoading && isAuthenticated,
         isLoading,
         login,
         logout,
