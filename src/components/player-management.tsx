@@ -67,6 +67,16 @@ interface PlayerManagementProps {
 type SortKey = keyof Player | 'present' | 'team';
 type SortDirection = 'asc' | 'desc';
 
+// Function to generate a consistent pastel color from a string
+const stringToPastelColor = (str: string) => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const h = hash % 360;
+  return `hsl(${h}, 70%, 85%)`;
+};
+
 export default function PlayerManagement({ teams }: PlayerManagementProps) {
   const { players, setPlayers, togglePlayerPresence } = usePlayerContext();
   const { toast } = useToast();
@@ -342,7 +352,9 @@ export default function PlayerManagement({ teams }: PlayerManagementProps) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {sortedPlayers.map((player) => (
+                {sortedPlayers.map((player) => {
+                    const teamName = playerTeamMap.get(player.id);
+                    return (
                   <TableRow key={player.id}>
                     <TableCell>
                       <Switch
@@ -373,8 +385,13 @@ export default function PlayerManagement({ teams }: PlayerManagementProps) {
                       </span>
                     </TableCell>
                      <TableCell className="hidden sm:table-cell">
-                      {playerTeamMap.get(player.id) ? (
-                        <Badge variant="secondary" className="whitespace-nowrap">{playerTeamMap.get(player.id)}</Badge>
+                      {teamName ? (
+                        <Badge 
+                          style={{ backgroundColor: stringToPastelColor(teamName), color: 'hsl(0, 0%, 20%)' }}
+                          className="whitespace-nowrap border-none"
+                        >
+                          {teamName}
+                        </Badge>
                       ) : (
                         <span className="text-muted-foreground">-</span>
                       )}
@@ -400,7 +417,7 @@ export default function PlayerManagement({ teams }: PlayerManagementProps) {
                         </DropdownMenu>
                     </TableCell>
                   </TableRow>
-                ))}
+                )})}
               </TableBody>
             </Table>
           </div>
