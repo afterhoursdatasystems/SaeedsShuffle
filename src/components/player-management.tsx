@@ -114,16 +114,16 @@ export default function PlayerManagement({ players, setPlayers }: PlayerManageme
 
   const getSkillBadgeClass = (skill: number) => {
     const colors = [
-      'bg-slate-200 text-slate-800', // 1
-      'bg-gray-300 text-gray-800',   // 2
-      'bg-blue-300 text-blue-800',   // 3
-      'bg-sky-300 text-sky-800',     // 4
-      'bg-green-400 text-green-900', // 5
-      'bg-lime-400 text-lime-900',   // 6
-      'bg-yellow-400 text-yellow-900',// 7
-      'bg-amber-500 text-white',      // 8
-      'bg-orange-500 text-white',    // 9
-      'bg-red-600 text-white',       // 10
+      'bg-slate-300 text-slate-800',   // 1 (Beginner)
+      'bg-cyan-300 text-cyan-800',     // 2
+      'bg-sky-400 text-sky-900',       // 3
+      'bg-green-400 text-green-900',   // 4 (Intermediate)
+      'bg-lime-400 text-lime-900',     // 5
+      'bg-yellow-400 text-yellow-900', // 6
+      'bg-amber-500 text-white',       // 7
+      'bg-orange-500 text-white',      // 8 (Advanced)
+      'bg-red-500 text-white',         // 9
+      'bg-rose-600 text-white',        // 10
     ];
     return colors[skill - 1] || colors[0];
   };
