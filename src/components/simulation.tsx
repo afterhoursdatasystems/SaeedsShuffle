@@ -1,7 +1,7 @@
+
 'use client';
 
 import { useState } from 'react';
-import type { Match } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -9,12 +9,10 @@ import { useToast } from '@/hooks/use-toast';
 import { Bot, RefreshCw } from 'lucide-react';
 import { getSimulatedStandings } from '@/app/actions';
 import { Skeleton } from './ui/skeleton';
+import { usePlayerContext } from '@/contexts/player-context';
 
-interface SimulationProps {
-  schedule: Match[];
-}
-
-export default function Simulation({ schedule }: SimulationProps) {
+export default function Simulation() {
+  const { schedule } = usePlayerContext();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [simulationResult, setSimulationResult] = useState<string | null>(null);

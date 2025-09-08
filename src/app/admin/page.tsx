@@ -1,58 +1,39 @@
 
 'use client';
 
-import { useState } from 'react';
-import type { Team, Match } from '@/types';
 import AppHeader from '@/components/app-header';
 import PlayerManagement from '@/components/player-management';
-import TeamsSchedule from '@/components/teams-schedule';
-import Simulation from '@/components/simulation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, ClipboardList, Bot, Zap } from 'lucide-react';
+import { Users, ClipboardList, Bot, Zap, Calendar, UserPlus } from 'lucide-react';
+import Link from 'next/link';
 
 export default function AdminPage() {
-  const [teams, setTeams] = useState<Team[]>([]);
-  const [schedule, setSchedule] = useState<Match[]>([]);
 
   return (
     <div className="flex min-h-screen w-full flex-col">
       <AppHeader />
       <main className="flex-1 p-4 sm:p-6 md:p-8">
         <Tabs defaultValue="players" className="w-full">
-          <TabsList className="grid w-full grid-cols-1 sm:w-auto sm:grid-cols-4">
+          <TabsList className="grid w-full grid-cols-1 sm:w-auto sm:grid-cols-5">
             <TabsTrigger value="players">
               <Users className="mr-2 h-4 w-4" />
               Players
             </TabsTrigger>
-            <TabsTrigger value="schedule">
-              <ClipboardList className="mr-2 h-4 w-4" />
-              Teams & Schedule
+             <TabsTrigger value="teams" asChild>
+              <Link href="/admin/teams"><UserPlus className="mr-2 h-4 w-4" /> Teams</Link>
             </TabsTrigger>
-            <TabsTrigger value="simulate">
-              <Bot className="mr-2 h-4 w-4" />
-              Simulate Standings
+            <TabsTrigger value="schedule" asChild>
+               <Link href="/admin/schedule"><Calendar className="mr-2 h-4 w-4" /> Schedule</Link>
             </TabsTrigger>
-            <TabsTrigger value="rules">
-              <Zap className="mr-2 h-4 w-4" />
-              Rule Generator
+            <TabsTrigger value="simulate" asChild>
+               <Link href="/admin/simulation"><Bot className="mr-2 h-4 w-4" /> Simulate</Link>
+            </TabsTrigger>
+            <TabsTrigger value="rules" asChild>
+              <Link href="/admin/rule-generator"><Zap className="mr-2 h-4 w-4" /> Rule Generator</Link>
             </TabsTrigger>
           </TabsList>
           <TabsContent value="players" className="mt-6">
-            <PlayerManagement teams={teams} />
-          </TabsContent>
-          <TabsContent value="schedule" className="mt-6">
-            <TeamsSchedule
-              teams={teams}
-              setTeams={setTeams}
-              schedule={schedule}
-              setSchedule={setSchedule}
-            />
-          </TabsContent>
-          <TabsContent value="simulate" className="mt-6">
-            <Simulation schedule={schedule} />
-          </TabsContent>
-          <TabsContent value="rules" className="mt-6">
-             <iframe src="/admin/rule-generator" className="w-full h-[80vh] border-0" />
+            <PlayerManagement />
           </TabsContent>
         </Tabs>
       </main>

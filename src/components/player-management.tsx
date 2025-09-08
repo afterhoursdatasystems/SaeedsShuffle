@@ -60,10 +60,6 @@ const playerSchema = z.object({
 
 type PlayerFormValues = z.infer<typeof playerSchema>;
 
-interface PlayerManagementProps {
-  teams: Team[];
-}
-
 type SortKey = keyof Player | 'present' | 'team';
 type SortDirection = 'asc' | 'desc';
 
@@ -80,8 +76,8 @@ const stringToPastelColor = (str: string) => {
 };
 
 
-export default function PlayerManagement({ teams }: PlayerManagementProps) {
-  const { players, setPlayers, togglePlayerPresence } = usePlayerContext();
+export default function PlayerManagement() {
+  const { players, setPlayers, togglePlayerPresence, teams } = usePlayerContext();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
@@ -429,5 +425,3 @@ export default function PlayerManagement({ teams }: PlayerManagementProps) {
     </div>
   );
 }
-
-    

@@ -24,6 +24,7 @@ export async function getSimulatedStandings(input: SimulateLeagueStandingsInput)
 
 export async function publishData(teams: Team[], format: GameFormat, schedule: Match[]) {
     try {
+        console.log('Publishing data:', { teams, format, schedule });
         publishedData = { teams, format, schedule };
         return { success: true, message: 'Teams, format, and schedule published successfully!' };
     } catch (error) {

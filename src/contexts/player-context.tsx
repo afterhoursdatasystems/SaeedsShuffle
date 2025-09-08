@@ -1,7 +1,7 @@
 
 'use client';
 
-import type { Player } from '@/types';
+import type { Player, Team, Match, GameFormat } from '@/types';
 import React, { createContext, useContext, useState, type ReactNode } from 'react';
 
 // Using a simple in-memory store for the prototype.
@@ -42,12 +42,21 @@ interface PlayerContextType {
   setPlayers: React.Dispatch<React.SetStateAction<Player[]>>;
   togglePlayerPresence: (playerId: string) => void;
   isLoading: boolean;
+  teams: Team[];
+  setTeams: React.Dispatch<React.SetStateAction<Team[]>>;
+  schedule: Match[];
+  setSchedule: React.Dispatch<React.SetStateAction<Match[]>>;
+  gameFormat: GameFormat;
+  setGameFormat: React.Dispatch<React.SetStateAction<GameFormat>>;
 }
 
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
 
 export function PlayerProvider({ children }: { children: ReactNode }) {
   const [players, setPlayers] = useState<Player[]>(MOCK_PLAYERS);
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [schedule, setSchedule] = useState<Match[]>([]);
+  const [gameFormat, setGameFormat] = useState<GameFormat>('round-robin');
   const [isLoading, setIsLoading] = useState(false); // Can be used for async operations later
 
   const togglePlayerPresence = (playerId: string) => {
@@ -62,7 +71,13 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     players,
     setPlayers,
     togglePlayerPresence,
-    isLoading
+    isLoading,
+    teams,
+    setTeams,
+    schedule,
+    setSchedule,
+    gameFormat,
+    setGameFormat
   };
 
   return (
