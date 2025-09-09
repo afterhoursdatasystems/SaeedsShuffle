@@ -8,6 +8,7 @@ import { PlayerProvider } from '@/contexts/player-context';
 import { SidebarProvider, Sidebar, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from '@/components/ui/sidebar';
 import { LayoutDashboard, UserCheck, Users, Calendar, Wand2, Bot, Volleyball, UserPlus } from 'lucide-react';
 import Link from 'next/link';
+import AppHeader from '@/components/app-header';
 
 const navItems = [
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -44,7 +45,7 @@ export default function AdminLayout({
 
   return (
     <PlayerProvider>
-        <SidebarProvider>
+        <SidebarProvider defaultOpen={false}>
             <div className="flex min-h-screen w-full flex-col bg-muted/40">
                 <div className="flex">
                     <Sidebar className="hidden lg:block border-r">
@@ -68,6 +69,7 @@ export default function AdminLayout({
                         </SidebarMenu>
                     </Sidebar>
                     <div className="flex flex-col flex-1">
+                        <AppHeader />
                         {children}
                     </div>
                 </div>

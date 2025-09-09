@@ -44,7 +44,7 @@ export default function CheckinPage() {
             key={player.id}
             onClick={() => togglePlayerPresence(player.id)}
             className={cn(
-                'cursor-pointer select-none transition-all duration-200 ease-in-out flex flex-col',
+                'cursor-pointer select-none transition-all duration-200 ease-in-out flex flex-col min-w-[150px]',
                 player.present
                 ? 'border-green-500 bg-green-50/50 border-2 shadow-lg'
                 : 'border-red-500 bg-red-50/20 text-muted-foreground'
@@ -57,7 +57,7 @@ export default function CheckinPage() {
                     <XCircle className="h-8 w-8 text-red-500 flex-shrink-0" />
                 )}
                 <div className="min-w-0 flex-1">
-                    <p className="text-base sm:text-lg font-bold leading-tight break-all" title={player.name}>
+                    <p className="text-base sm:text-lg font-bold leading-tight break-words" title={player.name}>
                         {player.name}
                     </p>
                 </div>

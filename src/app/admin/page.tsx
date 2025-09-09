@@ -1,6 +1,5 @@
 'use client';
 
-import AppHeader from '@/components/app-header';
 import PlayerManagement from '@/components/player-management';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Bot, Calendar, Crown, BookOpen, Shuffle, Settings, UserPlus, Trophy, Zap } from 'lucide-react';
@@ -17,7 +16,6 @@ export default function AdminPage() {
 
   return (
     <>
-    <AppHeader />
     <main className="flex flex-1 flex-col p-4 sm:p-6 md:p-8">
         <div className="mx-auto grid w-full max-w-5xl grid-cols-1 gap-8">
             {/* Step 1: Player Management */}
