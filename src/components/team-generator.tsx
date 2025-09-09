@@ -36,6 +36,7 @@ const shuffleArray = <T,>(array: T[]): T[] => {
   return newArray;
 };
 
+type PlayerWithAdjustedSkill = Player & { adjustedSkill: number };
 
 export function TeamGenerator() {
   const { 
@@ -60,7 +61,7 @@ export function TeamGenerator() {
   const presentPlayers = useMemo(() => players.filter((p) => p.present), [players]);
   const possibleTeamsCount = presentPlayers.length >= teamSize ? Math.floor(presentPlayers.length / teamSize) : 0;
   
-const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] => {
+  const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] => {
     console.clear();
     console.log('--- Starting New Draft Simulation ---');
     console.log(`Total Players: ${allPlayers.length}, Team Size: ${formatSize}v${formatSize}`);
@@ -69,88 +70,87 @@ const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] =
         return [];
     }
 
+    // 1. Player Valuation
     const alpha = -1.2;
-    const valuedPlayers = allPlayers.map(p => ({
+    const valuedPlayers: PlayerWithAdjustedSkill[] = allPlayers.map(p => ({
         ...p,
         adjustedSkill: p.skill + (p.gender === 'Gal' ? alpha : 0),
     }));
 
-    // 1. Determine Team Count and Sizes
+    // 2. Create and Shuffle Skill Buckets
+    const buckets: Record<string, PlayerWithAdjustedSkill[]> = {
+      'tier1': [], // 9-10
+      'tier2': [], // 7-8
+      'tier3': [], // 4-6
+      'tier4': [], // 1-3
+    };
+
+    valuedPlayers.forEach(p => {
+      if (p.skill >= 9) buckets.tier1.push(p);
+      else if (p.skill >= 7) buckets.tier2.push(p);
+      else if (p.skill >= 4) buckets.tier3.push(p);
+      else buckets.tier4.push(p);
+    });
+
+    // Shuffle within each bucket
+    Object.keys(buckets).forEach(tier => {
+      buckets[tier] = shuffleArray(buckets[tier]);
+    });
+    
+    // Combine buckets into a single draft pool, ordered by tier
+    let draftPool = [...buckets.tier1, ...buckets.tier2, ...buckets.tier3, ...buckets.tier4];
+    console.log('Shuffled Draft Pool (Top 5):', draftPool.slice(0,5).map(p => `${p.name} (L': ${p.adjustedSkill.toFixed(1)})`));
+    
+    // 3. Determine Team Structure
     const numTeams = Math.floor(allPlayers.length / formatSize);
     const baseTeamSize = Math.floor(allPlayers.length / numTeams);
     const teamsWithExtra = allPlayers.length % numTeams;
-    console.log(`Calculated Teams: ${numTeams}`);
-    console.log(`Base size: ${baseTeamSize}, Teams with extra: ${teamsWithExtra}`);
+    console.log(`Calculated Teams: ${numTeams}, Base size: ${baseTeamSize}, Teams with extra: ${teamsWithExtra}`);
 
-
-    // 2. Create Tiered and Shuffled Player Pool
-    const skillGroups: Record<string, Player[]> = {};
-    valuedPlayers.forEach(p => {
-        const key = `${p.gender}-${p.adjustedSkill}`;
-        if (!skillGroups[key]) {
-            skillGroups[key] = [];
-        }
-        skillGroups[key].push(p);
-    });
-
-    for (const key in skillGroups) {
-        skillGroups[key] = shuffleArray(skillGroups[key]);
-    }
-    
-    let draftPool = Object.values(skillGroups).flat().sort((a: any, b: any) => b.adjustedSkill - a.adjustedSkill);
-    console.log('Sorted & Shuffled Draft Pool (Top 5):', draftPool.slice(0,5).map((p: any) => `${p.name} (L': ${p.adjustedSkill.toFixed(1)})`));
-
-
-    // 3. Setup Teams
     const shuffledNames = shuffleArray(teamNames);
     const newTeams: Team[] = Array.from({ length: numTeams }, (_, i) => ({
       name: shuffledNames[i % shuffledNames.length],
       players: [],
     }));
 
-    // 4. Execute Gender-Priority Snake Draft
+    // 4. Execute Gender-Aware Snake Draft
     let teamIndex = 0;
-    let direction = 1; 
+    let direction = 1;
+
+    const guysInPool = draftPool.filter(p => p.gender === 'Guy').length;
+    const galsInPool = draftPool.filter(p => p.gender === 'Gal').length;
 
     while(draftPool.length > 0) {
         const team = newTeams[teamIndex];
-        const teamPlayerCount = team.players.length;
         const targetSize = teamIndex < teamsWithExtra ? baseTeamSize + 1 : baseTeamSize;
 
-        let playerToDraft: Player | undefined;
+        if (team.players.length < targetSize) {
+          const guysOnTeam = team.players.filter(p => p.gender === 'Guy').length;
+          const galsOnTeam = team.players.filter(p => p.gender === 'Gal').length;
 
-        const idealGuys = Math.round((allPlayers.filter(p=>p.gender==='Guy').length / allPlayers.length) * targetSize);
-        const idealGals = targetSize - idealGuys;
+          // Determine ideal gender ratio for this specific team size
+          const idealGuys = Math.round((guysInPool / allPlayers.length) * targetSize);
+          const idealGals = targetSize - idealGuys;
 
-        const guysOnTeam = team.players.filter(p => p.gender === 'Guy').length;
-        const galsOnTeam = team.players.filter(p => p.gender === 'Gal').length;
+          let playerToDraft: PlayerWithAdjustedSkill | undefined;
+          let candidateIndex = -1;
 
-        let candidateIndex = -1;
-        
-        // Prioritize gender if a team is falling behind its ideal ratio
-        if (galsOnTeam < idealGals) {
+          // Prioritize needed gender
+          if (galsOnTeam < idealGals && draftPool.some(p => p.gender === 'Gal')) {
             candidateIndex = draftPool.findIndex(p => p.gender === 'Gal');
-        } else if (guysOnTeam < idealGuys) {
+          } else if (guysOnTeam < idealGuys && draftPool.some(p => p.gender === 'Guy')) {
             candidateIndex = draftPool.findIndex(p => p.gender === 'Guy');
-        }
-
-        // If no strict gender priority, or if that gender is unavailable, pick best available
-        if (candidateIndex === -1) {
-             const topN = draftPool.slice(0, 3); // Look at top 3
-             const randomPlayer = topN[Math.floor(Math.random() * topN.length)];
-             candidateIndex = draftPool.findIndex(p => p.id === randomPlayer.id);
-        }
-        
-        if (candidateIndex === -1) { // Fallback if preferred gender is gone
+          } else {
+            // If ideal ratio is met or cannot be met, just take the best available player
             candidateIndex = 0;
-        }
+          }
+          
+          [playerToDraft] = draftPool.splice(candidateIndex, 1);
 
-        [playerToDraft] = draftPool.splice(candidateIndex, 1);
-
-
-        if(playerToDraft) {
-            console.log(`Drafting ${playerToDraft.name} (L': ${(playerToDraft as any).adjustedSkill.toFixed(1)}) to Team ${newTeams[teamIndex].name}`);
-            team.players.push(playerToDraft);
+          if (playerToDraft) {
+              console.log(`Drafting ${playerToDraft.name} (L': ${playerToDraft.adjustedSkill.toFixed(1)}) to Team ${newTeams[teamIndex].name}`);
+              team.players.push(playerToDraft);
+          }
         }
 
         teamIndex += direction;
