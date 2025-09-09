@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { usePlayerContext } from '@/contexts/player-context';
@@ -21,11 +22,20 @@ import { useMemo, useState } from 'react';
 import type { Player } from '@/types';
 import { cn } from '@/lib/utils';
 
-type SortKey = 'name' | 'team' | 'gender' | 'skill';
+type SortKey = 'name' | 'team' | 'gender' | 'skill' | 'present';
 
 const teamColors = [
-  '#E0BBE4', '#957DAD', '#D291BC', '#FEC8D8', '#FFDFD3',
-  '#B5EAD7', '#A2D2FF', '#ADC4CE', '#99A8B2', '#BDE0FE', '#CDB4DB'
+  '#F3A6A6', // Light Coral
+  '#A6C1F3', // Light Blue
+  '#A6F3A6', // Light Green
+  '#F3ECA6', // Light Yellow
+  '#DDA0DD', // Plum
+  '#B0E0E6', // Powder Blue
+  '#FFDAB9', // Peach Puff
+  '#E6E6FA', // Lavender
+  '#F08080', // Light Coral
+  '#98FB98', // Pale Green
+  '#ADD8E6', // Light Blue
 ];
 
 const getSkillColor = (skill: number) => {
@@ -61,8 +71,8 @@ export default function PlayerManagementPage() {
 
   const sortedPlayers = useMemo(() => {
     return [...players].sort((a, b) => {
-      let valA: string | number;
-      let valB: string | number;
+      let valA: string | number | boolean;
+      let valB: string | number | boolean;
 
       switch(sortKey) {
         case 'team':
@@ -73,6 +83,10 @@ export default function PlayerManagementPage() {
           valA = a.skill;
           valB = b.skill;
           break;
+        case 'present':
+            valA = a.present;
+            valB = b.present;
+            break;
         default:
           valA = a[sortKey];
           valB = b[sortKey];
@@ -153,6 +167,12 @@ export default function PlayerManagementPage() {
                     <span className="ml-2">{getSortIcon('skill')}</span>
                   </Button>
                 </TableHead>
+                 <TableHead>
+                   <Button variant="ghost" onClick={() => handleSort('present')}>
+                    Presence
+                    <span className="ml-2">{getSortIcon('present')}</span>
+                  </Button>
+                </TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -192,6 +212,18 @@ export default function PlayerManagementPage() {
                            className="border-gray-300 border"
                         >
                           {player.skill}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                         <Badge
+                          style={{
+                            backgroundColor: player.present ? '#D4EDDA' : '#F8D7DA',
+                            color: player.present ? '#155724' : '#721C24',
+                            borderColor: player.present ? '#C3E6CB' : '#F5C6CB'
+                          }}
+                           className="border"
+                        >
+                          {player.present ? 'Present' : 'Away'}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
