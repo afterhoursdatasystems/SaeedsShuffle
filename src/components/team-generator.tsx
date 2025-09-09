@@ -277,19 +277,23 @@ export function TeamGenerator() {
                             <p className="text-2xl font-bold">{possibleTeamsCount}</p>
                         </div>
                     </div>
-                     <div className="flex flex-col sm:flex-row gap-2">
-                      <Button onClick={handleGenerateTeams} className="flex-grow">
-                          <Shuffle className="mr-2 h-4 w-4" />
-                          Generate New Teams
-                      </Button>
-                       <Button onClick={handleClearTeams} variant="destructive" className="flex-grow">
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Clear Teams
-                        </Button>
-                    </div>
                 </div>
             )}
         </CardContent>
+        {!isBlindDraw && (
+            <CardFooter className="border-t px-6 py-4">
+                <div className="flex gap-2">
+                    <Button onClick={handleGenerateTeams}>
+                        <Shuffle className="mr-2 h-4 w-4" />
+                        Generate New Teams
+                    </Button>
+                    <Button onClick={handleClearTeams} variant="outline">
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Clear Teams
+                    </Button>
+                </div>
+            </CardFooter>
+        )}
       </Card>
       
       {teams.length > 0 && !isBlindDraw && (

@@ -39,45 +39,37 @@ export default function CheckinPage() {
   };
 
   return (
-    <div className="min-h-screen bg-muted/40">
-        <header className="sticky top-0 z-10 flex h-20 items-center justify-between border-b bg-background px-4 sm:px-6 md:px-8">
-            <Button asChild variant="outline">
-               <Link href="/admin"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard</Link>
-            </Button>
-            <div className='text-center'>
-                <h1 className="text-3xl font-bold">Player Check-in</h1>
-                <p className="text-muted-foreground">{presentCount} of {players.length} players present</p>
-            </div>
-            <div className="w-32"></div>
-        </header>
+    <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
+        <div className='text-center mb-8'>
+            <h1 className="text-3xl font-bold">Player Check-in</h1>
+            <p className="text-muted-foreground">{presentCount} of {players.length} players present</p>
+        </div>
 
-        <main className="p-4 sm:p-6 md:p-8">
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7">
-            {sortedPlayers.map((player) => (
-                <Card
-                key={player.id}
-                onClick={() => togglePlayerPresence(player.id)}
-                className={cn(
-                    'cursor-pointer select-none transition-all duration-200 ease-in-out flex flex-col',
-                    player.present
-                    ? 'border-green-500 bg-green-50/50 border-2 shadow-lg'
-                    : 'border-red-500 bg-red-50/20 text-muted-foreground'
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7">
+        {sortedPlayers.map((player) => (
+            <Card
+            key={player.id}
+            onClick={() => togglePlayerPresence(player.id)}
+            className={cn(
+                'cursor-pointer select-none transition-all duration-200 ease-in-out flex flex-col',
+                player.present
+                ? 'border-green-500 bg-green-50/50 border-2 shadow-lg'
+                : 'border-red-500 bg-red-50/20 text-muted-foreground'
+            )}
+            >
+            <CardContent className="flex items-center justify-start p-3 sm:p-4 gap-3 flex-grow">
+                {player.present ? (
+                    <CheckCircle className="h-8 w-8 text-green-500 flex-shrink-0" />
+                ) : (
+                    <XCircle className="h-8 w-8 text-red-500 flex-shrink-0" />
                 )}
-                >
-                <CardContent className="flex items-center justify-start p-3 sm:p-4 gap-3 flex-grow">
-                    {player.present ? (
-                        <CheckCircle className="h-8 w-8 text-green-500 flex-shrink-0" />
-                    ) : (
-                        <XCircle className="h-8 w-8 text-red-500 flex-shrink-0" />
-                    )}
-                    <p className="text-base sm:text-lg font-bold leading-tight" title={player.name}>
-                        {formatName(player.name)}
-                    </p>
-                </CardContent>
-                </Card>
-            ))}
-            </div>
-        </main>
+                <p className="text-base sm:text-lg font-bold leading-tight" title={player.name}>
+                    {formatName(player.name)}
+                </p>
+            </CardContent>
+            </Card>
+        ))}
+        </div>
     </div>
   );
 }

@@ -260,13 +260,13 @@ export function ScheduleGenerator() {
                 <CardDescription>Generate the match schedule for the chosen game format.</CardDescription>
               </div>
                <div className="flex gap-2 mt-4 sm:mt-0">
-                 <Button onClick={handleClearSchedule} variant="destructive">
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Clear Schedule
-                </Button>
                  <Button onClick={handleGenerateSchedule}>
                   <CalendarDays className="mr-2 h-4 w-4" />
                   Generate Schedule
+                </Button>
+                <Button onClick={handleClearSchedule} variant="outline">
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Clear Schedule
                 </Button>
               </div>
            </div>

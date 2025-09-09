@@ -90,7 +90,7 @@ export default function RuleGeneratorPage() {
   };
 
   return (
-    <div className="min-h-screen bg-muted/40 p-4 sm:p-6 md:p-8">
+    <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
       <div className="mx-auto max-w-2xl">
         <header className="mb-8 flex flex-col items-center text-center">
           <Wand2 className="h-12 w-12 text-primary mb-4" />
