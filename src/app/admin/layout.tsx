@@ -52,12 +52,12 @@ export default function AdminLayout({
                         <SidebarMenu>
                             {navItems.map((item) => (
                                 <SidebarMenuItem key={item.href}>
-                                    <Link href={item.href} legacyBehavior passHref>
-                                        <SidebarMenuButton isActive={pathname === item.href}>
+                                    <SidebarMenuButton asChild isActive={pathname === item.href}>
+                                        <Link href={item.href}>
                                             <item.icon />
                                             {item.label}
-                                        </SidebarMenuButton>
-                                    </Link>
+                                        </Link>
+                                    </SidebarMenuButton>
                                 </SidebarMenuItem>
                             ))}
                         </SidebarMenu>

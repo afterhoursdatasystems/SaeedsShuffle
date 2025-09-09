@@ -40,9 +40,18 @@ export default function CheckinPage() {
 
   return (
     <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
-        <div className='text-center mb-8'>
-            <h1 className="text-3xl font-bold">Player Check-in</h1>
-            <p className="text-muted-foreground">{presentCount} of {players.length} players present</p>
+        <div className="flex items-center justify-between mb-8">
+             <Button asChild variant="outline">
+                <Link href="/admin">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back to Dashboard
+                </Link>
+            </Button>
+            <div className='text-center'>
+                <h1 className="text-3xl font-bold">Player Check-in</h1>
+                <p className="text-muted-foreground">{presentCount} of {players.length} players present</p>
+            </div>
+             <div style={{width: '160px'}}></div>
         </div>
 
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7">
