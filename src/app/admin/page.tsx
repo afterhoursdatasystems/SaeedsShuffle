@@ -9,9 +9,10 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { GameFormat, GameVariant } from '@/types';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 export default function AdminPage() {
-    const { gameFormat, setGameFormat, gameVariant, setGameVariant, teams, schedule } = usePlayerContext();
+    const { gameFormat, setGameFormat, gameVariant, setGameVariant, teams, schedule, pointsToWin, setPointsToWin } = usePlayerContext();
     const isKOTC = gameFormat === 'king-of-the-court';
 
   return (
@@ -74,6 +75,17 @@ export default function AdminPage() {
                                     </Select>
                                 </div>
                             )}
+                             <div className='space-y-2'>
+                                <Label htmlFor="points-to-win">Points to Win</Label>
+                                <Input 
+                                    id="points-to-win"
+                                    type="number" 
+                                    value={pointsToWin}
+                                    onChange={(e) => setPointsToWin(Number(e.target.value))}
+                                    className="w-full sm:w-[120px]"
+                                    min="1"
+                                />
+                            </div>
                         </div>
                     </div>
                 </CardContent>

@@ -14,34 +14,19 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 
 type CombinedGameFormat = GameFormat | GameVariant;
 
-const KOTC_BASE_RULES = (
-    <div>
-      <h4 className="font-bold text-lg mb-2 mt-6 border-t pt-4">Base King of the Court Rules</h4>
-      <p className="mb-4">This is a dynamic, non-stop format where the goal is to seize control of the “winner’s court” and hold it against a constant stream of new challengers.</p>
-      <ul className="list-disc pl-5 space-y-2">
-          <li><strong>Court Setup:</strong> One court is the designated “King/Queen Court” and the other is the “Challenger Court.”</li>
-          <li><strong>Starting the Game:</strong> The first two teams in line play on the King Court, and the next two teams play on the Challenger Court.</li>
-          <li><strong>On the King Court:</strong> The winning team stays on the court and earns one point on the main scoreboard. The losing team goes to the back of the challenger line.</li>
-          <li><strong>On the Challenger Court:</strong> The winning team of this match becomes the next in line to challenge the current King.</li>
-          <li><strong>Winning the Tournament:</strong> This process repeats continuously. The team with the most points (total wins) at the end of the night is the champion.</li>
-      </ul>
-    </div>
-);
-
-
-const formatDetails: Record<CombinedGameFormat, { title: string; description: React.ReactNode; icon: React.ElementType }> = {
+const getFormatDetails = (pointsToWin: number): Record<CombinedGameFormat, { title: string; description: React.ReactNode; icon: React.ElementType }> => ({
   'king-of-the-court': {
     title: 'Continuous King of the Court',
     icon: Crown,
     description: (
        <div>
-        <p className="mb-4">A high-energy, continuous-play format designed to maximize playtime and interaction.</p>
+        <p className="mb-4">A high-energy, continuous-play format designed to maximize playtime and interaction. All games are to {pointsToWin} points.</p>
         <h4 className="font-bold text-lg mb-2">The Concept</h4>
         <p className="mb-4">A dynamic, non-stop format where the goal is to seize control of the “winner’s court” and hold it against a constant stream of new challengers.</p>
         <h4 className="font-bold text-lg mb-2">The Flow of Play</h4>
         <ul className="list-disc pl-5 space-y-2">
             <li><strong>Court Setup:</strong> Court 1 will be the designated “King/Queen Court” and Court 2 will be the “Challenger Court.”</li>
-            <li><strong>Starting the Game:</strong> The first two teams in line will play on the King Court, and the next two teams will play on the Challenger Court. All games are to 15 points.</li>
+            <li><strong>Starting the Game:</strong> The first two teams in line will play on the King Court, and the next two teams will play on the Challenger Court.</li>
             <li><strong>On the King Court (Court 1):</strong> The winning team stays on the court and earns one point on the main scoreboard. The losing team leaves the court and goes to the back of the challenger line.</li>
             <li><strong>On the Challenger Court (Court 2):</strong> The winning team of this match becomes the next in line to move up and challenge the current King.</li>
             <li><strong>Winning the Tournament:</strong> This process repeats continuously. The team with the most points (total wins) at the end of the time is the champion.</li>
@@ -52,14 +37,14 @@ const formatDetails: Record<CombinedGameFormat, { title: string; description: Re
    'standard': {
     title: 'King of the Court',
     icon: Crown,
-    description: ( <p>This is the standard King of the Court format.</p>)
+    description: ( <p>This is the standard King of the Court format. All games are to {pointsToWin} points.</p>)
   },
   'monarch-of-the-court': {
     title: 'Monarch of the Court',
     icon: Gem,
     description: (
       <div>
-        <p className="mb-4">A classic King of the Court format with a fun, social twist that gives the winning team a small “power” after their win, adding a layer of strategy and interaction.</p>
+        <p className="mb-4">A classic King of the Court format with a fun, social twist that gives the winning team a small “power” after their win, adding a layer of strategy and interaction. All games are to {pointsToWin} points.</p>
         <h4 className="font-bold text-lg mb-2">Variant Rules</h4>
          <ul className="list-disc pl-5 space-y-2">
             <li>After winning a game on the King Court, your team is crowned “The Monarchs”.</li>
@@ -79,7 +64,7 @@ const formatDetails: Record<CombinedGameFormat, { title: string; description: Re
     icon: KeyRound,
     description: (
       <div>
-        <p className="mb-4">A dramatic and strategic KOTC format where team rosters are not safe. It includes a player “steal” mechanic.</p>
+        <p className="mb-4">A dramatic and strategic KOTC format where team rosters are not safe. It includes a player “steal” mechanic. All games are to {pointsToWin} points.</p>
         <h4 className="font-bold text-lg mb-2">Variant Rules</h4>
          <ul className="list-disc pl-5 space-y-2">
             <li><strong>The Cosmic Scramble:</strong> In this variant, a special "Cosmic Scramble" rule is in effect, which causes players to be traded between teams after a match.</li>
@@ -93,10 +78,10 @@ const formatDetails: Record<CombinedGameFormat, { title: string; description: Re
     icon: Zap,
     description: (
        <div>
-        <p className="mb-4">A fun, arcade-like twist on the classic KOTC format where teams get random advantages.</p>
+        <p className="mb-4">A fun, arcade-like twist on the classic KOTC format where teams get random advantages. All games are to {pointsToWin} points.</p>
         <h4 className="font-bold text-lg mb-2">Variant Rules</h4>
          <ul className="list-disc pl-5 space-y-2">
-            <li>A special "Power-Up" rule is in effect, granting an advantage to the challenging team for their game on the King's Court.</li>
+            <li>A special "Power-Up" rule is in effect, granting an advantage to the challenging team for their game on the King's Court. This can be used once per match.</li>
              <li className="list-none pt-2"><strong>See the active power-up rule displayed on this dashboard to know what advantage is in play!</strong></li>
         </ul>
       </div>
@@ -107,7 +92,7 @@ const formatDetails: Record<CombinedGameFormat, { title: string; description: Re
     icon: Trophy,
     description: (
       <div>
-        <p className="mb-4">A classic tournament format where teams first compete in a round-robin style "pool play" to determine seeding, followed by a single-elimination bracket to crown the champion.</p>
+        <p className="mb-4">A classic tournament format where teams first compete in a round-robin style "pool play" to determine seeding, followed by a single-elimination bracket to crown the champion. All games are to {pointsToWin} points.</p>
         <h4 className="font-bold text-lg mb-2">Phase 1: Pool Play</h4>
         <p className="mb-4">All teams will play against each other once in a round-robin format. The results of these matches (wins, losses, and point differential) will be used to rank the teams and determine their seeding for the bracket.</p>
         <h4 className="font-bold text-lg mb-2">Phase 2: Bracket Play</h4>
@@ -120,7 +105,7 @@ const formatDetails: Record<CombinedGameFormat, { title: string; description: Re
     icon: BookOpen,
     description: (
        <div>
-        <p className="mb-4">A simple and fair format where every team gets to play against every other team. This is great for maximizing play time and ensuring a variety of matchups.</p>
+        <p className="mb-4">A simple and fair format where every team gets to play against every other team. This is great for maximizing play time and ensuring a variety of matchups. All games are to {pointsToWin} points.</p>
         <h4 className="font-bold text-lg mb-2">The Concept</h4>
         <p className="mb-4">No eliminations, no court changes—just pure volleyball. The schedule is generated so that each team plays all other teams once (or twice, depending on the setup).</p>
         <h4 className="font-bold text-lg mb-2">Determining the Winner</h4>
@@ -133,7 +118,7 @@ const formatDetails: Record<CombinedGameFormat, { title: string; description: Re
     icon: Shuffle,
     description: (
        <div>
-        <p className="mb-4">A social and unpredictable format where teams are redrawn for every round. This format is great for mixing up players and ensuring everyone gets to play with a variety of teammates.</p>
+        <p className="mb-4">A social and unpredictable format where teams are redrawn for every round. This format is great for mixing up players and ensuring everyone gets to play with a variety of teammates. All games are to {pointsToWin} points.</p>
         <h4 className="font-bold text-lg mb-2">The Concept</h4>
         <p className="mb-4">There are no fixed teams in this format. Before each round of games, new teams are randomly created from the pool of present players. This emphasizes individual performance and adaptability.</p>
         <h4 className="font-bold text-lg mb-2">Scoring and Winning</h4>
@@ -141,13 +126,15 @@ const formatDetails: Record<CombinedGameFormat, { title: string; description: Re
        </div>
     )
   },
-};
+});
+
 
 export default function PublicTeamsPage() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [schedule, setSchedule] = useState<Match[]>([]);
   const [gameFormat, setGameFormat] = useState<CombinedGameFormat>('round-robin');
   const [activeRule, setActiveRule] = useState<PowerUp | null>(null);
+  const [pointsToWin, setPointsToWin] = useState<number>(15);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -172,6 +159,9 @@ export default function PublicTeamsPage() {
           if (format !== gameFormat) {
             setGameFormat(format);
           }
+           if (result.data.pointsToWin !== pointsToWin) {
+            setPointsToWin(result.data.pointsToWin || 15);
+          }
         } else {
           console.error('Failed to fetch data:', result.error);
         }
@@ -189,7 +179,7 @@ export default function PublicTeamsPage() {
     const interval = setInterval(() => fetchData(false), 120000); // Refresh every 2 minutes
     return () => clearInterval(interval);
 
-  }, [teams, schedule, activeRule, gameFormat]);
+  }, [teams, schedule, activeRule, gameFormat, pointsToWin]);
 
   const renderTeamSkeletons = () => (
     Array.from({ length: 4 }).map((_, index) => (
@@ -228,6 +218,7 @@ export default function PublicTeamsPage() {
     </Card>
   );
 
+  const formatDetails = useMemo(() => getFormatDetails(pointsToWin), [pointsToWin]);
   const isKOTC = ['king-of-the-court', 'monarch-of-the-court', 'king-s-ransom', 'power-up-round', 'standard'].includes(gameFormat);
   const currentFormatDetails = isKOTC ? formatDetails[gameFormat] : formatDetails[gameFormat];
   const CurrentFormatIcon = currentFormatDetails?.icon || ShieldQuestion;
@@ -329,7 +320,19 @@ export default function PublicTeamsPage() {
                 <CardContent className="p-6">
                     <h3 className="font-bold text-xl mb-4">{currentFormatDetails.title}</h3>
                     <div>{currentFormatDetails.description}</div>
-                    {isKOTC && gameFormat !== 'king-of-the-court' && KOTC_BASE_RULES}
+                    {isKOTC && gameFormat !== 'king-of-the-court' && (
+                        <div>
+                          <h4 className="font-bold text-lg mb-2 mt-6 border-t pt-4">Base King of the Court Rules</h4>
+                          <p className="mb-4">This is a dynamic, non-stop format where the goal is to seize control of the “winner’s court” and hold it against a constant stream of new challengers.</p>
+                          <ul className="list-disc pl-5 space-y-2">
+                              <li><strong>Court Setup:</strong> One court is the designated “King/Queen Court” and the other is the “Challenger Court.”</li>
+                              <li><strong>Starting the Game:</strong> The first two teams in line play on the King Court, and the next two teams play on the Challenger Court.</li>
+                              <li><strong>On the King Court:</strong> The winning team stays on the court and earns one point on the main scoreboard. The losing team goes to the back of the challenger line.</li>
+                              <li><strong>On the Challenger Court:</strong> The winning team of this match becomes the next in line to challenge the current King.</li>
+                              <li><strong>Winning the Tournament:</strong> This process repeats continuously. The team with the most points (total wins) at the end of the night is the champion.</li>
+                          </ul>
+                        </div>
+                    )}
                 </CardContent>
               </Card>}
 

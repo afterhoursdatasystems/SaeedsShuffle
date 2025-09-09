@@ -52,6 +52,8 @@ interface PlayerContextType {
   setGameVariant: React.Dispatch<React.SetStateAction<GameVariant>>;
   activeRule: PowerUp | null;
   setActiveRule: React.Dispatch<React.SetStateAction<PowerUp | null>>;
+  pointsToWin: number;
+  setPointsToWin: React.Dispatch<React.SetStateAction<number>>;
 }
 
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
@@ -63,6 +65,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [gameFormat, setGameFormat] = useState<GameFormat>('king-of-the-court');
   const [gameVariant, setGameVariant] = useState<GameVariant>('standard');
   const [activeRule, setActiveRule] = useState<PowerUp | null>(null);
+  const [pointsToWin, setPointsToWin] = useState<number>(15);
   const [isLoading, setIsLoading] = useState(false); // Can be used for async operations later
 
   const togglePlayerPresence = (playerId: string) => {
@@ -88,6 +91,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setGameVariant,
     activeRule,
     setActiveRule,
+    pointsToWin,
+    setPointsToWin,
   };
 
   return (

@@ -25,7 +25,7 @@ const shuffleArray = <T,>(array: T[]): T[] => {
 
 
 export function ScheduleGenerator() {
-  const { teams, schedule, setSchedule, gameFormat, gameVariant, players, activeRule } = usePlayerContext();
+  const { teams, schedule, setSchedule, gameFormat, gameVariant, players, activeRule, pointsToWin } = usePlayerContext();
   const { toast } = useToast();
   const [isPublishing, setIsPublishing] = React.useState(false);
 
@@ -203,7 +203,7 @@ export function ScheduleGenerator() {
     setIsPublishing(true);
     // For blind draw, we pass the players as teams since teams are ephemeral
     const teamsToPublish = gameFormat === 'blind-draw' ? [] : teams;
-    const result = await publishData(teamsToPublish, finalFormat, schedule, activeRule);
+    const result = await publishData(teamsToPublish, finalFormat, schedule, activeRule, pointsToWin);
     setIsPublishing(false);
 
     if (result.success) {

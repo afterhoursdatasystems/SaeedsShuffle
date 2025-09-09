@@ -59,6 +59,7 @@ export function TeamGenerator() {
     setSchedule,
     gameFormat,
     activeRule,
+    pointsToWin
   } = usePlayerContext();
   const { toast } = useToast();
   const [teamSize, setTeamSize] = useState<number>(4);
@@ -280,7 +281,7 @@ const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] =
       return;
     }
     setIsPublishing(true);
-    const result = await publishData(teams, gameFormat, schedule, activeRule);
+    const result = await publishData(teams, gameFormat, schedule, activeRule, pointsToWin);
     setIsPublishing(false);
 
     if (result.success) {

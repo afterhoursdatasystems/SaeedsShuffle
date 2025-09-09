@@ -10,6 +10,7 @@ type PublishedData = {
     format: GameFormat | GameVariant;
     schedule: Match[];
     activeRule: PowerUp | null;
+    pointsToWin: number;
 };
 
 // Use a JSON file as a simple database for this prototype.
@@ -18,11 +19,16 @@ const dbPath = path.join(process.cwd(), 'db.json');
 async function readDb(): Promise<PublishedData> {
     try {
         const data = await fs.readFile(dbPath, 'utf-8');
-        return JSON.parse(data);
+        const parsedData = JSON.parse(data);
+        // Provide default for pointsToWin if not present
+        if (!('pointsToWin' in parsedData)) {
+            parsedData.pointsToWin = 15;
+        }
+        return parsedData;
     } catch (error: any) {
         if (error.code === 'ENOENT') {
             // If the file doesn't exist, return a default structure
-            return { teams: [], format: 'king-of-the-court', schedule: [], activeRule: null };
+            return { teams: [], format: 'king-of-the-court', schedule: [], activeRule: null, pointsToWin: 15 };
         }
         console.error('Error reading from DB:', error);
         throw error;
@@ -48,10 +54,10 @@ export async function getSimulatedStandings(input: SimulateLeagueStandingsInput)
     }
 }
 
-export async function publishData(teams: Team[], format: GameFormat | GameVariant, schedule: Match[], activeRule: PowerUp | null) {
+export async function publishData(teams: Team[], format: GameFormat | GameVariant, schedule: Match[], activeRule: PowerUp | null, pointsToWin: number) {
     try {
-        console.log('Publishing data:', { teams, format, schedule, activeRule });
-        const dataToPublish: PublishedData = { teams, format, schedule, activeRule };
+        console.log('Publishing data:', { teams, format, schedule, activeRule, pointsToWin });
+        const dataToPublish: PublishedData = { teams, format, schedule, activeRule, pointsToWin };
         await writeDb(dataToPublish);
         return { success: true, message: 'Teams, format, and schedule published successfully!' };
     } catch (error) {
