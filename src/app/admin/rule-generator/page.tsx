@@ -5,8 +5,10 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Wand2, RefreshCw } from 'lucide-react';
+import { Wand2, RefreshCw, Info } from 'lucide-react';
 import type { PowerUp } from '@/types';
+import { usePlayerContext } from '@/contexts/player-context';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 const allPowerUps: PowerUp[] = [
   { name: 'Point Boost', description: 'Start the next game with a 2-point lead.' },
@@ -23,39 +25,54 @@ const allPowerUps: PowerUp[] = [
   { name: 'Vampire', description: 'Steal one point from the opposing team and add it to your score.' },
   { name: 'Frozen', description: 'Pick a player on the other team. They cannot jump for the next rally.' },
   { name: 'Mimic', description: 'For the next rally, the opposing team must mimic your team\'s formation.' },
-  { name: 'Golden Touch', description: 'For the next rally, any point scored by your designated "golden" player is worth 3 points.' },
   { name: 'Double Trouble', description: 'For the next rally, your team is allowed to have two contacts in a row by the same player.' },
   { name: 'Low Ceiling', description: 'For the next rally, the opposing team is not allowed to send the ball over the net above the height of the antennae.' },
   { name: 'Friendly Fire', description: 'Your team can get a point if the opposing team has a miscommunication and two players run into each other.' },
   { name: 'Serve Swap', description: 'You may force any player on the opposing team to serve for the next point.' },
 ];
 
+const kingsRansomRules: PowerUp[] = [
+    { name: 'Lowest Skill Swap', description: 'The player with the lowest skill rating from each team will be traded.' },
+    { name: 'Highest Skill Swap', description: 'The player with the highest skill rating from each team will be traded.' },
+    { name: 'Gender-for-Gender Swap', description: 'The losing team chooses one of their players to trade, and the winning team must offer a player of the same gender in return.' },
+    { name: 'Player\'s Choice (Winning Team)', description: 'The winning team chooses which of their players to offer for trade. The losing team must accept.' },
+    { name: 'Player\'s Choice (Losing Team)', description: 'The losing team chooses one of their players to trade, and the winning team must accept the trade.' },
+    { name: 'Calculated Risk', description: 'The two players with the most similar skill ratings from each team will be traded.'},
+];
+
+
 export default function RuleGeneratorPage() {
   const { toast } = useToast();
+  const { gameFormat, gameVariant, activeRule, setActiveRule } = usePlayerContext();
   const [isLoading, setIsLoading] = useState(false);
-  const [powerUp, setPowerUp] = useState<PowerUp | null>(null);
+
+  const isPowerUpRound = gameFormat === 'king-of-the-court' && gameVariant === 'power-up-round';
+  const isKingsRansom = gameFormat === 'king-of-the-court' && gameVariant === 'king-s-ransom';
+  const validFormat = isPowerUpRound || isKingsRansom;
+  const ruleSet = isKingsRansom ? kingsRansomRules : allPowerUps;
+  const buttonText = isKingsRansom ? 'Generate Swap Rule' : 'Get New Power-Up';
+  const cardTitle = isKingsRansom ? 'Active Swap Rule' : 'Active Power-Up';
+  const initialText = isKingsRansom ? 'Click the button to get the first swap rule!' : 'Click the button to get the first power-up!';
 
   const handleGenerate = async () => {
     setIsLoading(true);
 
-    // Simulate a brief loading period for better UX
     setTimeout(() => {
-      const randomIndex = Math.floor(Math.random() * allPowerUps.length);
-      let selectedPowerUp = allPowerUps[randomIndex];
+      const randomIndex = Math.floor(Math.random() * ruleSet.length);
+      let selectedRule = ruleSet[randomIndex];
 
-      // Ensure we don't show the same power-up twice in a row
-      if (powerUp && selectedPowerUp.name === powerUp.name) {
-        selectedPowerUp = allPowerUps[(randomIndex + 1) % allPowerUps.length];
+      if (activeRule && selectedRule.name === activeRule.name) {
+        selectedRule = ruleSet[(randomIndex + 1) % ruleSet.length];
       }
       
-      setPowerUp(selectedPowerUp);
+      setActiveRule(selectedRule);
       
       toast({
-        title: 'New Power-Up!',
-        description: `"${selectedPowerUp.name}" is now in play.`,
+        title: isKingsRansom ? 'New Swap Rule!' : 'New Power-Up!',
+        description: `"${selectedRule.name}" is now in play.`,
       });
       setIsLoading(false);
-    }, 300); // 300ms delay
+    }, 300);
   };
 
   return (
@@ -64,41 +81,60 @@ export default function RuleGeneratorPage() {
         <header className="mb-8 flex flex-col items-center text-center">
           <Wand2 className="h-12 w-12 text-primary mb-4" />
           <h1 className="text-4xl font-bold">Rule Generator</h1>
-          <p className="text-muted-foreground mt-2">
-            Click the button for a new power-up each round!
-          </p>
-        </header>
-
-        <div className="text-center mb-8">
-          <Button onClick={handleGenerate} disabled={isLoading} size="lg">
-            {isLoading ? (
-              <RefreshCw className="mr-2 h-5 w-5 animate-spin" />
-            ) : (
-              <Wand2 className="mr-2 h-5 w-5" />
-            )}
-            {isLoading ? 'Generating...' : 'Get New Power-Up'}
-          </Button>
-        </div>
-
-        <div className="min-h-[200px]">
-          {powerUp ? (
-              <Card className="shadow-2xl transition-all duration-300 ease-in-out transform scale-100 hover:scale-105 w-full">
-                <CardHeader className="text-center">
-                  <CardTitle className="text-4xl font-bold text-primary">{powerUp.name}</CardTitle>
-                </CardHeader>
-                <CardContent className="text-center">
-                  <p className="text-xl text-muted-foreground">{powerUp.description}</p>
-                </CardContent>
-              </Card>
+          {validFormat ? (
+             <p className="text-muted-foreground mt-2">
+                Click the button for a new rule when needed!
+            </p>
           ) : (
-            <Card className="text-center py-20 border-2 border-dashed">
-              <CardContent>
-                <p className="text-lg text-muted-foreground">Click the button to get the first power-up!</p>
-              </CardContent>
-            </Card>
+             <p className="text-muted-foreground mt-2">
+                This tool is available for the "Power-Up Round" and "King's Ransom" game variants.
+            </p>
           )}
-        </div>
+        </header>
+        
+        {validFormat ? (
+        <>
+            <div className="text-center mb-8">
+                <Button onClick={handleGenerate} disabled={isLoading} size="lg">
+                    {isLoading ? (
+                    <RefreshCw className="mr-2 h-5 w-5 animate-spin" />
+                    ) : (
+                    <Wand2 className="mr-2 h-5 w-5" />
+                    )}
+                    {isLoading ? 'Generating...' : buttonText}
+                </Button>
+            </div>
+
+            <div className="min-h-[200px]">
+            {activeRule ? (
+                <Card className="shadow-2xl transition-all duration-300 ease-in-out transform scale-100 hover:scale-105 w-full">
+                    <CardHeader className="text-center">
+                    <CardTitle className="text-4xl font-bold text-primary">{activeRule.name}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-center">
+                    <p className="text-xl text-muted-foreground">{activeRule.description}</p>
+                    </CardContent>
+                </Card>
+            ) : (
+                <Card className="text-center py-20 border-2 border-dashed">
+                <CardContent>
+                    <p className="text-lg text-muted-foreground">{initialText}</p>
+                </CardContent>
+                </Card>
+            )}
+            </div>
+        </>
+        ) : (
+            <Alert>
+                <Info className="h-4 w-4" />
+                <AlertTitle>No Applicable Rules</AlertTitle>
+                <AlertDescription>
+                    The current game format does not use the rule generator. Please select either <strong>Power-Up Round</strong> or <strong>King's Ransom</strong> from the schedule page to activate this feature.
+                </AlertDescription>
+            </Alert>
+        )}
       </div>
     </div>
   );
 }
+
