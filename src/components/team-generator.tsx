@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Send, Shuffle, Info, Trash2 } from 'lucide-react';
 import { Avatar, AvatarFallback } from './ui/avatar';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { Label } from './ui/label';
 import { Separator } from './ui/separator';
@@ -50,32 +50,23 @@ export function TeamGenerator() {
   const { toast } = useToast();
   const [teamSize, setTeamSize] = useState<number>(4);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
 
   const presentPlayers = useMemo(() => players.filter((p) => p.present), [players]);
   const possibleTeamsCount = presentPlayers.length >= teamSize ? Math.floor(presentPlayers.length / teamSize) : 0;
   
-const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] => {
-    console.clear();
-    console.log("--- Starting New Draft Simulation ---");
-    const Ntotal = allPlayers.length;
-    
-    if (Ntotal < formatSize * 2) {
-      toast({
-        title: 'Not enough players',
-        description: `You need at least ${formatSize * 2} present players to generate at least two valid teams.`,
-        variant: 'destructive',
-      });
-      return [];
-    }
-
-    // 1. Player Valuation & Tiering
-    const alpha = -1.2; // Female skill adjustment factor
+  const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] => {
+    const alpha = -1.2;
     const valuedPlayers = allPlayers.map(p => ({
         ...p,
         adjustedSkill: p.skill + (p.gender === 'Gal' ? alpha : 0),
     }));
 
-    // Group players by gender and adjusted skill for tier-based shuffling
     const skillGroups: Record<string, Player[]> = {};
     valuedPlayers.forEach(p => {
         const key = `${p.gender}-${p.adjustedSkill}`;
@@ -85,64 +76,73 @@ const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] =
         skillGroups[key].push(p);
     });
 
-    // Shuffle within each skill group
     for (const key in skillGroups) {
         skillGroups[key] = shuffleArray(skillGroups[key]);
     }
     
-    // Flatten and sort the shuffled players to create the final draft pool
     let draftPool = Object.values(skillGroups).flat().sort((a, b) => b.adjustedSkill - a.adjustedSkill);
-    console.log("Draft Pool (Top 5):", draftPool.slice(0, 5).map(p => `${p.name} (L': ${p.adjustedSkill})`));
 
-    // 2. Team Sizing & Structure
-    const k = Math.floor(Ntotal / formatSize); // Number of teams
-    const baseSize = Math.floor(Ntotal / k);
-    const extraPlayers = Ntotal % k;
-    
-    console.log(`Total Players: ${Ntotal}, Format: ${formatSize}v${formatSize}`);
-    console.log(`Calculated Teams: ${k} teams. ${extraPlayers} teams will have ${baseSize + 1} players, ${k - extraPlayers} teams will have ${baseSize} players.`);
-    
+    const Ntotal = allPlayers.length;
+    let k = Math.floor(Ntotal / formatSize);
+    if (Ntotal % formatSize > 0 && Ntotal % formatSize < formatSize / 2 && k > 1) {
+        k = Math.max(k - 1, 1);
+    }
+     if (k < 2 && Ntotal >= formatSize) {
+        k = 1;
+    }
+    if (Ntotal < formatSize) return [];
+
+
     const shuffledNames = shuffleArray(teamNames);
     const newTeams: Team[] = Array.from({ length: k }, (_, i) => ({
       name: shuffledNames[i % shuffledNames.length],
       players: [],
     }));
 
-    // 3. The Snake Draft Execution
     let teamIndex = 0;
-    let direction = 1; // 1 for forward, -1 for reverse
-    
+    let direction = 1; 
+
+    const genderDraftOrder = ['Gal', 'Guy'];
+    let round = 0;
+
     while(draftPool.length > 0) {
-        const team = newTeams[teamIndex];
-        let playerToDraft = draftPool.shift();
-        
-        if (playerToDraft) {
-             console.log(`Drafting ${playerToDraft.name} (L': ${playerToDraft.adjustedSkill}) to Team ${team.name}`);
-             team.players.push(playerToDraft);
-        }
+        const draftGender = genderDraftOrder[round % 2];
+        let draftedPlayer = false;
 
-        // Move to the next team based on snake draft direction
-        teamIndex += direction;
+        for (let i = 0; i < k; i++) {
+            const currentTeam = newTeams[teamIndex];
+            const candidateIndex = draftPool.findIndex(p => p.gender === draftGender);
+            
+            if (candidateIndex !== -1) {
+                const [playerToDraft] = draftPool.splice(candidateIndex, 1);
+                currentTeam.players.push(playerToDraft);
+                draftedPlayer = true;
+            } else {
+                // If no players of the preferred gender are left, draft from remaining pool
+                 const playerToDraft = draftPool.shift();
+                 if(playerToDraft) {
+                    currentTeam.players.push(playerToDraft);
+                    draftedPlayer = true;
+                 }
+            }
 
-        // Reverse direction if we've reached the end of the team list
-        if (teamIndex < 0 || teamIndex >= k) {
-            direction *= -1;
             teamIndex += direction;
-            console.log(`--- Snake Turn --- New Direction: ${direction === 1 ? 'Forward' : 'Reverse'}`);
+            if (teamIndex < 0 || teamIndex >= k) {
+                direction *= -1;
+                teamIndex += direction;
+            }
         }
+        
+        if (!draftedPlayer && draftPool.length > 0) {
+            let playerToDraft = draftPool.shift();
+            if(playerToDraft) {
+                newTeams.sort((a,b) => a.players.length - b.players.length)[0].players.push(playerToDraft);
+            }
+        }
+
+        round++;
     }
     
-    console.log("--- Final Team Rosters ---");
-    newTeams.forEach(team => {
-        const analysis = getTeamAnalysis(team);
-        console.log(
-            `Team: ${team.name} (${team.players.length} players) | ` +
-            `Avg Skill: ${analysis.avgSkill} | ` +
-            `Avg Adj Skill: ${analysis.avgAdjustedSkill} | ` +
-            `Gender: ${analysis.guyCount}G / ${analysis.galCount}L`
-        );
-    });
-
     return newTeams;
 };
 
@@ -274,6 +274,10 @@ const getTeamAnalysis = (team: Team) => {
   
   const isBlindDraw = gameFormat === 'blind-draw';
 
+  if (!isClient) {
+    return null; 
+  }
+
   return (
     <DragDropContext onDragEnd={onDragEnd}>
     <div className="space-y-8">
@@ -354,7 +358,7 @@ const getTeamAnalysis = (team: Team) => {
             {teams.map((team) => {
               const { avgSkill, guyCount, galCount } = getTeamAnalysis(team);
               return (
-              <Droppable droppableId={team.name} key={team.name}>
+              <Droppable droppableId={team.name} key={team.name} isDropDisabled={false}>
                 {(provided, snapshot) => (
                   <Card 
                     ref={provided.innerRef}
