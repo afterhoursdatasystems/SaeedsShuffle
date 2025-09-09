@@ -1,52 +1,7 @@
 {
   "teams": [
     {
-      "name": "Jetton Juggernauts",
-      "players": [
-        {
-          "id": "20",
-          "name": "Rachel Nystrom",
-          "gender": "Gal",
-          "skill": 8,
-          "present": true,
-          "adjustedSkill": 6.8
-        },
-        {
-          "id": "22",
-          "name": "Jasona Jones",
-          "gender": "Gal",
-          "skill": 1,
-          "present": true,
-          "adjustedSkill": 0.85
-        },
-        {
-          "id": "19",
-          "name": "Colleen Palman",
-          "gender": "Gal",
-          "skill": 2,
-          "present": true,
-          "adjustedSkill": 1.7
-        },
-        {
-          "id": "1",
-          "name": "Cole Deaver",
-          "gender": "Guy",
-          "skill": 6,
-          "present": true,
-          "adjustedSkill": 6
-        },
-        {
-          "id": "18",
-          "name": "William Van Meter",
-          "gender": "Guy",
-          "skill": 3,
-          "present": true,
-          "adjustedSkill": 3
-        }
-      ]
-    },
-    {
-      "name": "McGuire Nuclear Knockouts",
+      "name": "Bailey's Bruisers",
       "players": [
         {
           "id": "3",
@@ -57,53 +12,8 @@
           "adjustedSkill": 5.95
         },
         {
-          "id": "23",
-          "name": "Joy Swasy",
-          "gender": "Gal",
-          "skill": 6,
-          "present": true,
-          "adjustedSkill": 5.1
-        },
-        {
-          "id": "24",
-          "name": "Jesica Bullrich",
-          "gender": "Gal",
-          "skill": 2,
-          "present": true,
-          "adjustedSkill": 1.7
-        },
-        {
-          "id": "15",
-          "name": "Stephen Jaqua",
-          "gender": "Guy",
-          "skill": 4,
-          "present": true,
-          "adjustedSkill": 4
-        },
-        {
-          "id": "9",
-          "name": "Miranda Griego",
-          "gender": "Gal",
-          "skill": 3,
-          "present": true,
-          "adjustedSkill": 2.55
-        }
-      ]
-    },
-    {
-      "name": "Bailey's Bruisers",
-      "players": [
-        {
-          "id": "17",
-          "name": "Shaylyn Murphy",
-          "gender": "Gal",
-          "skill": 8,
-          "present": true,
-          "adjustedSkill": 6.8
-        },
-        {
-          "id": "13",
-          "name": "Emily Victoria",
+          "id": "25",
+          "name": "Lauren Hopkins",
           "gender": "Gal",
           "skill": 6,
           "present": true,
@@ -118,62 +28,78 @@
           "adjustedSkill": 9
         },
         {
-          "id": "10",
-          "name": "Jonathan Bradley",
-          "gender": "Guy",
-          "skill": 5,
+          "id": "9",
+          "name": "Miranda Griego",
+          "gender": "Gal",
+          "skill": 3,
           "present": true,
-          "adjustedSkill": 5
+          "adjustedSkill": 2.55
+        },
+        {
+          "id": "19",
+          "name": "Colleen Palman",
+          "gender": "Gal",
+          "skill": 2,
+          "present": true,
+          "adjustedSkill": 1.7
         }
       ]
     },
     {
-      "name": "Cool Fish Commandos",
+      "name": "McGuire Nuclear Knockouts",
       "players": [
         {
-          "id": "28",
-          "name": "Alexandra Broskey",
+          "id": "20",
+          "name": "Rachel Nystrom",
           "gender": "Gal",
-          "skill": 6,
-          "present": true,
-          "adjustedSkill": 5.1
-        },
-        {
-          "id": "8",
-          "name": "Abby Gilpin",
-          "gender": "Gal",
-          "skill": 6,
-          "present": true,
-          "adjustedSkill": 5.1
-        },
-        {
-          "id": "7",
-          "name": "Brian Kempert",
-          "gender": "Guy",
           "skill": 8,
           "present": true,
-          "adjustedSkill": 8
+          "adjustedSkill": 6.8
         },
         {
-          "id": "14",
-          "name": "Eric Ahrens",
+          "id": "13",
+          "name": "Emily Victoria",
+          "gender": "Gal",
+          "skill": 6,
+          "present": true,
+          "adjustedSkill": 5.1
+        },
+        {
+          "id": "11",
+          "name": "Aditya Singh",
           "gender": "Guy",
           "skill": 7,
           "present": true,
           "adjustedSkill": 7
+        },
+        {
+          "id": "24",
+          "name": "Jesica Bullrich",
+          "gender": "Gal",
+          "skill": 2,
+          "present": true,
+          "adjustedSkill": 1.7
+        },
+        {
+          "id": "22",
+          "name": "Jasona Jones",
+          "gender": "Gal",
+          "skill": 1,
+          "present": true,
+          "adjustedSkill": 0.85
         }
       ]
     },
     {
-      "name": "Birkdale Bombers",
+      "name": "Jetton Juggernauts",
       "players": [
         {
-          "id": "27",
-          "name": "Alaina McCoy",
+          "id": "17",
+          "name": "Shaylyn Murphy",
           "gender": "Gal",
-          "skill": 4,
+          "skill": 8,
           "present": true,
-          "adjustedSkill": 3.4
+          "adjustedSkill": 6.8
         },
         {
           "id": "5",
@@ -192,42 +118,91 @@
           "adjustedSkill": 7
         },
         {
-          "id": "11",
-          "name": "Aditya Singh",
+          "id": "18",
+          "name": "William Van Meter",
           "gender": "Guy",
-          "skill": 7,
+          "skill": 3,
           "present": true,
-          "adjustedSkill": 7
+          "adjustedSkill": 3
+        }
+      ]
+    },
+    {
+      "name": "Antiquity Attackers",
+      "players": [
+        {
+          "id": "27",
+          "name": "Alaina McCoy",
+          "gender": "Gal",
+          "skill": 4,
+          "present": true,
+          "adjustedSkill": 3.4
+        },
+        {
+          "id": "23",
+          "name": "Joy Swasy",
+          "gender": "Gal",
+          "skill": 6,
+          "present": true,
+          "adjustedSkill": 5.1
+        },
+        {
+          "id": "7",
+          "name": "Brian Kempert",
+          "gender": "Guy",
+          "skill": 8,
+          "present": true,
+          "adjustedSkill": 8
+        },
+        {
+          "id": "15",
+          "name": "Stephen Jaqua",
+          "gender": "Guy",
+          "skill": 4,
+          "present": true,
+          "adjustedSkill": 4
+        }
+      ]
+    },
+    {
+      "name": "Cool Fish Commandos",
+      "players": [
+        {
+          "id": "8",
+          "name": "Abby Gilpin",
+          "gender": "Gal",
+          "skill": 6,
+          "present": true,
+          "adjustedSkill": 5.1
+        },
+        {
+          "id": "28",
+          "name": "Alexandra Broskey",
+          "gender": "Gal",
+          "skill": 6,
+          "present": true,
+          "adjustedSkill": 5.1
+        },
+        {
+          "id": "1",
+          "name": "Cole Deaver",
+          "gender": "Guy",
+          "skill": 6,
+          "present": true,
+          "adjustedSkill": 6
+        },
+        {
+          "id": "21",
+          "name": "Pat Sobotka",
+          "gender": "Guy",
+          "skill": 6,
+          "present": true,
+          "adjustedSkill": 6
         }
       ]
     }
   ],
-  "format": "power-up-round",
-  "schedule": [
-    {
-      "id": "22fe9841-829b-44f3-a6e7-9222bda8e41c",
-      "teamA": "McGuire Nuclear Knockouts",
-      "teamB": "Bailey's Bruisers",
-      "resultA": null,
-      "resultB": null,
-      "court": "King Court"
-    },
-    {
-      "id": "39c94186-7050-4c08-8e93-acff23690c0e",
-      "teamA": "Jetton Juggernauts",
-      "teamB": "Birkdale Bombers",
-      "resultA": null,
-      "resultB": null,
-      "court": "Challenger Court"
-    },
-    {
-      "id": "67ae40de-be7d-4d7b-ab91-f3d77258c057",
-      "teamA": "Cool Fish Commandos",
-      "teamB": "Waiting #1",
-      "resultA": null,
-      "resultB": null,
-      "court": "Challenger Line"
-    }
-  ],
+  "format": "king-of-the-court",
+  "schedule": [],
   "activeRule": null
 }

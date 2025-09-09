@@ -69,11 +69,10 @@ export function TeamGenerator() {
     setIsClient(true);
   }, []);
 
-
   const presentPlayers = useMemo(() => players.filter((p) => p.present), [players]);
   const possibleTeamsCount = presentPlayers.length >= teamSize ? Math.floor(presentPlayers.length / teamSize) : 0;
   
-const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] => {
+  const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] => {
     console.clear();
     console.log('--- Starting New Draft Simulation ---');
     console.log(`Total Players: ${allPlayers.length}, Team Size: ${formatSize}v${formatSize}`);
@@ -111,8 +110,8 @@ const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] =
     const numTeams = Math.floor(allPlayers.length / formatSize);
     const baseTeamSize = Math.floor(allPlayers.length / numTeams);
     const teamsWithExtra = allPlayers.length % numTeams;
-    
     console.log(`Calculated Teams: ${numTeams}, Base size: ${baseTeamSize}, Teams with extra: ${teamsWithExtra}`);
+
 
     const shuffledNames = shuffleArray(teamNames);
     const newTeams: Team[] = Array.from({ length: numTeams }, (_, i) => ({
@@ -123,6 +122,7 @@ const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] =
     // 5. Execute Gender-Aware Snake Draft
     let teamIndex = 0;
     let direction = 1; // 1 for forward, -1 for reverse
+    let draftRound = 0;
 
     while (draftPool.length > 0) {
         const team = newTeams[teamIndex];
@@ -132,34 +132,37 @@ const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] =
             const galsOnTeam = team.players.filter(p => p.gender === 'Gal').length;
             const guysOnTeam = team.players.filter(p => p.gender === 'Guy').length;
             
-            const totalGalsRemaining = draftPool.filter(p => p.gender === 'Gal').length;
-            const totalGuysRemaining = draftPool.filter(p => p.gender === 'Guy').length;
-            
-            const picksRemainingForTeam = targetSize - team.players.length;
-            const teamsRemainingToDraft = newTeams.slice(teamIndex).filter(t => t.players.length < (newTeams.indexOf(t) < teamsWithExtra ? baseTeamSize + 1 : baseTeamSize)).length;
+            // Determine the ideal gender for the next pick
+            let idealGender: 'Guy' | 'Gal' | null = null;
+            if (galsOnTeam < Math.ceil(targetSize / 2)) {
+                idealGender = 'Gal';
+            } else if (guysOnTeam < Math.floor(targetSize / 2)) {
+                idealGender = 'Guy';
+            }
 
             let candidateIndex = -1;
             
-            // Prioritize gender if a team is falling behind in one
-            if (galsOnTeam < Math.floor(targetSize / 2) && totalGalsRemaining > 0) {
-                 candidateIndex = draftPool.findIndex(p => p.gender === 'Gal');
-            } else if (guysOnTeam < Math.floor(targetSize / 2) && totalGuysRemaining > 0) {
-                 candidateIndex = draftPool.findIndex(p => p.gender === 'Guy');
-            }
-
-            // If no strong gender priority, or if a gender is running out, pick best available
-            if (candidateIndex === -1) {
-                const top5 = draftPool.slice(0, 5);
-                const randomIndex = Math.floor(Math.random() * Math.min(top5.length, 3)); // Randomize among top 3-5
-                const randomPlayer = top5[randomIndex];
-                candidateIndex = draftPool.findIndex(p => p.id === randomPlayer.id);
+            // Try to find a player of the ideal gender from the top of the draft pool
+            if (idealGender) {
+                candidateIndex = draftPool.findIndex(p => p.gender === idealGender);
             }
             
-            if (candidateIndex !== -1) {
-                const [playerToDraft] = draftPool.splice(candidateIndex, 1);
-                console.log(`Drafting ${playerToDraft.name} (L': ${playerToDraft.adjustedSkill.toFixed(1)}) to Team ${newTeams[teamIndex].name}`);
-                team.players.push(playerToDraft);
+            // If no ideal gender match is found (or needed), just take the best available player
+            if (candidateIndex === -1) {
+                candidateIndex = 0; 
             }
+
+            // Introduce randomness: pick from top 2-3 candidates instead of always #1
+            const randomRange = Math.min(3, draftPool.length);
+            const randomIndex = Math.floor(Math.random() * randomRange);
+            
+            const playerToDraft = draftPool[randomIndex];
+            candidateIndex = draftPool.findIndex(p => p.id === playerToDraft.id);
+
+
+            const [draftedPlayer] = draftPool.splice(candidateIndex, 1);
+            console.log(`Drafting ${draftedPlayer.name} (L': ${draftedPlayer.adjustedSkill.toFixed(1)}) to Team ${newTeams[teamIndex].name}`);
+            team.players.push(draftedPlayer);
         }
 
         // Move to the next team in the snake
@@ -167,6 +170,7 @@ const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] =
         if (teamIndex < 0 || teamIndex >= numTeams) {
             direction *= -1; // Reverse direction
             teamIndex += direction;
+            draftRound++;
             console.log(`--- Snake Turn --- New Direction: ${direction === 1 ? 'Forward' : 'Reverse'}`);
         }
     }
@@ -180,7 +184,6 @@ const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] =
     
     return newTeams;
 };
-
 
   const handleGenerateTeams = () => {
     if (presentPlayers.length < teamSize * 2 && presentPlayers.length > 0) {
@@ -442,4 +445,3 @@ const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] =
     </DragDropContext>
   );
 }
-
