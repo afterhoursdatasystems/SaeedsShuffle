@@ -37,6 +37,9 @@ const kingsRansomRules: PowerUp[] = [
     { name: 'Height Swap (Shortest)', description: 'The shortest player from each team gets traded.' },
     { name: 'Height Swap (Tallest)', description: 'The tallest player from each team gets traded.' },
     { name: 'Seniority Swap', description: "The player who has been playing in Saeed's league the longest from each team gets traded." },
+    { name: 'Age Swap (Youngest for Oldest)', description: 'The youngest player from one team gets traded for the oldest player from the other team.' },
+    { name: 'Age Swap (Youngest for Youngest)', description: 'The youngest player from each team gets traded.' },
+    { name: 'Age Swap (Oldest for Oldest)', description: 'The oldest player from each team gets traded.' },
 ];
 
 
