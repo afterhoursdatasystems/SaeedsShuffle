@@ -78,6 +78,7 @@ const formatDetails: Record<CombinedGameFormat, { title: string; description: Re
          <ul className="list-disc pl-5 space-y-2">
             <li>The tournament follows the standard KOTC winner-stays-on format.</li>
             <li><strong>The Ransom Rule:</strong> After you lose a match on the King Court, your team has the option to declare a “ransom”. You can force a one-for-one player trade with the winning team that just beat you. The newly-formed winning team must then defend the court with their new player.</li>
+            <li>This creates a self-balancing system where dominant teams may lose strong players, keeping the competition tight and giving all teams a chance to stay in the running.</li>
         </ul>
       </div>
     ),
@@ -89,13 +90,18 @@ const formatDetails: Record<CombinedGameFormat, { title: string; description: Re
        <div>
         <p className="mb-4 text-lg">A fun, arcade-like twist on the classic KOTC format where teams get random advantages.</p>
         <h4 className="font-bold text-xl mb-2">The Concept</h4>
-        <p className="mb-4">Before each match on the King's Court, the challenging team gets a random power-up for that game only, giving them a unique edge.</p>
-        <h4 className="font-bold text-xl mb-2">Example Power-Ups</h4>
+        <p className="mb-4">Before each match on the King's Court, the challenging team gets a random power-up for that game only, giving them a unique edge and keeping the reigning team on their toes.</p>
+        <h4 className="font-bold text-xl mb-2">How It Works</h4>
+         <ul className="list-disc pl-5 space-y-2">
+            <li>The tournament follows the standard KOTC winner-stays-on format.</li>
+            <li>Before a new game starts on the King's Court, the tournament director will generate a random power-up for the challenging team.</li>
+            <li>The power-up is active for that single game only.</li>
+        </ul>
+        <h4 className="font-bold text-xl mt-4 mb-2">Example Power-Ups</h4>
         <ul className="list-disc pl-5 space-y-2">
             <li><strong>Point Boost:</strong> Start the game with a 2-point lead.</li>
             <li><strong>Serve Advantage:</strong> Get one "do-over" on a missed serve during the match.</li>
             <li><strong>The Equalizer:</strong> The opponent's highest-skilled player must serve underhand for the entire game.</li>
-            <li><strong>Secret Weapon:</strong> Choose one player on your team; their points are worth double for the first 5 points of the game.</li>
         </ul>
       </div>
     ),
@@ -106,10 +112,10 @@ const formatDetails: Record<CombinedGameFormat, { title: string; description: Re
     description: (
       <div>
         <p className="mb-4 text-lg">A classic tournament format where teams first compete in a round-robin style "pool play" to determine seeding, followed by a single-elimination bracket to crown the champion.</p>
-        <h4 className="font-bold text-xl mb-2">Pool Play</h4>
-        <p className="mb-4">All teams will play against each other once. The results of these matches (wins, losses, and point differential) will be used to rank the teams for the bracket.</p>
-        <h4 className="font-bold text-xl mb-2">Bracket Play</h4>
-        <p>After pool play, teams are seeded into a single-elimination tournament. The top-ranked team plays the lowest-ranked team, and so on. Win and you advance, lose and you're out. The last team standing is the winner!</p>
+        <h4 className="font-bold text-xl mb-2">Phase 1: Pool Play</h4>
+        <p className="mb-4">All teams will play against each other once in a round-robin format. The results of these matches (wins, losses, and point differential) will be used to rank the teams and determine their seeding for the bracket.</p>
+        <h4 className="font-bold text-xl mb-2">Phase 2: Bracket Play</h4>
+        <p>After pool play is complete, teams are seeded into a single-elimination tournament. The top-ranked team plays the lowest-ranked team, and so on. In this phase, if you win, you advance; if you lose, you're out. The last team standing is the tournament champion!</p>
       </div>
     ),
   },
@@ -120,7 +126,9 @@ const formatDetails: Record<CombinedGameFormat, { title: string; description: Re
        <div>
         <p className="mb-4 text-lg">A simple and fair format where every team gets to play against every other team. This is great for maximizing play time and ensuring a variety of matchups.</p>
         <h4 className="font-bold text-xl mb-2">The Concept</h4>
-        <p className="mb-4">The schedule is generated so that each team plays all other teams once (or twice, depending on the setup). The winner is determined by the final standings based on wins and point differential.</p>
+        <p className="mb-4">No eliminations, no court changes—just pure volleyball. The schedule is generated so that each team plays all other teams once (or twice, depending on the setup).</p>
+        <h4 className="font-bold text-xl mb-2">Determining the Winner</h4>
+        <p>The winner is determined by the final standings at the end of all scheduled matches. Standings are ranked first by total number of wins, then by point differential if there is a tie.</p>
        </div>
     )
   },
@@ -131,7 +139,9 @@ const formatDetails: Record<CombinedGameFormat, { title: string; description: Re
        <div>
         <p className="mb-4 text-lg">A social and unpredictable format where teams are redrawn for every round. This format is great for mixing up players and ensuring everyone gets to play with a variety of teammates.</p>
         <h4 className="font-bold text-xl mb-2">The Concept</h4>
-        <p className="mb-4">There are no fixed teams. Before each round of games, new teams are randomly created from the pool of present players. Players earn points individually based on their randomly-assigned team's performance, and the player with the most points at the end of the night is the champion.</p>
+        <p className="mb-4">There are no fixed teams in this format. Before each round of games, new teams are randomly created from the pool of present players. This emphasizes individual performance and adaptability.</p>
+        <h4 className="font-bold text-xl mb-2">Scoring and Winning</h4>
+        <p>Players earn points individually based on their randomly-assigned team's performance in each match. The player with the most accumulated points at the end of the night is crowned the individual champion.</p>
        </div>
     )
   },
