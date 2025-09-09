@@ -52,60 +52,119 @@ export function TeamGenerator() {
   const [isPublishing, setIsPublishing] = useState(false);
 
   const presentPlayers = useMemo(() => players.filter((p) => p.present), [players]);
-  const possibleTeamsCount = Math.floor(presentPlayers.length / teamSize);
+  const possibleTeamsCount = presentPlayers.length >= teamSize ? Math.floor(presentPlayers.length / teamSize) : 0;
   
-  const createBalancedTeams = (allPlayers: Player[], numTeams: number, sizeOfTeam: number): Team[] => {
-    const shuffledNames = shuffleArray(teamNames);
-    let newTeams: Team[] = Array.from({ length: numTeams }, (_, i) => ({
-      name: shuffledNames[i % shuffledNames.length],
-      players: [],
-    }));
+  const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] => {
+    const Ntotal = allPlayers.length;
+    const femaleSkillAdjustment = -1.2;
 
-    // Shuffle players before sorting to ensure randomness for same-skilled players
-    const shuffledPlayers = shuffleArray(allPlayers);
+    // 1. Team Sizing & Structure
+    const k = Math.max(2, Math.floor(Ntotal / formatSize));
+    const S_base = Math.floor(Ntotal / k);
+    const k_extra = Ntotal % k;
 
-    const guys = shuffledPlayers.filter(p => p.gender === 'Guy').sort((a, b) => b.skill - a.skill);
-    const gals = shuffledPlayers.filter(p => p.gender === 'Gal').sort((a, b) => b.skill - a.skill);
-
-    let allDraftablePlayers = [];
-    let g = 0, l = 0;
-    // Weave the two lists together, alternating gender
-    while (g < guys.length || l < gals.length) {
-      if (l < gals.length) allDraftablePlayers.push(gals[l++]);
-      if (g < guys.length) allDraftablePlayers.push(guys[g++]);
+    const teamSizes = Array(k).fill(S_base);
+    for (let i = 0; i < k_extra; i++) {
+        teamSizes[i]++;
     }
 
-    // Snake draft the players
+    const shuffledNames = shuffleArray(teamNames);
+    const newTeams: Team[] = Array.from({ length: k }, (_, i) => ({
+        name: shuffledNames[i % shuffledNames.length],
+        players: [],
+    }));
+
+    // 2. Player Valuation & Tiering
+    const valuedPlayers = allPlayers.map(p => ({
+        ...p,
+        adjustedSkill: p.skill + (p.gender === 'Gal' ? femaleSkillAdjustment : 0),
+    }));
+
+    const guys = valuedPlayers.filter(p => p.gender === 'Guy');
+    const gals = valuedPlayers.filter(p => p.gender === 'Gal');
+
+    // Group by skill, then shuffle within those groups
+    const groupAndShuffle = (playerList: typeof valuedPlayers) => {
+        const grouped = playerList.reduce((acc, player) => {
+            const key = player.adjustedSkill;
+            if (!acc[key]) {
+                acc[key] = [];
+            }
+            acc[key].push(player);
+            return acc;
+        }, {} as Record<number, typeof valuedPlayers>);
+
+        Object.values(grouped).forEach(group => shuffleArray(group));
+        
+        return Object.values(grouped).flat().sort((a, b) => b.adjustedSkill - a.adjustedSkill);
+    };
+
+    const sortedGuys = groupAndShuffle(guys);
+    const sortedGals = groupAndShuffle(gals);
+
+    // 3. The Snake Draft
     let teamIndex = 0;
     let direction: 1 | -1 = 1;
-    allDraftablePlayers.forEach(player => {
-        newTeams[teamIndex].players.push(player);
+    const totalPlayersToDraft = teamSizes.reduce((a, b) => a + b, 0);
+
+    for (let i = 0; i < totalPlayersToDraft; i++) {
+        const currentTeam = newTeams[teamIndex];
+        const remainingSpots = teamSizes[teamIndex] - currentTeam.players.length;
+        if(remainingSpots === 0) {
+            // This should not happen if logic is correct, but as a safeguard
+            teamIndex += direction;
+            if (teamIndex >= k || teamIndex < 0) {
+                direction *= -1;
+                teamIndex += direction;
+            }
+            i--; // retry this player
+            continue;
+        }
+
+        const genderNeeded = (() => {
+            const guyCount = currentTeam.players.filter(p => p.gender === 'Guy').length;
+            const galCount = currentTeam.players.filter(p => p.gender === 'Gal').length;
+            const guyRatio = sortedGuys.length / Ntotal;
+            const galRatio = sortedGals.length / Ntotal;
+
+            const desiredGalCount = Math.round(teamSizes[teamIndex] * galRatio);
+            
+            if (galCount < desiredGalCount && sortedGals.length > 0) return 'Gal';
+            if (guyCount < (teamSizes[teamIndex] - desiredGalCount) && sortedGuys.length > 0) return 'Guy';
+
+            // Fallback if ratios lead to dead-end
+            return sortedGals.length > sortedGuys.length ? 'Gal' : 'Guy';
+        })();
+
+
+        let playerToDraft;
+        if (genderNeeded === 'Gal' && sortedGals.length > 0) {
+            playerToDraft = sortedGals.shift()!;
+        } else if (sortedGuys.length > 0) {
+            playerToDraft = sortedGuys.shift()!;
+        } else {
+             playerToDraft = sortedGals.shift()!; // Take whatever is left
+        }
+
+        currentTeam.players.push(playerToDraft);
+
+        // Move to the next team
         teamIndex += direction;
-        if (teamIndex >= numTeams || teamIndex < 0) {
+        if (teamIndex >= k || teamIndex < 0) {
             direction *= -1;
             teamIndex += direction;
         }
-    });
+    }
 
     return newTeams;
 };
 
 
   const handleGenerateTeams = () => {
-    if (presentPlayers.length < teamSize) {
+    if (presentPlayers.length < teamSize * 2) {
       toast({
         title: 'Not enough players',
-        description: `You need at least ${teamSize} present players to generate teams.`,
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    const numTeams = Math.floor(presentPlayers.length / teamSize);
-    if (numTeams < 2) {
-       toast({
-        title: 'Not enough players',
-        description: `Not enough players to form at least 2 teams of size ${teamSize}.`,
+        description: `You need at least ${teamSize * 2} present players to generate at least two teams.`,
         variant: 'destructive',
       });
       return;
@@ -114,12 +173,12 @@ export function TeamGenerator() {
     setTeams([]);
     setSchedule([]);
     
-    const newTeams = createBalancedTeams(presentPlayers, numTeams, teamSize);
+    const newTeams = createBalancedTeams(presentPlayers, teamSize);
     setTeams(newTeams);
 
     toast({
       title: 'Teams Generated!',
-      description: `${newTeams.length} teams have been created.`,
+      description: `${newTeams.length} teams have been created with the new algorithm.`,
     });
   };
 
@@ -185,6 +244,16 @@ export function TeamGenerator() {
     const sourcePlayerId = result.draggableId;
 
     if (sourceTeamName === destTeamName) {
+        // Re-order within same team
+        const team = teams.find(t => t.name === sourceTeamName);
+        if (team) {
+            const newPlayers = Array.from(team.players);
+            const [reorderedItem] = newPlayers.splice(source.index, 1);
+            newPlayers.splice(destination.index, 0, reorderedItem);
+            
+            const newTeams = teams.map(t => t.name === sourceTeamName ? {...t, players: newPlayers} : t);
+            setTeams(newTeams);
+        }
         return; 
     }
 
@@ -200,24 +269,13 @@ export function TeamGenerator() {
         if (sourcePlayerIndex === -1) return currentTeams;
 
         const [movedPlayer] = sourceTeam.players.splice(sourcePlayerIndex, 1);
-        const destPlayerId = result.destination?.draggableId;
-        const destPlayerIndex = destTeam.players.findIndex((p: Player) => p.id === destPlayerId);
-
-        if(destPlayerIndex > -1) {
-             const [swappedPlayer] = destTeam.players.splice(destPlayerIndex, 1);
-             sourceTeam.players.splice(sourcePlayerIndex, 0, swappedPlayer);
-             destTeam.players.splice(destination.index, 0, movedPlayer);
-             toast({
-                title: "Players Swapped",
-                description: `${movedPlayer.name} and ${swappedPlayer.name} have been swapped.`
-            })
-        } else {
-            destTeam.players.splice(destination.index, 0, movedPlayer);
-            toast({
-                title: "Player Moved",
-                description: `${movedPlayer.name} has been moved to ${destTeam.name}.`
-            })
-        }
+        
+        destTeam.players.splice(destination.index, 0, movedPlayer);
+        
+        toast({
+            title: "Player Moved",
+            description: `${movedPlayer.name} has been moved to ${destTeam.name}.`
+        })
 
         return newTeams;
     });
@@ -305,20 +363,22 @@ export function TeamGenerator() {
             {teams.map((team) => {
               const { avgSkill, guyCount, galCount } = getTeamAnalysis(team);
               return (
-              <Droppable droppableId={team.name} key={team.name} isDropDisabled={false} isCombineEnabled={false} ignoreContainerClipping={false}>
-                {(provided) => (
+              <Droppable droppableId={team.name} key={team.name}>
+                {(provided, snapshot) => (
                   <Card 
                     ref={provided.innerRef}
                     {...provided.droppableProps}
-                    className="flex flex-col"
+                    className={cn(
+                      "flex flex-col",
+                      snapshot.isDraggingOver && "bg-primary/10"
+                    )}
                   >
                     <CardHeader className="p-4">
                       <CardTitle className="text-lg">{team.name}</CardTitle>
                     </CardHeader>
                     <CardContent className="flex-grow p-4 pt-0">
-                      <div className="space-y-3">
-                        {[...team.players]
-                          .sort((a, b) => a.name.localeCompare(b.name))
+                      <div className="space-y-3 min-h-[100px]">
+                        {team.players
                           .map((player, index) => (
                             <Draggable key={player.id} draggableId={player.id} index={index}>
                                 {(provided, snapshot) => (
