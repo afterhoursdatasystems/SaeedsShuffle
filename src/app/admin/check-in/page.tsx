@@ -38,25 +38,25 @@ export default function CheckinPage() {
              <div style={{width: '160px'}}></div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 md:grid-cols-7">
         {sortedPlayers.map((player) => (
             <Card
             key={player.id}
             onClick={() => togglePlayerPresence(player.id)}
             className={cn(
-                'cursor-pointer select-none transition-all duration-200 ease-in-out flex flex-col min-w-[150px]',
+                'cursor-pointer select-none transition-all duration-200 ease-in-out flex flex-col',
                 player.present
                 ? 'border-green-500 bg-green-50/50 border-2 shadow-lg'
                 : 'border-red-500 bg-red-50/20 text-muted-foreground'
             )}
             >
-            <CardContent className="flex flex-col items-center justify-center text-center p-4 gap-2 flex-grow">
+            <CardContent className="flex flex-col items-center justify-center text-center p-3 gap-2 flex-grow">
                 {player.present ? (
-                    <CheckCircle className="h-10 w-10 text-green-500 flex-shrink-0" />
+                    <CheckCircle className="h-8 w-8 text-green-500 flex-shrink-0" />
                 ) : (
-                    <XCircle className="h-10 w-10 text-red-500 flex-shrink-0" />
+                    <XCircle className="h-8 w-8 text-red-500 flex-shrink-0" />
                 )}
-                <p className="text-base font-bold leading-tight break-words">
+                <p className="text-xs font-bold leading-tight">
                     {player.name}
                 </p>
             </CardContent>
