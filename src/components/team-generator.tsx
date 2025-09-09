@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Save, Users, Send, Shuffle, Info } from 'lucide-react';
+import { Send, Shuffle, Info, Trash2 } from 'lucide-react';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import React, { useMemo, useState } from 'react';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
@@ -166,6 +166,15 @@ export function TeamGenerator() {
     }
   };
   
+    const handleClearTeams = () => {
+    setTeams([]);
+    setSchedule([]); // Also clear schedule when teams are cleared
+    toast({
+      title: 'Teams & Schedule Cleared',
+      description: 'All teams have been cleared and the schedule has been reset.',
+    });
+  };
+
   const getTeamAnalysis = (team: Team) => {
     const avgSkill = team.players.length > 0 ? (team.players.reduce((sum, p) => sum + p.skill, 0) / team.players.length).toFixed(1) : '0';
     const guyCount = team.players.filter(p => p.gender === 'Guy').length;
@@ -233,7 +242,7 @@ export function TeamGenerator() {
           <CardTitle>Team Generation Settings</CardTitle>
           <CardDescription>Configure the settings to generate balanced teams for the night.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent>
             {isBlindDraw ? (
                 <Alert>
                     <Info className="h-4 w-4" />
@@ -243,34 +252,40 @@ export function TeamGenerator() {
                     </AlertDescription>
                 </Alert>
             ) : (
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-lg border p-4">
-                     <div className='space-y-2'>
-                        <Label>Team Size</Label>
-                        <RadioGroup value={String(teamSize)} onValueChange={(val) => setTeamSize(Number(val))} className="flex space-x-4">
-                            <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="3" id="3v3" />
-                                <Label htmlFor="3v3">3 vs 3</Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="4" id="4v4" />
-                                <Label htmlFor="4v4">4 vs 4</Label>
-                            </div>
-                        </RadioGroup>
+                <div className="space-y-6">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-lg border p-4">
+                         <div className='space-y-2'>
+                            <Label>Team Size</Label>
+                            <RadioGroup value={String(teamSize)} onValueChange={(val) => setTeamSize(Number(val))} className="flex space-x-4">
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="3" id="3v3" />
+                                    <Label htmlFor="3v3">3 vs 3</Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="4" id="4v4" />
+                                    <Label htmlFor="4v4">4 vs 4</Label>
+                                </div>
+                            </RadioGroup>
+                        </div>
+                        <Separator orientation='vertical' className='hidden sm:block h-12' />
+                        <div className="text-center">
+                            <p className="text-sm font-medium text-muted-foreground">Present Players</p>
+                            <p className="text-2xl font-bold">{presentPlayers.length}</p>
+                        </div>
+                        <div className="text-center">
+                            <p className="text-sm font-medium text-muted-foreground">Possible Teams</p>
+                            <p className="text-2xl font-bold">{possibleTeamsCount}</p>
+                        </div>
                     </div>
-                    <Separator orientation='vertical' className='hidden sm:block h-12' />
-                    <div className="text-center">
-                        <p className="text-sm font-medium text-muted-foreground">Present Players</p>
-                        <p className="text-2xl font-bold">{presentPlayers.length}</p>
-                    </div>
-                    <div className="text-center">
-                        <p className="text-sm font-medium text-muted-foreground">Possible Teams</p>
-                        <p className="text-2xl font-bold">{possibleTeamsCount}</p>
-                    </div>
-                    <div className="flex flex-col sm:flex-row gap-2 mt-4 sm:mt-0">
-                      <Button onClick={handleGenerateTeams}>
+                     <div className="flex flex-col sm:flex-row gap-2">
+                      <Button onClick={handleGenerateTeams} className="flex-grow">
                           <Shuffle className="mr-2 h-4 w-4" />
-                          Generate Teams
+                          Generate New Teams
                       </Button>
+                       <Button onClick={handleClearTeams} variant="destructive" className="flex-grow">
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Clear Teams
+                        </Button>
                     </div>
                 </div>
             )}
@@ -338,8 +353,8 @@ export function TeamGenerator() {
                     <CardFooter className="flex-col items-start gap-2 border-t bg-muted/50 p-4 text-sm text-muted-foreground">
                         <div className="flex w-full justify-between">
                             <div className='flex items-center gap-2'>Avg Skill: <span className="font-bold text-foreground">{avgSkill}</span></div>
+                             <div className="flex items-center gap-2">Gender: <span className="font-bold text-foreground">{guyCount}G / {galCount}L</span></div>
                         </div>
-                        <div className="flex items-center gap-2"><Users className="h-4 w-4" /> Gender: <span className="font-bold text-foreground">{guyCount} Guys, {galCount} Gals</span></div>
                     </CardFooter>
                   </Card>
                 )}

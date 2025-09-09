@@ -3,39 +3,132 @@
 
 import AppHeader from '@/components/app-header';
 import PlayerManagement from '@/components/player-management';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, ClipboardList, Bot, Zap, Calendar, UserPlus } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Users, ClipboardList, Bot, Zap, Calendar, UserPlus, ArrowRight, Settings, Trophy, Crown, BookOpen, Shuffle } from 'lucide-react';
 import Link from 'next/link';
+import { usePlayerContext } from '@/contexts/player-context';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { GameFormat, GameVariant } from '@/types';
+import { Button } from '@/components/ui/button';
 
 export default function AdminPage() {
+    const { gameFormat, setGameFormat, gameVariant, setGameVariant, teams, schedule } = usePlayerContext();
+    const isKOTC = gameFormat === 'king-of-the-court';
 
   return (
-    <div className="flex min-h-screen w-full flex-col">
+    <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <AppHeader />
       <main className="flex-1 p-4 sm:p-6 md:p-8">
-        <Tabs defaultValue="players" className="w-full">
-          <TabsList className="grid w-full grid-cols-1 sm:w-auto sm:grid-cols-5">
-            <TabsTrigger value="players">
-              <Users className="mr-2 h-4 w-4" />
-              Players
-            </TabsTrigger>
-             <TabsTrigger value="teams" asChild>
-              <Link href="/admin/teams"><UserPlus className="mr-2 h-4 w-4" /> Teams</Link>
-            </TabsTrigger>
-            <TabsTrigger value="schedule" asChild>
-               <Link href="/admin/schedule"><Calendar className="mr-2 h-4 w-4" /> Schedule</Link>
-            </TabsTrigger>
-            <TabsTrigger value="simulate" asChild>
-               <Link href="/admin/simulation"><Bot className="mr-2 h-4 w-4" /> Simulate</Link>
-            </TabsTrigger>
-            <TabsTrigger value="rules" asChild>
-              <Link href="/admin/rule-generator"><Zap className="mr-2 h-4 w-4" /> Rule Generator</Link>
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="players" className="mt-6">
-            <PlayerManagement />
-          </TabsContent>
-        </Tabs>
+        <div className="mx-auto grid max-w-5xl grid-cols-1 gap-8">
+            {/* Step 1: Player Management */}
+            <Card className="shadow-lg">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-3">
+                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold">1</span>
+                        Player Check-in & Stats
+                    </CardTitle>
+                    <CardDescription>Review who is present for tonight's games and manage the full player roster.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <PlayerManagement />
+                </CardContent>
+            </Card>
+
+             {/* Step 2: Configure Tournament */}
+            <Card className="shadow-lg">
+                <CardHeader>
+                     <CardTitle className="flex items-center gap-3">
+                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold">2</span>
+                        Configure Tournament
+                    </CardTitle>
+                    <CardDescription>Select the game format and any specific variants for tonight's event.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between rounded-lg border p-4">
+                        <div className='flex flex-col sm:flex-row gap-4'>
+                            <div className='space-y-2'>
+                                <Label>Game Format</Label>
+                                <Select value={gameFormat} onValueChange={(val: GameFormat) => setGameFormat(val)}>
+                                  <SelectTrigger className="w-full sm:w-[240px]">
+                                    <SelectValue placeholder="Select a format" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="king-of-the-court"><Crown className="inline-block h-4 w-4 mr-2" /> King of the Court</SelectItem>
+                                    <SelectItem value="round-robin"><BookOpen className="inline-block h-4 w-4 mr-2" /> Round Robin</SelectItem>
+                                    <SelectItem value="pool-play-bracket"><Trophy className="inline-block h-4 w-4 mr-2" /> Pool Play / Bracket</SelectItem>
+                                    <SelectItem value="blind-draw"><Shuffle className="inline-block h-4 w-4 mr-2" /> Blind Draw</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                            </div>
+                            { isKOTC && (
+                                <div className='space-y-2'>
+                                    <Label>Game Variant</Label>
+                                    <Select value={gameVariant} onValueChange={(val: GameVariant) => setGameVariant(val)}>
+                                      <SelectTrigger className="w-full sm:w-[240px]">
+                                        <SelectValue placeholder="Select a variant" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="standard">Standard KOTC</SelectItem>
+                                        <SelectItem value="monarch-of-the-court">Monarch of the Court</SelectItem>
+                                        <SelectItem value="king-s-ransom">King's Ransom</SelectItem>
+                                        <SelectItem value="power-up-round">Power-up Round</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Step 3: Teams & Schedule */}
+             <Card className="shadow-lg">
+                <CardHeader>
+                     <CardTitle className="flex items-center gap-3">
+                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold">3</span>
+                        Manage Teams & Schedule
+                    </CardTitle>
+                    <CardDescription>Generate teams based on who is present, then create the schedule.</CardDescription>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                   <Button asChild size="lg" variant={teams.length === 0 ? 'default' : 'secondary'}>
+                        <Link href="/admin/teams">
+                            <UserPlus className="mr-2 h-5 w-5" /> Generate Teams
+                        </Link>
+                   </Button>
+                   <Button asChild size="lg" variant={schedule.length === 0 ? 'default' : 'secondary'} disabled={teams.length === 0 && gameFormat !== 'blind-draw'}>
+                       <Link href="/admin/schedule">
+                           <Calendar className="mr-2 h-5 w-5" /> Generate Schedule
+                       </Link>
+                   </Button>
+                </CardContent>
+            </Card>
+            
+             {/* Other Tools */}
+             <Card className="shadow-lg">
+                <CardHeader>
+                     <CardTitle className="flex items-center gap-3">
+                        <Settings className="h-6 w-6" />
+                        Other Tools
+                    </CardTitle>
+                    <CardDescription>Additional utilities for managing the tournament.</CardDescription>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                   <Button asChild size="lg" variant="outline">
+                       <Link href="/admin/simulation">
+                           <Bot className="mr-2 h-5 w-5" /> Simulate Standings
+                       </Link>
+                   </Button>
+                   <Button asChild size="lg" variant="outline">
+                       <Link href="/admin/rule-generator">
+                           <Zap className="mr-2 h-5 w-5" /> Rule Generator
+                       </Link>
+                   </Button>
+                </CardContent>
+            </Card>
+
+        </div>
       </main>
     </div>
   )

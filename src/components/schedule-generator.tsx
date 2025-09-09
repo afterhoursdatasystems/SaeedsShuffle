@@ -1,20 +1,18 @@
 
 'use client';
 
-import type { Match, GameFormat, GameVariant, Player } from '@/types';
+import type { Match, GameFormat, GameVariant, Player, Team } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Save, CalendarDays, Send, BookOpen, Trophy, Crown, Shuffle } from 'lucide-react';
+import { Save, CalendarDays, Send, Trash2 } from 'lucide-react';
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { usePlayerContext } from '@/contexts/player-context';
 import { publishData } from '@/app/actions';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Label } from './ui/label';
 
 const shuffleArray = <T,>(array: T[]): T[] => {
   const newArray = [...array];
@@ -27,7 +25,7 @@ const shuffleArray = <T,>(array: T[]): T[] => {
 
 
 export function ScheduleGenerator() {
-  const { teams, schedule, setSchedule, gameFormat, setGameFormat, gameVariant, setGameVariant, players, activeRule } = usePlayerContext();
+  const { teams, schedule, setSchedule, gameFormat, gameVariant, players, activeRule } = usePlayerContext();
   const { toast } = useToast();
   const [isPublishing, setIsPublishing] = React.useState(false);
 
@@ -242,6 +240,14 @@ export function ScheduleGenerator() {
     toast({ title: "Results saved", description: "All match results have been updated." });
   };
   
+    const handleClearSchedule = () => {
+    setSchedule([]);
+    toast({
+      title: 'Schedule Cleared',
+      description: 'The match schedule has been cleared.',
+    });
+  };
+  
   const isKOTC = gameFormat === 'king-of-the-court';
 
   return (
@@ -253,48 +259,18 @@ export function ScheduleGenerator() {
                 <CardTitle>Schedule Generation</CardTitle>
                 <CardDescription>Generate the match schedule for the chosen game format.</CardDescription>
               </div>
-           </div>
-        </CardHeader>
-        <CardContent className="space-y-6">
-            <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between rounded-lg border p-4">
-                <div className='flex flex-col sm:flex-row gap-4'>
-                    <div className='space-y-2'>
-                        <Label>Game Format</Label>
-                        <Select value={gameFormat} onValueChange={(val: GameFormat) => setGameFormat(val)}>
-                          <SelectTrigger className="w-full sm:w-[240px]">
-                            <SelectValue placeholder="Select a format" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="king-of-the-court"><Crown className="inline-block h-4 w-4 mr-2" /> King of the Court</SelectItem>
-                            <SelectItem value="round-robin"><BookOpen className="inline-block h-4 w-4 mr-2" /> Round Robin</SelectItem>
-                            <SelectItem value="pool-play-bracket"><Trophy className="inline-block h-4 w-4 mr-2" /> Pool Play / Bracket</SelectItem>
-                            <SelectItem value="blind-draw"><Shuffle className="inline-block h-4 w-4 mr-2" /> Blind Draw</SelectItem>
-                          </SelectContent>
-                        </Select>
-                    </div>
-                    { isKOTC && (
-                        <div className='space-y-2'>
-                            <Label>Game Variant</Label>
-                            <Select value={gameVariant} onValueChange={(val: GameVariant) => setGameVariant(val)}>
-                              <SelectTrigger className="w-full sm:w-[240px]">
-                                <SelectValue placeholder="Select a variant" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="standard">Standard KOTC</SelectItem>
-                                <SelectItem value="monarch-of-the-court">Monarch of the Court</SelectItem>
-                                <SelectItem value="king-s-ransom">King's Ransom</SelectItem>
-                                <SelectItem value="power-up-round">Power-up Round</SelectItem>
-                              </SelectContent>
-                            </Select>
-                        </div>
-                    )}
-                </div>
+               <div className="flex gap-2 mt-4 sm:mt-0">
+                 <Button onClick={handleClearSchedule} variant="destructive">
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Clear Schedule
+                </Button>
                  <Button onClick={handleGenerateSchedule}>
                   <CalendarDays className="mr-2 h-4 w-4" />
                   Generate Schedule
-              </Button>
-            </div>
-        </CardContent>
+                </Button>
+              </div>
+           </div>
+        </CardHeader>
        </Card>
 
       {schedule.length > 0 && (
