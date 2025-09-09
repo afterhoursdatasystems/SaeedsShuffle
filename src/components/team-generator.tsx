@@ -55,32 +55,45 @@ export function TeamGenerator() {
   const possibleTeamsCount = presentPlayers.length >= teamSize ? Math.floor(presentPlayers.length / teamSize) : 0;
   
   const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] => {
-    const Ntotal = allPlayers.length;
+    // 1. Separate by gender and shuffle each list thoroughly
+    let guys = shuffleArray(allPlayers.filter(p => p.gender === 'Guy'));
+    let gals = shuffleArray(allPlayers.filter(p => p.gender === 'Gal'));
+
+    // 2. Determine team count and sizes
+    const k = Math.max(2, Math.floor(allPlayers.length / formatSize));
+    const baseSize = Math.floor(allPlayers.length / k);
+    let extraPlayers = allPlayers.length % k;
+
+    const teamSizes = Array(k).fill(baseSize);
+    for (let i = 0; i < extraPlayers; i++) {
+        teamSizes[i]++;
+    }
     
-    // 1. Team Sizing
-    const k = Math.max(2, Math.floor(Ntotal / formatSize));
+    // 3. Create empty teams
     const shuffledNames = shuffleArray(teamNames);
     const newTeams: Team[] = Array.from({ length: k }, (_, i) => ({
-        name: shuffledNames[i % shuffledNames.length],
-        players: [],
+      name: shuffledNames[i % shuffledNames.length],
+      players: [],
     }));
 
-    // 2. Separate and Shuffle by Gender
-    const guys = shuffleArray(allPlayers.filter(p => p.gender === 'Guy'));
-    const gals = shuffleArray(allPlayers.filter(p => p.gender === 'Gal'));
-    
-    // 3. Distribute Genders Evenly ("Dealing like cards")
+    // 4. Deal players like cards to ensure gender balance
     let teamIndex = 0;
-    gals.forEach(player => {
-        newTeams[teamIndex].players.push(player);
-        teamIndex = (teamIndex + 1) % k;
-    });
-
+    while(gals.length > 0) {
+        const player = gals.shift();
+        if (player) {
+            newTeams[teamIndex].players.push(player);
+            teamIndex = (teamIndex + 1) % k;
+        }
+    }
+    
     teamIndex = 0;
-    guys.forEach(player => {
-        newTeams[teamIndex].players.push(player);
-        teamIndex = (teamIndex + 1) % k;
-    });
+    while(guys.length > 0) {
+        const player = guys.shift();
+        if (player) {
+            newTeams[teamIndex].players.push(player);
+            teamIndex = (teamIndex + 1) % k;
+        }
+    }
 
     return newTeams;
 };
@@ -304,7 +317,8 @@ export function TeamGenerator() {
                     </CardHeader>
                     <CardContent className="flex-grow p-4 pt-0">
                       <div className="space-y-3 min-h-[100px]">
-                        {team.players
+                        {[...team.players]
+                          .sort((a, b) => a.name.localeCompare(b.name))
                           .map((player, index) => (
                             <Draggable key={player.id} draggableId={player.id} index={index}>
                                 {(provided, snapshot) => (
