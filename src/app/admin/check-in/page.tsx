@@ -57,7 +57,7 @@ export default function CheckinPage() {
                     <XCircle className="h-8 w-8 text-red-500 flex-shrink-0" />
                 )}
                 <div className="min-w-0 flex-1">
-                    <p className="text-base sm:text-lg font-bold leading-tight break-words" title={player.name}>
+                    <p className="text-base sm:text-lg font-bold leading-tight truncate whitespace-nowrap" title={player.name}>
                         {player.name}
                     </p>
                 </div>
