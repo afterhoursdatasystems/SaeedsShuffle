@@ -7,9 +7,11 @@ import { Button } from '@/components/ui/button';
 import { LogOut, Volleyball, LayoutDashboard, PanelLeft, UserCheck, Users, Calendar, Wand2, Bot, Home } from 'lucide-react';
 import Link from 'next/link';
 import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
+import React from 'react';
 
 const navItems = [
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/admin/player-management', label: 'Player Management', icon: Home },
     { href: '/admin/check-in', label: 'Player Check-in', icon: UserCheck },
     { href: '/admin/teams', label: 'Team Management', icon: Users },
     { href: '/admin/schedule', label: 'Schedule Management', icon: Calendar },
@@ -17,7 +19,7 @@ const navItems = [
     { href: '/admin/simulation', label: 'Simulate Standings', icon: Bot },
 ];
 
-export default function AppHeader() {
+export default function AppHeader({ children }: { children?: React.ReactNode }) {
   const { logout } = useAuth();
   const router = useRouter();
 
@@ -30,10 +32,7 @@ export default function AppHeader() {
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:px-6">
         <Sheet>
             <SheetTrigger asChild>
-                <Button size="icon" variant="outline" className="lg:hidden">
-                    <PanelLeft className="h-5 w-5" />
-                    <span className="sr-only">Toggle Menu</span>
-                </Button>
+               {children}
             </SheetTrigger>
             <SheetContent side="left" className="sm:max-w-xs">
                 <nav className="grid gap-6 text-lg font-medium">

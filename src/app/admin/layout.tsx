@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { PlayerProvider } from '@/contexts/player-context';
-import { SidebarProvider, Sidebar, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from '@/components/ui/sidebar';
+import { SidebarProvider, Sidebar, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarTrigger } from '@/components/ui/sidebar';
 import { LayoutDashboard, UserCheck, Users, Calendar, Wand2, Bot, Volleyball, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 import AppHeader from '@/components/app-header';
@@ -45,7 +45,7 @@ export default function AdminLayout({
 
   return (
     <PlayerProvider>
-        <SidebarProvider defaultOpen={false}>
+        <SidebarProvider defaultOpen={true}>
             <div className="flex min-h-screen w-full flex-col bg-muted/40">
                 <div className="flex">
                     <Sidebar className="hidden lg:block border-r">
@@ -69,7 +69,9 @@ export default function AdminLayout({
                         </SidebarMenu>
                     </Sidebar>
                     <div className="flex flex-col flex-1">
-                        <AppHeader />
+                        <AppHeader>
+                           <SidebarTrigger className="lg:hidden" />
+                        </AppHeader>
                         {children}
                     </div>
                 </div>
