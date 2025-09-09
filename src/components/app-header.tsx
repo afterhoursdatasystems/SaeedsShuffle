@@ -29,7 +29,7 @@ export default function AppHeader() {
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-       <Sheet>
+        <Sheet>
             <SheetTrigger asChild>
                 <Button size="icon" variant="outline" className="lg:hidden">
                     <PanelLeft className="h-5 w-5" />
@@ -56,9 +56,11 @@ export default function AppHeader() {
                 </nav>
             </SheetContent>
         </Sheet>
-      <div className="flex items-center gap-3">
-        <Volleyball className="h-7 w-7 text-primary hidden lg:block" />
-        <h1 className="text-xl font-bold tracking-tight hidden lg:block">Saeed's Shuffle</h1>
+      <div className="relative flex-1 md:grow-0">
+         <div className="flex items-center gap-3">
+            <Volleyball className="h-7 w-7 text-primary hidden lg:block" />
+            <h1 className="text-xl font-bold tracking-tight hidden lg:block">Saeed's Shuffle</h1>
+        </div>
       </div>
       <div className="flex items-center gap-2 ml-auto">
         <Button asChild variant="outline" size="sm">
