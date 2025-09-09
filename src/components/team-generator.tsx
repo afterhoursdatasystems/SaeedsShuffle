@@ -54,44 +54,43 @@ export function TeamGenerator() {
   const presentPlayers = useMemo(() => players.filter((p) => p.present), [players]);
   const possibleTeamsCount = presentPlayers.length >= teamSize ? Math.floor(presentPlayers.length / teamSize) : 0;
   
-  const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] => {
+const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] => {
     // 1. Separate by gender and shuffle each list thoroughly
     let guys = shuffleArray(allPlayers.filter(p => p.gender === 'Guy'));
     let gals = shuffleArray(allPlayers.filter(p => p.gender === 'Gal'));
 
     // 2. Determine team count and sizes
-    const k = Math.max(2, Math.floor(allPlayers.length / formatSize));
-    const baseSize = Math.floor(allPlayers.length / k);
-    let extraPlayers = allPlayers.length % k;
-
-    const teamSizes = Array(k).fill(baseSize);
-    for (let i = 0; i < extraPlayers; i++) {
-        teamSizes[i]++;
+    const numPlayers = allPlayers.length;
+    const numTeams = Math.floor(numPlayers / formatSize);
+    
+    if (numTeams < 2) {
+      // Not enough players to make at least two teams.
+      return [];
     }
     
-    // 3. Create empty teams
+    // Create empty teams
     const shuffledNames = shuffleArray(teamNames);
-    const newTeams: Team[] = Array.from({ length: k }, (_, i) => ({
+    const newTeams: Team[] = Array.from({ length: numTeams }, (_, i) => ({
       name: shuffledNames[i % shuffledNames.length],
       players: [],
     }));
 
-    // 4. Deal players like cards to ensure gender balance
+    // 3. Deal players like cards to ensure gender balance
     let teamIndex = 0;
-    while(gals.length > 0) {
+    while (gals.length > 0) {
         const player = gals.shift();
         if (player) {
             newTeams[teamIndex].players.push(player);
-            teamIndex = (teamIndex + 1) % k;
+            teamIndex = (teamIndex + 1) % numTeams;
         }
     }
     
-    teamIndex = 0;
+    teamIndex = 0; // Reset for guys
     while(guys.length > 0) {
         const player = guys.shift();
         if (player) {
             newTeams[teamIndex].players.push(player);
-            teamIndex = (teamIndex + 1) % k;
+            teamIndex = (teamIndex + 1) % numTeams;
         }
     }
 
@@ -117,7 +116,7 @@ export function TeamGenerator() {
 
     toast({
       title: 'Teams Generated!',
-      description: `${newTeams.length} teams have been created with the new algorithm.`,
+      description: `${newTeams.length} teams have been created.`,
     });
   };
 
