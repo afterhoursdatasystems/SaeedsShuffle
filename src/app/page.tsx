@@ -252,7 +252,7 @@ export default function PublicTeamsPage() {
         <div className="mx-auto w-full max-w-none">
           {isLoading ? (
              <div className="space-y-12">
-                <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5">
                   {renderTeamSkeletons()}
                 </div>
                 {renderScheduleSkeletons()}
@@ -260,7 +260,7 @@ export default function PublicTeamsPage() {
           ) : teams.length > 0 || gameFormat === 'blind-draw' ? (
             <div className="space-y-12">
 
-               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5">
                 {teams.map((team) => (
                   <Card key={team.name} className="flex flex-col rounded-xl border-2 border-primary shadow-2xl transition-transform hover:scale-105 bg-card">
                     <CardHeader className="p-4 bg-slate-600 rounded-t-lg">
