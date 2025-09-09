@@ -27,7 +27,7 @@ const shuffleArray = <T,>(array: T[]): T[] => {
 
 
 export function ScheduleGenerator() {
-  const { teams, schedule, setSchedule, gameFormat, setGameFormat, gameVariant, setGameVariant, players } = usePlayerContext();
+  const { teams, schedule, setSchedule, gameFormat, setGameFormat, gameVariant, setGameVariant, players, activeRule } = usePlayerContext();
   const { toast } = useToast();
   const [isPublishing, setIsPublishing] = React.useState(false);
 
@@ -178,10 +178,19 @@ export function ScheduleGenerator() {
   };
   
   const handlePublish = async () => {
-     if (schedule.length === 0) {
+     if (schedule.length === 0 && gameFormat !== 'blind-draw') {
       toast({
         title: 'No Schedule Generated',
         description: 'Please generate a schedule before publishing.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    if (gameFormat === 'blind-draw' && teams.length > 0) {
+      toast({
+        title: 'Blind Draw incompatible with generated teams',
+        description: 'Please clear teams before publishing a blind draw format',
         variant: 'destructive',
       });
       return;
@@ -196,7 +205,7 @@ export function ScheduleGenerator() {
     setIsPublishing(true);
     // For blind draw, we pass the players as teams since teams are ephemeral
     const teamsToPublish = gameFormat === 'blind-draw' ? [] : teams;
-    const result = await publishData(teamsToPublish, finalFormat, schedule);
+    const result = await publishData(teamsToPublish, finalFormat, schedule, activeRule);
     setIsPublishing(false);
 
     if (result.success) {

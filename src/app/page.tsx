@@ -3,10 +3,10 @@
 
 import { useEffect, useState } from 'react';
 import { getPublishedData } from '@/app/actions';
-import type { Team, GameFormat, GameVariant, Match } from '@/types';
+import type { Team, GameFormat, GameVariant, Match, PowerUp } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Volleyball, Users, Trophy, BookOpen, Crown, Gem, ShieldQuestion, KeyRound, Zap, Calendar, Shuffle } from 'lucide-react';
+import { Volleyball, Users, Trophy, BookOpen, Crown, Gem, ShieldQuestion, KeyRound, Zap, Calendar, Shuffle, Wand2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -63,7 +63,7 @@ const formatDetails: Record<CombinedGameFormat, { title: string; description: Re
     ),
   },
     'king-s-ransom': {
-    title: 'King\'s Ransom',
+    title: "King's Ransom",
     icon: KeyRound,
     description: (
       <div>
@@ -73,8 +73,8 @@ const formatDetails: Record<CombinedGameFormat, { title: string; description: Re
         <h4 className="font-bold text-xl mb-2">The Flow of Play</h4>
          <ul className="list-disc pl-5 space-y-2">
             <li>The tournament follows the standard KOTC winner-stays-on format.</li>
-            <li><strong>The Ransom Rule:</strong> After you lose a match on the King Court, your team has the option to declare a “ransom”. You can force a one-for-one player trade with the winning team that just beat you. The newly-formed winning team must then defend the court with their new player.</li>
-            <li>This creates a self-balancing system where dominant teams may lose strong players, keeping the competition tight and giving all teams a chance to stay in the running.</li>
+            <li><strong>The Cosmic Scramble:</strong> After a team loses a match on the King Court, the Tournament Director will generate a random, fun "Cosmic Scramble" rule to determine which players are traded between the two teams.</li>
+             <li className="list-none pt-2"><strong>The active scramble rule will be displayed in a card at the top of this dashboard!</strong></li>
         </ul>
       </div>
     ),
@@ -92,12 +92,7 @@ const formatDetails: Record<CombinedGameFormat, { title: string; description: Re
             <li>The tournament follows the standard KOTC winner-stays-on format.</li>
             <li>Before a new game starts on the King's Court, the tournament director will generate a random power-up for the challenging team.</li>
             <li>The power-up is active for that single game only.</li>
-        </ul>
-        <h4 className="font-bold text-xl mt-4 mb-2">Example Power-Ups</h4>
-        <ul className="list-disc pl-5 space-y-2">
-            <li><strong>Point Boost:</strong> Start the game with a 2-point lead.</li>
-            <li><strong>Serve Advantage:</strong> Get one "do-over" on a missed serve during the match.</li>
-            <li><strong>The Equalizer:</strong> The opponent's highest-skilled player must serve underhand for the entire game.</li>
+            <li className="list-none pt-2"><strong>The active power-up will be displayed in a card at the top of this dashboard!</strong></li>
         </ul>
       </div>
     ),
@@ -147,6 +142,7 @@ export default function PublicTeamsPage() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [schedule, setSchedule] = useState<Match[]>([]);
   const [gameFormat, setGameFormat] = useState<CombinedGameFormat>('round-robin');
+  const [activeRule, setActiveRule] = useState<PowerUp | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -157,6 +153,7 @@ export default function PublicTeamsPage() {
         if (result.success && result.data) {
           setTeams(result.data.teams || []);
           setSchedule(result.data.schedule || []);
+          setActiveRule(result.data.activeRule || null);
           let format = result.data.format || 'round-robin';
           // Handle old format values for backward compatibility if needed
           if (format === 'standard') format = 'king-of-the-court';
@@ -207,6 +204,8 @@ export default function PublicTeamsPage() {
   const currentFormatDetails = formatDetails[effectiveGameFormat];
   const CurrentFormatIcon = currentFormatDetails?.icon || ShieldQuestion;
   const isKOTC = ['king-of-the-court', 'monarch-of-the-court', 'king-s-ransom', 'power-up-round', 'standard'].includes(gameFormat);
+  const ruleIsActive = (gameFormat === 'power-up-round' || gameFormat === 'king-s-ransom') && activeRule;
+  const activeRuleTitle = gameFormat === 'king-s-ransom' ? 'Active Cosmic Scramble' : 'Active Power-Up';
 
 
   return (
@@ -223,8 +222,23 @@ export default function PublicTeamsPage() {
              <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
               {renderTeamSkeletons()}
             </div>
-          ) : teams.length > 0 ? (
+          ) : teams.length > 0 || gameFormat === 'blind-draw' ? (
             <div className="space-y-12">
+               {ruleIsActive && (
+                  <Card className="shadow-2xl transition-all duration-300 ease-in-out transform w-full bg-accent/20 border-accent border-2">
+                      <CardHeader className="text-center pb-4">
+                        <CardTitle className="text-4xl font-bold text-accent-foreground flex items-center justify-center gap-4">
+                          <Wand2 className="h-10 w-10 text-primary" />
+                          {activeRuleTitle}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="text-center">
+                        <p className="text-3xl font-bold text-primary">{activeRule?.name}</p>
+                        <p className="text-xl text-muted-foreground mt-2">{activeRule?.description}</p>
+                      </CardContent>
+                  </Card>
+               )}
+
                <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
                 {teams.map((team) => (
                   <Card key={team.name} className="flex flex-col rounded-xl border-2 border-primary/50 shadow-2xl transition-transform hover:scale-105 bg-card">
