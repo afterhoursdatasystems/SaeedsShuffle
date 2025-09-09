@@ -31,15 +31,27 @@ const allPowerUps: PowerUp[] = [
   { name: 'Serve Swap', description: 'You may force any player on the opposing team to serve for the next point.' },
 ];
 
-const kingsRansomRules: PowerUp[] = [
-    { name: 'Birthday Swap', description: "The player from each team whose birthday is closest to today's date gets traded." },
-    { name: 'Alphabetical Swap', description: 'The player from each team whose first name comes first alphabetically gets traded.' },
-    { name: 'Height Swap (Shortest)', description: 'The shortest player from each team gets traded.' },
-    { name: 'Height Swap (Tallest)', description: 'The tallest player from each team gets traded.' },
-    { name: 'Seniority Swap', description: "The player who has been playing in Saeed's league the longest from each team gets traded." },
-    { name: 'Age Swap (Youngest for Oldest)', description: 'The youngest player from one team gets traded for the oldest player from the other team.' },
-    { name: 'Age Swap (Youngest for Youngest)', description: 'The youngest player from each team gets traded.' },
-    { name: 'Age Swap (Oldest for Oldest)', description: 'The oldest player from each team gets traded.' },
+const cosmicScrambleRules: PowerUp[] = [
+    { name: 'Birthday Swap', description: 'The two players (one from each team) whose birthday is closest to today must swap teams.' },
+    { name: 'Alphabetical Swap', description: 'The player whose first name comes last alphabetically on the losing team swaps with the player whose first name comes last alphabetically on the other team.' },
+    { name: 'Brightest Shirt Swap', description: 'Of all the players on both teams, the two wearing the brightest color shirts must swap.' },
+    { name: 'Sibling Swap', description: 'The player with the most siblings on the losing team swaps places with the player with the most siblings on the other team.' },
+    { name: 'Traveler Swap', description: 'The two players (one from each team) who traveled the farthest to get to the tournament must swap teams.' },
+    { name: 'Longest Last Name Swap', description: 'The player with the most letters in their last name on the losing team swaps with the player with the most letters in their last name on the other team.' },
+    { name: 'Newest Shoes Swap', description: 'The two players (one from each team) with the newest-looking shoes must swap.' },
+    { name: 'Concert Goer Swap', description: 'The player who most recently went to a concert on the losing team swaps with the player who most recently went to a concert on the other team.' },
+    { name: 'Longest Hair Swap', description: 'The two players (one from each team) with the longest hair must swap.' },
+    { name: 'Most Vowels Swap', description: 'The player with the most vowels in their first name on the losing team swaps with the player with the most vowels in their first name on the other team.' },
+    { name: 'Car Brand Swap', description: 'The two players (one from each team) who own the same brand of car must swap.' },
+    { name: 'Early Bird Swap', description: 'The player who woke up the earliest this morning on the losing team swaps places with the player who woke up the earliest on the other team.' },
+    { name: 'Tallest Swap', description: 'The two players (one from each team) who are the tallest must swap.' },
+    { name: 'Restaurant Swap', description: 'The player who last ate at a restaurant on the losing team swaps with the player who last ate at a restaurant on the other team.' },
+    { name: 'Pet Swap', description: 'The two players (one from each team) with the most unique or unusual pet must swap.' },
+    { name: 'Volleyball Veteran Swap', description: 'The player who has been playing volleyball for the longest number of years on the losing team swaps with their counterpart on the other team.' },
+    { name: 'Blue Clothing Swap', description: 'The two players (one from each team) with the most blue on their clothing must swap.' },
+    { name: 'Language Swap', description: 'The player who can speak another language on the losing team swaps with the player who can speak another language on the other team (if one exists on both teams).' },
+    { name: 'Birth Month Swap', description: 'The two players (one from each team) who share the same birth month must swap (if applicable).' },
+    { name: 'Movie Goer Swap', description: 'The player who last watched a movie in a theater on the losing team swaps places with the player who last did the same on the other team.' },
 ];
 
 
@@ -51,10 +63,10 @@ export default function RuleGeneratorPage() {
   const isPowerUpRound = gameFormat === 'king-of-the-court' && gameVariant === 'power-up-round';
   const isKingsRansom = gameFormat === 'king-of-the-court' && gameVariant === 'king-s-ransom';
   const validFormat = isPowerUpRound || isKingsRansom;
-  const ruleSet = isKingsRansom ? kingsRansomRules : allPowerUps;
-  const buttonText = isKingsRansom ? 'Generate Swap Rule' : 'Get New Power-Up';
-  const cardTitle = isKingsRansom ? 'Active Swap Rule' : 'Active Power-Up';
-  const initialText = isKingsRansom ? 'Click the button to get the first swap rule!' : 'Click the button to get the first power-up!';
+  const ruleSet = isKingsRansom ? cosmicScrambleRules : allPowerUps;
+  const buttonText = isKingsRansom ? 'Generate Cosmic Scramble' : 'Get New Power-Up';
+  const cardTitle = isKingsRansom ? 'Active Scramble Rule' : 'Active Power-Up';
+  const initialText = isKingsRansom ? 'Click the button to get the first Cosmic Scramble rule!' : 'Click the button to get the first power-up!';
 
   const handleGenerate = async () => {
     setIsLoading(true);
@@ -70,7 +82,7 @@ export default function RuleGeneratorPage() {
       setActiveRule(selectedRule);
       
       toast({
-        title: isKingsRansom ? 'New Swap Rule!' : 'New Power-Up!',
+        title: isKingsRansom ? 'New Scramble Rule!' : 'New Power-Up!',
         description: `"${selectedRule.name}" is now in play.`,
       });
       setIsLoading(false);
