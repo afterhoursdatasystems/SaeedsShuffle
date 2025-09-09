@@ -1,10 +1,9 @@
 
 'use client';
 
-import AppHeader from '@/components/app-header';
 import PlayerManagement from '@/components/player-management';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, ClipboardList, Bot, Zap, Calendar, UserPlus, ArrowRight, Settings, Trophy, Crown, BookOpen, Shuffle } from 'lucide-react';
+import { Users, Bot, Zap, Calendar, UserPlus, Settings, Trophy, Crown, BookOpen, Shuffle } from 'lucide-react';
 import Link from 'next/link';
 import { usePlayerContext } from '@/contexts/player-context';
 import { Label } from '@/components/ui/label';
@@ -17,10 +16,8 @@ export default function AdminPage() {
     const isKOTC = gameFormat === 'king-of-the-court';
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-muted/40">
-      <AppHeader />
-      <main className="flex-1 p-4 sm:p-6 md:p-8">
-        <div className="mx-auto grid max-w-5xl grid-cols-1 gap-8">
+    <div className="flex flex-1 flex-col p-4 sm:p-6 md:p-8">
+        <div className="mx-auto grid w-full max-w-5xl grid-cols-1 gap-8">
             {/* Step 1: Player Management */}
             <Card className="shadow-lg">
                 <CardHeader>
@@ -129,7 +126,6 @@ export default function AdminPage() {
             </Card>
 
         </div>
-      </main>
     </div>
   )
 }
