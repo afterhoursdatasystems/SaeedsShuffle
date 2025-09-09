@@ -6,7 +6,7 @@ import { getPublishedData } from '@/app/actions';
 import type { Team, GameFormat, GameVariant, Match, PowerUp } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Volleyball, Users, Trophy, BookOpen, Crown, Gem, ShieldQuestion, KeyRound, Zap, Calendar, Shuffle, Wand2 } from 'lucide-react';
+import { Volleyball, Users, Trophy, BookOpen, Crown, Gem, ShieldQuestion, KeyRound, Zap, Calendar, Shuffle, Wand2, Clock } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -177,14 +177,14 @@ export default function PublicTeamsPage() {
     Array.from({ length: 4 }).map((_, index) => (
        <Card key={index} className="flex flex-col shadow-lg rounded-xl">
         <CardHeader className="p-6">
-          <Skeleton className="h-10 w-3/4 rounded-md" />
+          <Skeleton className="h-8 w-3/4 rounded-md" />
         </CardHeader>
         <CardContent className="flex-grow p-6 pt-0">
-          <div className="space-y-6">
+          <div className="space-y-4">
             {Array.from({length: 4}).map((_, pIndex) => (
-              <div key={pIndex} className="flex items-center gap-4">
-                <Skeleton className="h-16 w-16 rounded-full" />
-                <Skeleton className="h-8 w-1/2 flex-grow rounded-md" />
+              <div key={pIndex} className="flex items-center gap-3">
+                <Skeleton className="h-12 w-12 rounded-full" />
+                <Skeleton className="h-6 w-1/2 flex-grow rounded-md" />
               </div>
             ))}
           </div>
@@ -200,7 +200,7 @@ export default function PublicTeamsPage() {
       <Skeleton className="h-8 w-full" />
       <Skeleton className="h-8 w-5/6" />
     </div>
-  )
+  );
 
   const effectiveGameFormat = gameFormat === 'standard' ? 'king-of-the-court' : gameFormat;
   const currentFormatDetails = formatDetails[effectiveGameFormat];
@@ -214,8 +214,11 @@ export default function PublicTeamsPage() {
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <header className="flex h-24 items-center justify-between border-b-4 border-primary bg-card px-6 md:px-8">
         <div className="flex items-center gap-4">
-          <Volleyball className="h-12 w-12 text-primary" />
-          <h1 className="text-4xl font-bold tracking-tight">Saeed's Shuffle</h1>
+          <Volleyball className="h-10 w-10 text-primary" />
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Saeed's Shuffle</h1>
+            <p className="text-lg text-muted-foreground flex items-center gap-2"><Clock className="h-5 w-5" />Games start at 6:45 PM</p>
+          </div>
         </div>
       </header>
       <main className="flex-1 p-6 md:p-8">
@@ -244,24 +247,24 @@ export default function PublicTeamsPage() {
                <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
                 {teams.map((team) => (
                   <Card key={team.name} className="flex flex-col rounded-xl border-2 border-primary/50 shadow-2xl transition-transform hover:scale-105 bg-card">
-                    <CardHeader className="p-6 bg-primary/10 rounded-t-lg">
-                      <CardTitle className="flex items-center gap-4 text-4xl font-bold text-primary">
-                        <Users className="h-10 w-10" />
+                    <CardHeader className="p-4 bg-primary/10 rounded-t-lg">
+                      <CardTitle className="flex items-center gap-3 text-2xl font-bold text-primary">
+                        <Users className="h-8 w-8" />
                         {team.name}
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="flex-grow p-6">
-                      <div className="space-y-6">
+                    <CardContent className="flex-grow p-4">
+                      <div className="space-y-4">
                         {[...team.players]
                           .sort((a, b) => a.name.localeCompare(b.name))
                           .map((player) => (
-                          <div key={player.id} className="flex items-center gap-4">
-                            <Avatar className="h-16 w-16 border-4 border-white">
-                              <AvatarFallback className="bg-primary/20 text-3xl font-bold text-primary">
+                          <div key={player.id} className="flex items-center gap-3">
+                            <Avatar className="h-12 w-12 border-2 border-white">
+                              <AvatarFallback className="bg-primary/20 text-xl font-bold text-primary">
                                 {player.name.charAt(0)}
                               </AvatarFallback>
                             </Avatar>
-                            <span className="text-3xl font-medium">{player.name}</span>
+                            <span className="text-xl font-medium">{player.name}</span>
                           </div>
                         ))}
                       </div>
@@ -273,8 +276,8 @@ export default function PublicTeamsPage() {
               {schedule.length > 0 && (
                 <Card className="rounded-xl border-2 shadow-2xl">
                   <CardHeader className="p-6 bg-muted/50 rounded-t-lg">
-                    <CardTitle className="flex items-center gap-4 text-4xl font-bold">
-                        <Calendar className="h-10 w-10 text-primary" />
+                    <CardTitle className="flex items-center gap-4 text-3xl font-bold">
+                        <Calendar className="h-8 w-8 text-primary" />
                         Tonight's Schedule
                     </CardTitle>
                   </CardHeader>
@@ -305,13 +308,13 @@ export default function PublicTeamsPage() {
 
               {currentFormatDetails && <Card className="rounded-xl border-2 shadow-2xl">
                 <CardHeader className="p-6 bg-secondary/10 rounded-t-lg">
-                    <CardTitle className="flex items-center gap-4 text-4xl font-bold text-secondary-foreground">
-                        <CurrentFormatIcon className="h-10 w-10 text-secondary" />
+                    <CardTitle className="flex items-center gap-4 text-3xl font-bold text-secondary-foreground">
+                        <CurrentFormatIcon className="h-8 w-8 text-secondary" />
                         Tonight's Format
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="p-6 text-xl">
-                    <h3 className="font-bold text-3xl mb-4">{currentFormatDetails.title}</h3>
+                <CardContent className="p-6 text-lg">
+                    <h3 className="font-bold text-2xl mb-4">{currentFormatDetails.title}</h3>
                     {currentFormatDetails.description}
                 </CardContent>
               </Card>}
@@ -319,13 +322,13 @@ export default function PublicTeamsPage() {
             </div>
           ) : (
              <div className="flex h-[60vh] flex-col items-center justify-center rounded-xl border-4 border-dashed bg-muted/50 p-12 text-center">
-              <h3 className="text-6xl font-bold tracking-tight">Teams Not Yet Published</h3>
-              <p className="mt-6 text-3xl text-muted-foreground">The commissioner is still drafting. Check back soon!</p>
+              <h3 className="text-5xl font-bold tracking-tight">Teams Not Yet Published</h3>
+              <p className="mt-6 text-2xl text-muted-foreground">The commissioner is still drafting. Check back soon!</p>
             </div>
           )}
         </div>
       </main>
-       <footer className="mt-auto py-6 text-center text-lg text-muted-foreground">
+       <footer className="mt-auto py-6 text-center text-muted-foreground">
           <p>&copy; {new Date().getFullYear()} Saeed's Volleyball. All rights reserved.</p>
           <a href="/login" className="mt-2 inline-block text-sm underline">Commissioner Login</a>
         </footer>
