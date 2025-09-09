@@ -61,6 +61,22 @@ export function TeamGenerator() {
   const possibleTeamsCount = presentPlayers.length >= teamSize ? Math.floor(presentPlayers.length / teamSize) : 0;
   
   const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] => {
+    console.clear();
+    console.log('--- Starting New Draft Simulation ---');
+    console.log(`Total Players: ${allPlayers.length}, Team Size: ${formatSize}v${formatSize}`);
+
+    let numTeams = Math.floor(allPlayers.length / formatSize);
+    if (allPlayers.length % formatSize > 0 && allPlayers.length % formatSize < formatSize / 2 && numTeams > 1) {
+        numTeams = Math.max(numTeams - 1, 1);
+    }
+    if (numTeams < 2 && allPlayers.length >= formatSize) {
+        numTeams = 1;
+    }
+     if (allPlayers.length < formatSize * 2) {
+        numTeams = 1;
+    }
+    console.log(`Calculated Teams: ${numTeams}`);
+
     const alpha = -1.2;
     const valuedPlayers = allPlayers.map(p => ({
         ...p,
@@ -81,20 +97,11 @@ export function TeamGenerator() {
     }
     
     let draftPool = Object.values(skillGroups).flat().sort((a, b) => b.adjustedSkill - a.adjustedSkill);
-
-    const Ntotal = allPlayers.length;
-    let k = Math.floor(Ntotal / formatSize);
-    if (Ntotal % formatSize > 0 && Ntotal % formatSize < formatSize / 2 && k > 1) {
-        k = Math.max(k - 1, 1);
-    }
-     if (k < 2 && Ntotal >= formatSize) {
-        k = 1;
-    }
-    if (Ntotal < formatSize) return [];
+    console.log('Sorted & Shuffled Draft Pool (Top 5):', draftPool.slice(0,5).map(p => `${p.name} (L': ${p.adjustedSkill.toFixed(1)})`));
 
 
     const shuffledNames = shuffleArray(teamNames);
-    const newTeams: Team[] = Array.from({ length: k }, (_, i) => ({
+    const newTeams: Team[] = Array.from({ length: numTeams }, (_, i) => ({
       name: shuffledNames[i % shuffledNames.length],
       players: [],
     }));
@@ -102,46 +109,51 @@ export function TeamGenerator() {
     let teamIndex = 0;
     let direction = 1; 
 
-    const genderDraftOrder = ['Gal', 'Guy'];
-    let round = 0;
+    while (draftPool.length > 0) {
+      const currentTeam = newTeams[teamIndex];
+      const guysOnTeam = currentTeam.players.filter(p => p.gender === 'Guy').length;
+      const galsOnTeam = currentTeam.players.filter(p => p.gender === 'Gal').length;
+      const totalOnTeam = currentTeam.players.length;
 
-    while(draftPool.length > 0) {
-        const draftGender = genderDraftOrder[round % 2];
-        let draftedPlayer = false;
+      const totalGuys = allPlayers.filter(p => p.gender === 'Guy').length;
+      const totalGals = allPlayers.filter(p => p.gender === 'Gal').length;
+      
+      const idealGuyRatio = totalGuys / numTeams;
+      const idealGalRatio = totalGals / numTeams;
 
-        for (let i = 0; i < k; i++) {
-            const currentTeam = newTeams[teamIndex];
-            const candidateIndex = draftPool.findIndex(p => p.gender === draftGender);
-            
-            if (candidateIndex !== -1) {
-                const [playerToDraft] = draftPool.splice(candidateIndex, 1);
-                currentTeam.players.push(playerToDraft);
-                draftedPlayer = true;
-            } else {
-                // If no players of the preferred gender are left, draft from remaining pool
-                 const playerToDraft = draftPool.shift();
-                 if(playerToDraft) {
-                    currentTeam.players.push(playerToDraft);
-                    draftedPlayer = true;
-                 }
-            }
+      let candidateIndex = -1;
+      
+      // Prioritize gender needed if ratio is off
+      if (guysOnTeam < Math.floor(idealGuyRatio)) {
+        candidateIndex = draftPool.findIndex(p => p.gender === 'Guy');
+      } else if (galsOnTeam < Math.floor(idealGalRatio)) {
+         candidateIndex = draftPool.findIndex(p => p.gender === 'Gal');
+      }
 
-            teamIndex += direction;
-            if (teamIndex < 0 || teamIndex >= k) {
-                direction *= -1;
-                teamIndex += direction;
-            }
-        }
-        
-        if (!draftedPlayer && draftPool.length > 0) {
-            let playerToDraft = draftPool.shift();
-            if(playerToDraft) {
-                newTeams.sort((a,b) => a.players.length - b.players.length)[0].players.push(playerToDraft);
-            }
-        }
+      // If no gender priority, or if preferred gender is not available, take best player
+      if (candidateIndex === -1) {
+        candidateIndex = 0;
+      }
+      
+      const [playerToDraft] = draftPool.splice(candidateIndex, 1);
+      
+      console.log(`Drafting ${playerToDraft.name} (L': ${playerToDraft.adjustedSkill.toFixed(1)}) to Team ${newTeams[teamIndex].name}`);
+      newTeams[teamIndex].players.push(playerToDraft);
 
-        round++;
+      teamIndex += direction;
+      if (teamIndex < 0 || teamIndex >= numTeams) {
+        direction *= -1;
+        teamIndex += direction;
+        console.log(`--- Snake Turn --- New Direction: ${direction === 1 ? 'Forward' : 'Reverse'}`);
+      }
     }
+    
+    console.log('--- Final Team Rosters ---');
+    newTeams.forEach(team => {
+        const { avgSkill, guyCount, galCount, avgAdjustedSkill } = getTeamAnalysis(team);
+        console.log(`Team: ${team.name} (${team.players.length} players) | Avg Skill: ${avgSkill} | Avg Adj. Skill: ${avgAdjustedSkill} | Gender: ${guyCount}G / ${galCount}L`);
+        console.table(team.players.map(({name, gender, skill}) => ({name, gender, skill})));
+    });
     
     return newTeams;
 };
