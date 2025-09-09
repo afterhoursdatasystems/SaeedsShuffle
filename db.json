@@ -1,8 +1,40 @@
 {
   "teams": [
     {
-      "name": "Summit Strikers",
+      "name": "Langtree Lightning",
       "players": [
+        {
+          "id": "20",
+          "name": "Rachel Nystrom",
+          "gender": "Gal",
+          "skill": 8,
+          "present": true,
+          "adjustedSkill": 6.8
+        },
+        {
+          "id": "9",
+          "name": "Miranda Griego",
+          "gender": "Gal",
+          "skill": 3,
+          "present": true,
+          "adjustedSkill": 1.8
+        },
+        {
+          "id": "4",
+          "name": "Kyle Novak",
+          "gender": "Guy",
+          "skill": 9,
+          "present": true,
+          "adjustedSkill": 9
+        },
+        {
+          "id": "18",
+          "name": "William Van Meter",
+          "gender": "Guy",
+          "skill": 3,
+          "present": true,
+          "adjustedSkill": 3
+        },
         {
           "id": "22",
           "name": "Jasona Jones",
@@ -10,14 +42,19 @@
           "skill": 1,
           "present": true,
           "adjustedSkill": -0.19999999999999996
-        },
+        }
+      ]
+    },
+    {
+      "name": "Antiquity Attackers",
+      "players": [
         {
-          "id": "1",
-          "name": "Cole Deaver",
-          "gender": "Guy",
-          "skill": 6,
+          "id": "3",
+          "name": "Kristin Drinka",
+          "gender": "Gal",
+          "skill": 7,
           "present": true,
-          "adjustedSkill": 6
+          "adjustedSkill": 5.8
         },
         {
           "id": "27",
@@ -28,41 +65,12 @@
           "adjustedSkill": 2.8
         },
         {
-          "id": "12",
-          "name": "Giovanni Salvatore",
+          "id": "7",
+          "name": "Brian Kempert",
           "gender": "Guy",
-          "skill": 7,
+          "skill": 8,
           "present": true,
-          "adjustedSkill": 7
-        },
-        {
-          "id": "26",
-          "name": "Matt Taylor",
-          "gender": "Guy",
-          "skill": 7,
-          "present": true,
-          "adjustedSkill": 7
-        }
-      ]
-    },
-    {
-      "name": "Peninsula Powerhouse",
-      "players": [
-        {
-          "id": "19",
-          "name": "Colleen Palman",
-          "gender": "Gal",
-          "skill": 2,
-          "present": true,
-          "adjustedSkill": 0.8
-        },
-        {
-          "id": "28",
-          "name": "Alexandra Broskey",
-          "gender": "Gal",
-          "skill": 6,
-          "present": true,
-          "adjustedSkill": 4.8
+          "adjustedSkill": 8
         },
         {
           "id": "15",
@@ -73,6 +81,80 @@
           "adjustedSkill": 4
         },
         {
+          "id": "24",
+          "name": "Jesica Bullrich",
+          "gender": "Gal",
+          "skill": 2,
+          "present": true,
+          "adjustedSkill": 0.8
+        }
+      ]
+    },
+    {
+      "name": "Summit Strikers",
+      "players": [
+        {
+          "id": "16",
+          "name": "Lindsey Victoria",
+          "gender": "Gal",
+          "skill": 7,
+          "present": true,
+          "adjustedSkill": 5.8
+        },
+        {
+          "id": "6",
+          "name": "Heidi Kempert",
+          "gender": "Gal",
+          "skill": 4,
+          "present": true,
+          "adjustedSkill": 2.8
+        },
+        {
+          "id": "26",
+          "name": "Matt Taylor",
+          "gender": "Guy",
+          "skill": 7,
+          "present": true,
+          "adjustedSkill": 7
+        },
+        {
+          "id": "10",
+          "name": "Jonathan Bradley",
+          "gender": "Guy",
+          "skill": 5,
+          "present": true,
+          "adjustedSkill": 5
+        },
+        {
+          "id": "19",
+          "name": "Colleen Palman",
+          "gender": "Gal",
+          "skill": 2,
+          "present": true,
+          "adjustedSkill": 0.8
+        }
+      ]
+    },
+    {
+      "name": "Birkdale Bombers",
+      "players": [
+        {
+          "id": "8",
+          "name": "Abby Gilpin",
+          "gender": "Gal",
+          "skill": 6,
+          "present": true,
+          "adjustedSkill": 4.8
+        },
+        {
+          "id": "28",
+          "name": "Alexandra Broskey",
+          "gender": "Gal",
+          "skill": 6,
+          "present": true,
+          "adjustedSkill": 4.8
+        },
+        {
           "id": "14",
           "name": "Eric Ahrens",
           "gender": "Guy",
@@ -81,25 +163,25 @@
           "adjustedSkill": 7
         },
         {
-          "id": "11",
-          "name": "Aditya Singh",
+          "id": "1",
+          "name": "Cole Deaver",
           "gender": "Guy",
-          "skill": 7,
+          "skill": 6,
           "present": true,
-          "adjustedSkill": 7
+          "adjustedSkill": 6
         }
       ]
     },
     {
-      "name": "McGuire Nuclear Knockouts",
+      "name": "Bailey's Bruisers",
       "players": [
         {
-          "id": "18",
-          "name": "William Van Meter",
-          "gender": "Guy",
-          "skill": 3,
+          "id": "13",
+          "name": "Emily Victoria",
+          "gender": "Gal",
+          "skill": 6,
           "present": true,
-          "adjustedSkill": 3
+          "adjustedSkill": 4.8
         },
         {
           "id": "25",
@@ -110,78 +192,12 @@
           "adjustedSkill": 4.8
         },
         {
-          "id": "13",
-          "name": "Emily Victoria",
-          "gender": "Gal",
-          "skill": 6,
-          "present": true,
-          "adjustedSkill": 4.8
-        },
-        {
-          "id": "7",
-          "name": "Brian Kempert",
+          "id": "11",
+          "name": "Aditya Singh",
           "gender": "Guy",
-          "skill": 8,
-          "present": true,
-          "adjustedSkill": 8
-        },
-        {
-          "id": "17",
-          "name": "Shaylyn Murphy",
-          "gender": "Gal",
-          "skill": 8,
-          "present": true,
-          "adjustedSkill": 6.8
-        }
-      ]
-    },
-    {
-      "name": "Soda Shop Slammers",
-      "players": [
-        {
-          "id": "9",
-          "name": "Miranda Griego",
-          "gender": "Gal",
-          "skill": 3,
-          "present": true,
-          "adjustedSkill": 1.8
-        },
-        {
-          "id": "2",
-          "name": "Melissa Roy",
-          "gender": "Gal",
-          "skill": 6,
-          "present": true,
-          "adjustedSkill": 4.8
-        },
-        {
-          "id": "8",
-          "name": "Abby Gilpin",
-          "gender": "Gal",
-          "skill": 6,
-          "present": true,
-          "adjustedSkill": 4.8
-        },
-        {
-          "id": "3",
-          "name": "Kristin Drinka",
-          "gender": "Gal",
           "skill": 7,
           "present": true,
-          "adjustedSkill": 5.8
-        }
-      ]
-    },
-    {
-      "name": "Toast Titans",
-      "players": [
-        {
-          "id": "4",
-          "name": "Kyle Novak",
-          "gender": "Guy",
-          "skill": 9,
-          "present": true,
-          "adjustedSkill": 9
+          "adjustedSkill": 7
         },
         {
           "id": "21",
@@ -190,27 +206,36 @@
           "skill": 6,
           "present": true,
           "adjustedSkill": 6
-        },
-        {
-          "id": "5",
-          "name": "Nicole Malone",
-          "gender": "Gal",
-          "skill": 5,
-          "present": true,
-          "adjustedSkill": 3.8
-        },
-        {
-          "id": "20",
-          "name": "Rachel Nystrom",
-          "gender": "Gal",
-          "skill": 8,
-          "present": true,
-          "adjustedSkill": 6.8
         }
       ]
     }
   ],
-  "format": "king-of-the-court",
-  "schedule": [],
+  "format": "power-up-round",
+  "schedule": [
+    {
+      "id": "d3dee869-e312-4cf6-b4ff-c99d1af4ebce",
+      "teamA": "Summit Strikers",
+      "teamB": "Birkdale Bombers",
+      "resultA": null,
+      "resultB": null,
+      "court": "King Court"
+    },
+    {
+      "id": "dcac8d3c-a9c9-43dd-9b25-2be14cbf56ad",
+      "teamA": "Bailey's Bruisers",
+      "teamB": "Antiquity Attackers",
+      "resultA": null,
+      "resultB": null,
+      "court": "Challenger Court"
+    },
+    {
+      "id": "603d85d6-5ff6-424c-b3c9-57dee491a9c9",
+      "teamA": "Langtree Lightning",
+      "teamB": "Waiting #1",
+      "resultA": null,
+      "resultB": null,
+      "court": "Challenger Line"
+    }
+  ],
   "activeRule": null
 }
