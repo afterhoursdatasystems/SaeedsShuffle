@@ -32,11 +32,11 @@ const allPowerUps: PowerUp[] = [
 ];
 
 const kingsRansomRules: PowerUp[] = [
-    { name: 'Blind Choice', description: 'The losing team huddles and decides which player on the winning team they want to trade for. The winning team then gets to pick any player from the losing team in return.' },
-    { name: 'Off-Court Swap', description: 'The trade happens between players who are currently off the court. The losing team chooses one of their benched players to trade, and the winning team chooses one of their benched players in return.' },
-    { name: 'Team Captain\'s Choice', description: 'The two team captains negotiate and decide which players will be traded. Their decision is final.' },
-    { name: 'The Renegotiation', description: 'The losing team proposes a trade. The winning team can either ACCEPT the trade, or VETO it by giving the losing team 3 points.' },
-    { name: 'Forced Trade', description: 'The player who served the final losing point is automatically traded for the player who scored the winning point.' },
+    { name: 'Birthday Swap', description: "The player from each team whose birthday is closest to today's date gets traded." },
+    { name: 'Alphabetical Swap', description: 'The player from each team whose first name comes first alphabetically gets traded.' },
+    { name: 'Height Swap (Shortest)', description: 'The shortest player from each team gets traded.' },
+    { name: 'Height Swap (Tallest)', description: 'The tallest player from each team gets traded.' },
+    { name: 'Seniority Swap', description: "The player who has been playing in Saeed's league the longest from each team gets traded." },
 ];
 
 
