@@ -262,8 +262,8 @@ export default function PublicTeamsPage() {
 
                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
                 {teams.map((team) => (
-                  <Card key={team.name} className="flex flex-col rounded-xl border-2 border-primary/50 shadow-2xl transition-transform hover:scale-105 bg-card">
-                    <CardHeader className="p-4 bg-primary/10 rounded-t-lg">
+                  <Card key={team.name} className="flex flex-col rounded-xl border-2 border-primary shadow-2xl transition-transform hover:scale-105 bg-card">
+                    <CardHeader className="p-4 bg-secondary/20 rounded-t-lg">
                       <CardTitle className="flex items-center gap-3 text-lg font-bold text-primary">
                         <Users className="h-5 w-5" />
                         {team.name}
@@ -280,7 +280,7 @@ export default function PublicTeamsPage() {
                                 {player.name.charAt(0)}
                               </AvatarFallback>
                             </Avatar>
-                            <span className="text-sm font-medium">{player.name}</span>
+                            <span className="text-base font-medium">{player.name}</span>
                           </div>
                         ))}
                       </div>
