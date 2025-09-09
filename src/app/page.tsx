@@ -14,6 +14,21 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 
 type CombinedGameFormat = GameFormat | GameVariant;
 
+const KOTC_BASE_RULES = (
+    <div>
+      <h4 className="font-bold text-xl mb-2 mt-6 border-t pt-4">Base King of the Court Rules</h4>
+      <p className="mb-4">This is a dynamic, non-stop format where the goal is to seize control of the “winner’s court” and hold it against a constant stream of new challengers.</p>
+      <ul className="list-disc pl-5 space-y-2">
+          <li><strong>Court Setup:</strong> One court is the designated “King/Queen Court” and the other is the “Challenger Court.”</li>
+          <li><strong>Starting the Game:</strong> The first two teams in line play on the King Court, and the next two teams play on the Challenger Court.</li>
+          <li><strong>On the King Court:</strong> The winning team stays on the court and earns one point on the main scoreboard. The losing team goes to the back of the challenger line.</li>
+          <li><strong>On the Challenger Court:</strong> The winning team of this match becomes the next in line to challenge the current King.</li>
+          <li><strong>Winning the Tournament:</strong> This process repeats continuously. The team with the most points (total wins) at the end of the night is the champion.</li>
+      </ul>
+    </div>
+);
+
+
 const formatDetails: Record<CombinedGameFormat, { title: string; description: React.ReactNode; icon: React.ElementType }> = {
   'king-of-the-court': {
     title: 'Continuous King of the Court',
@@ -34,10 +49,10 @@ const formatDetails: Record<CombinedGameFormat, { title: string; description: Re
       </div>
     ),
   },
-   'standard': { // This is a fallback, should ideally not be used directly for display
+   'standard': {
     title: 'King of the Court',
     icon: Crown,
-    description: ( <p>See King of the Court for details.</p>)
+    description: ( <p>This is the standard King of the Court format.</p>)
   },
   'monarch-of-the-court': {
     title: 'Monarch of the Court',
@@ -45,19 +60,14 @@ const formatDetails: Record<CombinedGameFormat, { title: string; description: Re
     description: (
       <div>
         <p className="mb-4 text-lg">A classic King of the Court format with a fun, social twist that gives the winning team a small “power” after their win, adding a layer of strategy and interaction.</p>
-        <h4 className="font-bold text-xl mb-2">The Concept</h4>
-        <p className="mb-4">Win the King Court to earn the title of “The Monarchs” and gain the right to choose a special privilege before your next game.</p>
-        <h4 className="font-bold text-xl mb-2">The Flow of Play</h4>
+        <h4 className="font-bold text-xl mb-2">Variant Rules</h4>
          <ul className="list-disc pl-5 space-y-2">
-            <li>The tournament follows the standard KOTC winner-stays-on format.</li>
-            <li><strong>Becoming the Monarch:</strong> After winning a game on the King Court, your team is crowned “The Monarchs”.</li>
-            <li><strong>Using Your Power:</strong> Before the next challenger begins their game against you, you must choose one of the following powers:
+            <li>After winning a game on the King Court, your team is crowned “The Monarchs”.</li>
+            <li>Before the next challenger begins their game against you, you must choose one of the following powers:
                 <ul className="list-circle pl-5 mt-2 space-y-1">
                     <li><strong>Choose Your Challenger:</strong> You may pick any team waiting in line to be your next opponent.</li>
                     <li><strong>Impose a Rule:</strong> You may add a fun, temporary rule for the next game only (e.g., “no jump serves”).</li>
                     <li><strong>Take a Royal Rest:</strong> You can choose to sit out one round. The next two teams will play each other to determine who challenges you next.</li>
-                    <li><strong>Challenger Handicap:</strong> Impose a small handicap on the challenging team (e.g., one player cannot block).</li>
-                    <li><strong>King's Court Alliance:</strong> Choose a waiting team as an ally. If you lose, your ally gets to immediately re-challenge the new King.</li>
                 </ul>
             </li>
         </ul>
@@ -69,12 +79,9 @@ const formatDetails: Record<CombinedGameFormat, { title: string; description: Re
     icon: KeyRound,
     description: (
       <div>
-        <p className="mb-4 text-lg">A dramatic and strategic KOTC format where team rosters are not safe. It includes both a player “steal” mechanic and a handicap for dominant teams.</p>
-        <h4 className="font-bold text-xl mb-2">The Concept</h4>
-        <p className="mb-4">Win the King Court and defend your crown, but be prepared for your team to change. Losing teams can force a player trade, and dominant teams will face a progressive handicap.</p>
-        <h4 className="font-bold text-xl mb-2">The Flow of Play</h4>
+        <p className="mb-4 text-lg">A dramatic and strategic KOTC format where team rosters are not safe. It includes a player “steal” mechanic.</p>
+        <h4 className="font-bold text-xl mb-2">Variant Rules</h4>
          <ul className="list-disc pl-5 space-y-2">
-            <li>The tournament follows the standard KOTC winner-stays-on format.</li>
             <li><strong>The Cosmic Scramble:</strong> After a team loses a match on the King Court, the Tournament Director will generate a random, fun "Cosmic Scramble" rule to determine which players are traded between the two teams.</li>
              <li className="list-none pt-2"><strong>The active scramble rule will be displayed in a card at the top of this dashboard!</strong></li>
         </ul>
@@ -87,11 +94,8 @@ const formatDetails: Record<CombinedGameFormat, { title: string; description: Re
     description: (
        <div>
         <p className="mb-4 text-lg">A fun, arcade-like twist on the classic KOTC format where teams get random advantages.</p>
-        <h4 className="font-bold text-xl mb-2">The Concept</h4>
-        <p className="mb-4">Before each match on the King's Court, the challenging team gets a random power-up for that game only, giving them a unique edge and keeping the reigning team on their toes.</p>
-        <h4 className="font-bold text-xl mb-2">How It Works</h4>
+        <h4 className="font-bold text-xl mb-2">Variant Rules</h4>
          <ul className="list-disc pl-5 space-y-2">
-            <li>The tournament follows the standard KOTC winner-stays-on format.</li>
             <li>Before a new game starts on the King's Court, the tournament director will generate a random power-up for the challenging team.</li>
             <li>The power-up is active for that single game only.</li>
             <li className="list-none pt-2"><strong>The active power-up will be displayed in a card at the top of this dashboard!</strong></li>
@@ -157,8 +161,6 @@ export default function PublicTeamsPage() {
           setSchedule(result.data.schedule || []);
           setActiveRule(result.data.activeRule || null);
           let format = result.data.format || 'round-robin';
-          // Handle old format values for backward compatibility if needed
-          if (format === 'standard') format = 'king-of-the-court';
           setGameFormat(format as CombinedGameFormat);
         } else {
           console.error('Failed to fetch data:', result.error);
@@ -171,6 +173,10 @@ export default function PublicTeamsPage() {
     }
     
     fetchData();
+    
+    const interval = setInterval(fetchData, 5000); // Refresh every 5 seconds
+    return () => clearInterval(interval);
+
   }, []);
 
   const renderTeamSkeletons = () => (
@@ -202,10 +208,10 @@ export default function PublicTeamsPage() {
     </div>
   );
 
-  const effectiveGameFormat = gameFormat === 'standard' ? 'king-of-the-court' : gameFormat;
-  const currentFormatDetails = formatDetails[effectiveGameFormat];
-  const CurrentFormatIcon = currentFormatDetails?.icon || ShieldQuestion;
   const isKOTC = ['king-of-the-court', 'monarch-of-the-court', 'king-s-ransom', 'power-up-round', 'standard'].includes(gameFormat);
+  const currentFormatDetails = isKOTC ? formatDetails[gameFormat] : formatDetails[gameFormat];
+  const CurrentFormatIcon = currentFormatDetails?.icon || ShieldQuestion;
+
   const ruleIsActive = (gameFormat === 'power-up-round' || gameFormat === 'king-s-ransom') && activeRule;
   const activeRuleTitle = gameFormat === 'king-s-ransom' ? 'Active Cosmic Scramble' : 'Active Power-Up';
 
@@ -216,12 +222,12 @@ export default function PublicTeamsPage() {
         <div className="flex items-center gap-4">
           <Volleyball className="h-10 w-10 text-primary" />
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Saeed's Shuffle</h1>
-            <p className="text-lg text-muted-foreground flex items-center gap-2"><Clock className="h-5 w-5" />Games start at 6:45 PM</p>
+            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Saeed's Shuffle</h1>
+            <p className="text-md text-muted-foreground sm:text-lg flex items-center gap-2"><Clock className="h-5 w-5" />Games start at 6:45 PM</p>
           </div>
         </div>
       </header>
-      <main className="flex-1 p-6 md:p-8">
+      <main className="flex-1 p-4 md:p-8">
         <div className="mx-auto w-full max-w-none">
           {isLoading ? (
              <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
@@ -244,27 +250,27 @@ export default function PublicTeamsPage() {
                   </Card>
                )}
 
-               <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
                 {teams.map((team) => (
                   <Card key={team.name} className="flex flex-col rounded-xl border-2 border-primary/50 shadow-2xl transition-transform hover:scale-105 bg-card">
                     <CardHeader className="p-4 bg-primary/10 rounded-t-lg">
-                      <CardTitle className="flex items-center gap-3 text-2xl font-bold text-primary">
-                        <Users className="h-8 w-8" />
+                      <CardTitle className="flex items-center gap-3 text-xl font-bold text-primary">
+                        <Users className="h-6 w-6" />
                         {team.name}
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="flex-grow p-4">
-                      <div className="space-y-4">
+                      <div className="space-y-3">
                         {[...team.players]
                           .sort((a, b) => a.name.localeCompare(b.name))
                           .map((player) => (
                           <div key={player.id} className="flex items-center gap-3">
-                            <Avatar className="h-12 w-12 border-2 border-white">
-                              <AvatarFallback className="bg-primary/20 text-xl font-bold text-primary">
+                            <Avatar className="h-10 w-10 border-2 border-white">
+                              <AvatarFallback className="bg-primary/20 text-lg font-bold text-primary">
                                 {player.name.charAt(0)}
                               </AvatarFallback>
                             </Avatar>
-                            <span className="text-xl font-medium">{player.name}</span>
+                            <span className="text-base font-medium">{player.name}</span>
                           </div>
                         ))}
                       </div>
@@ -315,7 +321,8 @@ export default function PublicTeamsPage() {
                 </CardHeader>
                 <CardContent className="p-6 text-lg">
                     <h3 className="font-bold text-2xl mb-4">{currentFormatDetails.title}</h3>
-                    {currentFormatDetails.description}
+                    <div>{currentFormatDetails.description}</div>
+                    {isKOTC && gameFormat !== 'king-of-the-court' && KOTC_BASE_RULES}
                 </CardContent>
               </Card>}
 
@@ -335,3 +342,5 @@ export default function PublicTeamsPage() {
     </div>
   );
 }
+
+    
