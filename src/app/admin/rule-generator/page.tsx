@@ -9,6 +9,7 @@ import { Wand2, RefreshCw, Info } from 'lucide-react';
 import type { PowerUp } from '@/types';
 import { usePlayerContext } from '@/contexts/player-context';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { publishData } from '@/app/actions';
 
 const allPowerUps: PowerUp[] = [
   { name: 'Point Boost', description: 'Start the next game with a 2-point lead.' },
@@ -57,7 +58,7 @@ const cosmicScrambleRules: PowerUp[] = [
 
 export default function RuleGeneratorPage() {
   const { toast } = useToast();
-  const { gameFormat, gameVariant, activeRule, setActiveRule } = usePlayerContext();
+  const { teams, schedule, gameFormat, gameVariant, activeRule, setActiveRule } = usePlayerContext();
   const [isLoading, setIsLoading] = useState(false);
 
   const isPowerUpRound = gameFormat === 'king-of-the-court' && gameVariant === 'power-up-round';
@@ -71,10 +72,12 @@ export default function RuleGeneratorPage() {
   const handleGenerate = async () => {
     setIsLoading(true);
 
-    setTimeout(() => {
+    // Simulate a short delay for a better user experience
+    setTimeout(async () => {
       const randomIndex = Math.floor(Math.random() * ruleSet.length);
       let selectedRule = ruleSet[randomIndex];
 
+      // Ensure the new rule is different from the current one
       if (activeRule && selectedRule.name === activeRule.name) {
         selectedRule = ruleSet[(randomIndex + 1) % ruleSet.length];
       }
@@ -83,9 +86,27 @@ export default function RuleGeneratorPage() {
       
       toast({
         title: isKingsRansom ? 'New Scramble Rule!' : 'New Power-Up!',
-        description: `"${selectedRule.name}" is now in play.`,
+        description: `"${selectedRule.name}" is now in play. Publishing to dashboard...`,
       });
+
+      // After setting the rule locally, publish all data to the dashboard
+      const formatToPublish = gameVariant !== 'standard' ? gameVariant : gameFormat;
+      const result = await publishData(teams, formatToPublish, schedule, selectedRule);
       setIsLoading(false);
+      
+      if (result.success) {
+        toast({
+          title: 'Rule Published!',
+          description: 'The new rule is now visible on the public dashboard.',
+        });
+      } else {
+         toast({
+          title: 'Publishing Error',
+          description: result.error || 'Could not publish the new rule.',
+          variant: 'destructive',
+        });
+      }
+
     }, 300);
   };
 
@@ -97,7 +118,7 @@ export default function RuleGeneratorPage() {
           <h1 className="text-4xl font-bold">Rule Generator</h1>
           {validFormat ? (
              <p className="text-muted-foreground mt-2">
-                Click the button for a new rule when needed!
+                Click the button for a new rule when needed! The public dashboard will update automatically.
             </p>
           ) : (
              <p className="text-muted-foreground mt-2">
@@ -151,3 +172,4 @@ export default function RuleGeneratorPage() {
     </div>
   );
 }
+
