@@ -56,7 +56,7 @@ export default function CheckinPage() {
                 ) : (
                     <XCircle className="h-8 w-8 text-red-500 flex-shrink-0" />
                 )}
-                <p className="text-xs font-bold leading-tight">
+                <p className="text-sm font-bold leading-tight">
                     {player.name}
                 </p>
             </CardContent>
