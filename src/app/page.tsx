@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -16,7 +15,7 @@ type CombinedGameFormat = GameFormat | GameVariant;
 
 const KOTC_BASE_RULES = (
     <div>
-      <h4 className="font-bold text-xl mb-2 mt-6 border-t pt-4">Base King of the Court Rules</h4>
+      <h4 className="font-bold text-lg mb-2 mt-6 border-t pt-4">Base King of the Court Rules</h4>
       <p className="mb-4">This is a dynamic, non-stop format where the goal is to seize control of the “winner’s court” and hold it against a constant stream of new challengers.</p>
       <ul className="list-disc pl-5 space-y-2">
           <li><strong>Court Setup:</strong> One court is the designated “King/Queen Court” and the other is the “Challenger Court.”</li>
@@ -35,10 +34,10 @@ const formatDetails: Record<CombinedGameFormat, { title: string; description: Re
     icon: Crown,
     description: (
        <div>
-        <p className="mb-4 text-lg">A high-energy, continuous-play format designed to maximize playtime and interaction.</p>
-        <h4 className="font-bold text-xl mb-2">The Concept</h4>
+        <p className="mb-4">A high-energy, continuous-play format designed to maximize playtime and interaction.</p>
+        <h4 className="font-bold text-lg mb-2">The Concept</h4>
         <p className="mb-4">A dynamic, non-stop format where the goal is to seize control of the “winner’s court” and hold it against a constant stream of new challengers.</p>
-        <h4 className="font-bold text-xl mb-2">The Flow of Play</h4>
+        <h4 className="font-bold text-lg mb-2">The Flow of Play</h4>
         <ul className="list-disc pl-5 space-y-2">
             <li><strong>Court Setup:</strong> Court 1 will be the designated “King/Queen Court” and Court 2 will be the “Challenger Court.”</li>
             <li><strong>Starting the Game:</strong> The first two teams in line will play on the King Court, and the next two teams will play on the Challenger Court. All games are to 15 points.</li>
@@ -59,8 +58,8 @@ const formatDetails: Record<CombinedGameFormat, { title: string; description: Re
     icon: Gem,
     description: (
       <div>
-        <p className="mb-4 text-lg">A classic King of the Court format with a fun, social twist that gives the winning team a small “power” after their win, adding a layer of strategy and interaction.</p>
-        <h4 className="font-bold text-xl mb-2">Variant Rules</h4>
+        <p className="mb-4">A classic King of the Court format with a fun, social twist that gives the winning team a small “power” after their win, adding a layer of strategy and interaction.</p>
+        <h4 className="font-bold text-lg mb-2">Variant Rules</h4>
          <ul className="list-disc pl-5 space-y-2">
             <li>After winning a game on the King Court, your team is crowned “The Monarchs”.</li>
             <li>Before the next challenger begins their game against you, you must choose one of the following powers:
@@ -79,8 +78,8 @@ const formatDetails: Record<CombinedGameFormat, { title: string; description: Re
     icon: KeyRound,
     description: (
       <div>
-        <p className="mb-4 text-lg">A dramatic and strategic KOTC format where team rosters are not safe. It includes a player “steal” mechanic.</p>
-        <h4 className="font-bold text-xl mb-2">Variant Rules</h4>
+        <p className="mb-4">A dramatic and strategic KOTC format where team rosters are not safe. It includes a player “steal” mechanic.</p>
+        <h4 className="font-bold text-lg mb-2">Variant Rules</h4>
          <ul className="list-disc pl-5 space-y-2">
             <li><strong>The Cosmic Scramble:</strong> After a team loses a match on the King Court, the Tournament Director will generate a random, fun "Cosmic Scramble" rule to determine which players are traded between the two teams.</li>
              <li className="list-none pt-2"><strong>The active scramble rule will be displayed in a card at the top of this dashboard!</strong></li>
@@ -93,8 +92,8 @@ const formatDetails: Record<CombinedGameFormat, { title: string; description: Re
     icon: Zap,
     description: (
        <div>
-        <p className="mb-4 text-lg">A fun, arcade-like twist on the classic KOTC format where teams get random advantages.</p>
-        <h4 className="font-bold text-xl mb-2">Variant Rules</h4>
+        <p className="mb-4">A fun, arcade-like twist on the classic KOTC format where teams get random advantages.</p>
+        <h4 className="font-bold text-lg mb-2">Variant Rules</h4>
          <ul className="list-disc pl-5 space-y-2">
             <li>Before a new game starts on the King's Court, the tournament director will generate a random power-up for the challenging team.</li>
             <li>The power-up is active for that single game only.</li>
@@ -108,10 +107,10 @@ const formatDetails: Record<CombinedGameFormat, { title: string; description: Re
     icon: Trophy,
     description: (
       <div>
-        <p className="mb-4 text-lg">A classic tournament format where teams first compete in a round-robin style "pool play" to determine seeding, followed by a single-elimination bracket to crown the champion.</p>
-        <h4 className="font-bold text-xl mb-2">Phase 1: Pool Play</h4>
+        <p className="mb-4">A classic tournament format where teams first compete in a round-robin style "pool play" to determine seeding, followed by a single-elimination bracket to crown the champion.</p>
+        <h4 className="font-bold text-lg mb-2">Phase 1: Pool Play</h4>
         <p className="mb-4">All teams will play against each other once in a round-robin format. The results of these matches (wins, losses, and point differential) will be used to rank the teams and determine their seeding for the bracket.</p>
-        <h4 className="font-bold text-xl mb-2">Phase 2: Bracket Play</h4>
+        <h4 className="font-bold text-lg mb-2">Phase 2: Bracket Play</h4>
         <p>After pool play is complete, teams are seeded into a single-elimination tournament. The top-ranked team plays the lowest-ranked team, and so on. In this phase, if you win, you advance; if you lose, you're out. The last team standing is the tournament champion!</p>
       </div>
     ),
@@ -121,10 +120,10 @@ const formatDetails: Record<CombinedGameFormat, { title: string; description: Re
     icon: BookOpen,
     description: (
        <div>
-        <p className="mb-4 text-lg">A simple and fair format where every team gets to play against every other team. This is great for maximizing play time and ensuring a variety of matchups.</p>
-        <h4 className="font-bold text-xl mb-2">The Concept</h4>
+        <p className="mb-4">A simple and fair format where every team gets to play against every other team. This is great for maximizing play time and ensuring a variety of matchups.</p>
+        <h4 className="font-bold text-lg mb-2">The Concept</h4>
         <p className="mb-4">No eliminations, no court changes—just pure volleyball. The schedule is generated so that each team plays all other teams once (or twice, depending on the setup).</p>
-        <h4 className="font-bold text-xl mb-2">Determining the Winner</h4>
+        <h4 className="font-bold text-lg mb-2">Determining the Winner</h4>
         <p>The winner is determined by the final standings at the end of all scheduled matches. Standings are ranked first by total number of wins, then by point differential if there is a tie.</p>
        </div>
     )
@@ -134,10 +133,10 @@ const formatDetails: Record<CombinedGameFormat, { title: string; description: Re
     icon: Shuffle,
     description: (
        <div>
-        <p className="mb-4 text-lg">A social and unpredictable format where teams are redrawn for every round. This format is great for mixing up players and ensuring everyone gets to play with a variety of teammates.</p>
-        <h4 className="font-bold text-xl mb-2">The Concept</h4>
+        <p className="mb-4">A social and unpredictable format where teams are redrawn for every round. This format is great for mixing up players and ensuring everyone gets to play with a variety of teammates.</p>
+        <h4 className="font-bold text-lg mb-2">The Concept</h4>
         <p className="mb-4">There are no fixed teams in this format. Before each round of games, new teams are randomly created from the pool of present players. This emphasizes individual performance and adaptability.</p>
-        <h4 className="font-bold text-xl mb-2">Scoring and Winning</h4>
+        <h4 className="font-bold text-lg mb-2">Scoring and Winning</h4>
         <p>Players earn points individually based on their randomly-assigned team's performance in each match. The player with the most accumulated points at the end of the night is crowned the individual champion.</p>
        </div>
     )
@@ -182,15 +181,15 @@ export default function PublicTeamsPage() {
   const renderTeamSkeletons = () => (
     Array.from({ length: 4 }).map((_, index) => (
        <Card key={index} className="flex flex-col shadow-lg rounded-xl">
-        <CardHeader className="p-6">
-          <Skeleton className="h-8 w-3/4 rounded-md" />
+        <CardHeader className="p-4">
+          <Skeleton className="h-6 w-3/4 rounded-md" />
         </CardHeader>
-        <CardContent className="flex-grow p-6 pt-0">
-          <div className="space-y-4">
+        <CardContent className="flex-grow p-4 pt-0">
+          <div className="space-y-3">
             {Array.from({length: 4}).map((_, pIndex) => (
               <div key={pIndex} className="flex items-center gap-3">
-                <Skeleton className="h-12 w-12 rounded-full" />
-                <Skeleton className="h-6 w-1/2 flex-grow rounded-md" />
+                <Skeleton className="h-10 w-10 rounded-full" />
+                <Skeleton className="h-5 w-1/2 flex-grow rounded-md" />
               </div>
             ))}
           </div>
@@ -238,14 +237,14 @@ export default function PublicTeamsPage() {
                {ruleIsActive && (
                   <Card className="shadow-2xl transition-all duration-300 ease-in-out transform w-full bg-accent/20 border-accent border-2">
                       <CardHeader className="text-center pb-4">
-                        <CardTitle className="text-4xl font-bold text-accent-foreground flex items-center justify-center gap-4">
-                          <Wand2 className="h-10 w-10 text-primary" />
+                        <CardTitle className="text-2xl font-bold text-accent-foreground flex items-center justify-center gap-4">
+                          <Wand2 className="h-8 w-8 text-primary" />
                           {activeRuleTitle}
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="text-center">
-                        <p className="text-3xl font-bold text-primary">{activeRule?.name}</p>
-                        <p className="text-xl text-muted-foreground mt-2">{activeRule?.description}</p>
+                        <p className="text-2xl font-bold text-primary">{activeRule?.name}</p>
+                        <p className="text-lg text-muted-foreground mt-2">{activeRule?.description}</p>
                       </CardContent>
                   </Card>
                )}
@@ -254,8 +253,8 @@ export default function PublicTeamsPage() {
                 {teams.map((team) => (
                   <Card key={team.name} className="flex flex-col rounded-xl border-2 border-primary/50 shadow-2xl transition-transform hover:scale-105 bg-card">
                     <CardHeader className="p-4 bg-primary/10 rounded-t-lg">
-                      <CardTitle className="flex items-center gap-3 text-xl font-bold text-primary">
-                        <Users className="h-6 w-6" />
+                      <CardTitle className="flex items-center gap-3 text-lg font-bold text-primary">
+                        <Users className="h-5 w-5" />
                         {team.name}
                       </CardTitle>
                     </CardHeader>
@@ -266,11 +265,11 @@ export default function PublicTeamsPage() {
                           .map((player) => (
                           <div key={player.id} className="flex items-center gap-3">
                             <Avatar className="h-10 w-10 border-2 border-white">
-                              <AvatarFallback className="bg-primary/20 text-lg font-bold text-primary">
+                              <AvatarFallback className="bg-primary/20 font-bold text-primary">
                                 {player.name.charAt(0)}
                               </AvatarFallback>
                             </Avatar>
-                            <span className="text-base font-medium">{player.name}</span>
+                            <span className="text-sm font-medium">{player.name}</span>
                           </div>
                         ))}
                       </div>
@@ -282,8 +281,8 @@ export default function PublicTeamsPage() {
               {schedule.length > 0 && (
                 <Card className="rounded-xl border-2 shadow-2xl">
                   <CardHeader className="p-6 bg-muted/50 rounded-t-lg">
-                    <CardTitle className="flex items-center gap-4 text-3xl font-bold">
-                        <Calendar className="h-8 w-8 text-primary" />
+                    <CardTitle className="flex items-center gap-4 text-2xl font-bold">
+                        <Calendar className="h-7 w-7 text-primary" />
                         Tonight's Schedule
                     </CardTitle>
                   </CardHeader>
@@ -299,7 +298,7 @@ export default function PublicTeamsPage() {
                           </TableHeader>
                           <TableBody>
                             {schedule.map((match) => (
-                              <TableRow key={match.id} className="text-lg">
+                              <TableRow key={match.id} className="text-base">
                                 <TableCell><Badge>{match.court}</Badge></TableCell>
                                 <TableCell className="font-medium">{match.teamA}</TableCell>
                                 <TableCell className="font-medium">{match.teamB}</TableCell>
@@ -314,13 +313,13 @@ export default function PublicTeamsPage() {
 
               {currentFormatDetails && <Card className="rounded-xl border-2 shadow-2xl">
                 <CardHeader className="p-6 bg-secondary/10 rounded-t-lg">
-                    <CardTitle className="flex items-center gap-4 text-3xl font-bold text-secondary-foreground">
-                        <CurrentFormatIcon className="h-8 w-8 text-secondary" />
+                    <CardTitle className="flex items-center gap-4 text-2xl font-bold text-secondary-foreground">
+                        <CurrentFormatIcon className="h-7 w-7 text-secondary" />
                         Tonight's Format
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="p-6 text-lg">
-                    <h3 className="font-bold text-2xl mb-4">{currentFormatDetails.title}</h3>
+                <CardContent className="p-6">
+                    <h3 className="font-bold text-xl mb-4">{currentFormatDetails.title}</h3>
                     <div>{currentFormatDetails.description}</div>
                     {isKOTC && gameFormat !== 'king-of-the-court' && KOTC_BASE_RULES}
                 </CardContent>
@@ -329,8 +328,8 @@ export default function PublicTeamsPage() {
             </div>
           ) : (
              <div className="flex h-[60vh] flex-col items-center justify-center rounded-xl border-4 border-dashed bg-muted/50 p-12 text-center">
-              <h3 className="text-5xl font-bold tracking-tight">Teams Not Yet Published</h3>
-              <p className="mt-6 text-2xl text-muted-foreground">The commissioner is still drafting. Check back soon!</p>
+              <h3 className="text-4xl font-bold tracking-tight">Teams Not Yet Published</h3>
+              <p className="mt-6 text-xl text-muted-foreground">The commissioner is still drafting. Check back soon!</p>
             </div>
           )}
         </div>
@@ -342,5 +341,3 @@ export default function PublicTeamsPage() {
     </div>
   );
 }
-
-    

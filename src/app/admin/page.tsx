@@ -1,10 +1,9 @@
-
 'use client';
 
 import AppHeader from '@/components/app-header';
 import PlayerManagement from '@/components/player-management';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Bot, Zap, Calendar, UserPlus, Settings, Trophy, Crown, BookOpen, Shuffle } from 'lucide-react';
+import { Bot, Calendar, Crown, BookOpen, Shuffle, Settings, UserPlus, Trophy, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { usePlayerContext } from '@/contexts/player-context';
 import { Label } from '@/components/ui/label';

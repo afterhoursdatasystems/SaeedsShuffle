@@ -1,4 +1,3 @@
-
 'use client';
 
 import type { Player, Team } from '@/types';
@@ -56,39 +55,62 @@ export function TeamGenerator() {
   const createBalancedTeams = (allPlayers: Player[], numTeams: number): Team[] => {
     const shuffledNames = shuffleArray(teamNames);
     const newTeams: Team[] = Array.from({ length: numTeams }, (_, i) => ({
-      name: shuffledNames[i % shuffledNames.length],
-      players: [],
+        name: shuffledNames[i % shuffledNames.length],
+        players: [],
     }));
 
-    const playersWithAdjustedSkill = allPlayers.map(p => ({
-        ...p,
-        adjustedSkill: p.gender === 'Gal' ? p.skill - 1 : p.skill,
-    }));
+    // Separate players by gender and sort by skill
+    const guys = shuffleArray(allPlayers.filter(p => p.gender === 'Guy')).sort((a, b) => b.skill - a.skill);
+    const gals = shuffleArray(allPlayers.filter(p => p.gender === 'Gal')).sort((a, b) => b.skill - a.skill);
 
-    const buckets: { [key: string]: Player[] } = {
-      '8-10': playersWithAdjustedSkill.filter(p => p.adjustedSkill >= 8 && p.adjustedSkill <= 10),
-      '6-7': playersWithAdjustedSkill.filter(p => p.adjustedSkill >= 6 && p.adjustedSkill <= 7),
-      '4-5': playersWithAdjustedSkill.filter(p => p.adjustedSkill >= 4 && p.adjustedSkill <= 5),
-      '1-3': playersWithAdjustedSkill.filter(p => p.adjustedSkill <= 3),
-    };
+    const playersToDraft = [...guys, ...gals];
 
-    for (const key in buckets) {
-      buckets[key] = shuffleArray(buckets[key]);
-    }
-    
-    const playersToDraft = [
-      ...buckets['8-10'],
-      ...buckets['6-7'],
-      ...buckets['4-5'],
-      ...buckets['1-3'],
-    ];
-
+    // Snake draft
     let teamIndex = 0;
-    let direction = 1; 
-    
+    let direction = 1; // 1 for forward, -1 for backward
+
     playersToDraft.forEach(player => {
-        const originalPlayer = allPlayers.find(p => p.id === player.id)!;
-        newTeams[teamIndex].players.push(originalPlayer);
+        // Find the team with the fewest players, then the lowest total skill
+        newTeams.sort((a, b) => {
+            if (a.players.length !== b.players.length) {
+                return a.players.length - b.players.length;
+            }
+            const skillA = a.players.reduce((sum, p) => sum + p.skill, 0);
+            const skillB = b.players.reduce((sum, p) => sum + p.skill, 0);
+            return skillA - skillB;
+        });
+
+        const guysOnTeam = newTeams[teamIndex].players.filter(p => p.gender === 'Guy').length;
+        const galsOnTeam = newTeams[teamIndex].players.filter(p => p.gender === 'Gal').length;
+
+        // Try to balance genders
+        if (player.gender === 'Guy' && guysOnTeam > galsOnTeam + 1) {
+             // find a team that needs a guy
+            let alternateTeamIndex = (teamIndex + 1) % numTeams;
+            while(alternateTeamIndex !== teamIndex) {
+                 const alternateGuys = newTeams[alternateTeamIndex].players.filter(p => p.gender === 'Guy').length;
+                 const alternateGals = newTeams[alternateTeamIndex].players.filter(p => p.gender === 'Gal').length;
+                 if(alternateGuys <= alternateGals) {
+                    teamIndex = alternateTeamIndex;
+                    break;
+                 }
+                alternateTeamIndex = (alternateTeamIndex + 1) % numTeams;
+            }
+        } else if (player.gender === 'Gal' && galsOnTeam > guysOnTeam + 1) {
+            // find a team that needs a gal
+            let alternateTeamIndex = (teamIndex + 1) % numTeams;
+             while(alternateTeamIndex !== teamIndex) {
+                 const alternateGuys = newTeams[alternateTeamIndex].players.filter(p => p.gender === 'Guy').length;
+                 const alternateGals = newTeams[alternateTeamIndex].players.filter(p => p.gender === 'Gal').length;
+                 if(alternateGals <= alternateGuys) {
+                    teamIndex = alternateTeamIndex;
+                    break;
+                 }
+                alternateTeamIndex = (alternateTeamIndex + 1) % numTeams;
+            }
+        }
+
+        newTeams[teamIndex].players.push(player);
         
         teamIndex += direction;
         if (teamIndex >= numTeams || teamIndex < 0) {
@@ -98,7 +120,7 @@ export function TeamGenerator() {
     });
 
     return newTeams;
-  }
+}
 
   const handleGenerateTeams = () => {
     if (presentPlayers.length < teamSize) {

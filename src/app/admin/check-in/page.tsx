@@ -1,4 +1,3 @@
-
 'use client';
 
 import { usePlayerContext } from '@/contexts/player-context';
@@ -21,22 +20,6 @@ export default function CheckinPage() {
 
   const sortedPlayers = [...players].sort((a, b) => a.name.localeCompare(b.name));
   const presentCount = players.filter(p => p.present).length;
-
-  const formatName = (name: string) => {
-    const firstSpaceIndex = name.indexOf(' ');
-    if (firstSpaceIndex === -1) {
-      return name; // Return as is if no space
-    }
-    const firstName = name.substring(0, firstSpaceIndex);
-    const restOfName = name.substring(firstSpaceIndex + 1);
-    return (
-      <>
-        {firstName}
-        <br />
-        {restOfName}
-      </>
-    );
-  };
 
   return (
     <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
@@ -72,8 +55,8 @@ export default function CheckinPage() {
                 ) : (
                     <XCircle className="h-8 w-8 text-red-500 flex-shrink-0" />
                 )}
-                <p className="text-base sm:text-lg font-bold leading-tight" title={player.name}>
-                    {formatName(player.name)}
+                <p className="text-base sm:text-lg font-bold leading-tight break-words" title={player.name}>
+                    {player.name}
                 </p>
             </CardContent>
             </Card>
