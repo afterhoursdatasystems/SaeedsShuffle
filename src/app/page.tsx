@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { getPublishedData } from '@/app/actions';
 import type { Team, GameFormat, GameVariant, Match, PowerUp } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -187,7 +187,7 @@ export default function PublicTeamsPage() {
     
     fetchData(true);
     
-    const interval = setInterval(() => fetchData(false), 5000); // Refresh every 5 seconds
+    const interval = setInterval(() => fetchData(false), 120000); // Refresh every 2 minutes
     return () => clearInterval(interval);
 
   }, [teams, schedule, activeRule, gameFormat]);
@@ -365,4 +365,3 @@ export default function PublicTeamsPage() {
     </div>
   );
 }
-
