@@ -38,6 +38,18 @@ const shuffleArray = <T,>(array: T[]): T[] => {
 
 type PlayerWithAdjustedSkill = Player & { adjustedSkill: number };
 
+const getTeamAnalysis = (team: Team) => {
+    const totalRawSkill = team.players.reduce((sum, p) => sum + p.skill, 0);
+    const totalAdjustedSkill = team.players.reduce((sum, p: any) => sum + (p.adjustedSkill || p.skill), 0);
+
+    const avgSkill = team.players.length > 0 ? (totalRawSkill / team.players.length).toFixed(1) : '0';
+    const avgAdjustedSkill = team.players.length > 0 ? (totalAdjustedSkill / team.players.length).toFixed(1) : '0';
+    const guyCount = team.players.filter(p => p.gender === 'Guy').length;
+    const galCount = team.players.filter(p => p.gender === 'Gal').length;
+    return { avgSkill, guyCount, galCount, avgAdjustedSkill };
+};
+
+
 export function TeamGenerator() {
   const { 
     players, 
@@ -66,15 +78,10 @@ export function TeamGenerator() {
     console.log('--- Starting New Draft Simulation ---');
     console.log(`Total Players: ${allPlayers.length}, Team Size: ${formatSize}v${formatSize}`);
 
-    if (allPlayers.length < formatSize) {
-        return [];
-    }
-
     // 1. Player Valuation
-    const alpha = -1.2;
     const valuedPlayers: PlayerWithAdjustedSkill[] = allPlayers.map(p => ({
         ...p,
-        adjustedSkill: p.skill + (p.gender === 'Gal' ? alpha : 0),
+        adjustedSkill: p.gender === 'Gal' ? p.skill * 0.85 : p.skill,
     }));
 
     // 2. Create and Shuffle Skill Buckets
@@ -105,7 +112,9 @@ export function TeamGenerator() {
     const numTeams = Math.floor(allPlayers.length / formatSize);
     const baseTeamSize = Math.floor(allPlayers.length / numTeams);
     const teamsWithExtra = allPlayers.length % numTeams;
+    
     console.log(`Calculated Teams: ${numTeams}, Base size: ${baseTeamSize}, Teams with extra: ${teamsWithExtra}`);
+
 
     const shuffledNames = shuffleArray(teamNames);
     const newTeams: Team[] = Array.from({ length: numTeams }, (_, i) => ({
@@ -117,8 +126,8 @@ export function TeamGenerator() {
     let teamIndex = 0;
     let direction = 1;
 
-    const guysInPool = draftPool.filter(p => p.gender === 'Guy').length;
-    const galsInPool = draftPool.filter(p => p.gender === 'Gal').length;
+    const totalGuys = draftPool.filter(p => p.gender === 'Guy').length;
+    const totalGals = draftPool.filter(p => p.gender === 'Gal').length;
 
     while(draftPool.length > 0) {
         const team = newTeams[teamIndex];
@@ -127,22 +136,26 @@ export function TeamGenerator() {
         if (team.players.length < targetSize) {
           const guysOnTeam = team.players.filter(p => p.gender === 'Guy').length;
           const galsOnTeam = team.players.filter(p => p.gender === 'Gal').length;
-
-          // Determine ideal gender ratio for this specific team size
-          const idealGuys = Math.round((guysInPool / allPlayers.length) * targetSize);
-          const idealGals = targetSize - idealGuys;
+          
+          const idealGuysPerTeam = Math.round((totalGuys / allPlayers.length) * targetSize);
+          const idealGalsPerTeam = targetSize - idealGuysPerTeam;
 
           let playerToDraft: PlayerWithAdjustedSkill | undefined;
           let candidateIndex = -1;
 
           // Prioritize needed gender
-          if (galsOnTeam < idealGals && draftPool.some(p => p.gender === 'Gal')) {
+          if (galsOnTeam < idealGalsPerTeam && draftPool.some(p => p.gender === 'Gal')) {
             candidateIndex = draftPool.findIndex(p => p.gender === 'Gal');
-          } else if (guysOnTeam < idealGuys && draftPool.some(p => p.gender === 'Guy')) {
+          } else if (guysOnTeam < idealGuysPerTeam && draftPool.some(p => p.gender === 'Guy')) {
             candidateIndex = draftPool.findIndex(p => p.gender === 'Guy');
-          } else {
-            // If ideal ratio is met or cannot be met, just take the best available player
-            candidateIndex = 0;
+          }
+          
+          // If no specific gender is needed or available, or if the pool is small, take the best player
+          if(candidateIndex === -1) {
+            const top5 = draftPool.slice(0, 5);
+            const randomIndex = Math.floor(Math.random() * Math.min(top5.length, 3));
+            const randomPlayer = top5[randomIndex];
+            candidateIndex = draftPool.findIndex(p => p.id === randomPlayer.id);
           }
           
           [playerToDraft] = draftPool.splice(candidateIndex, 1);
@@ -169,17 +182,6 @@ export function TeamGenerator() {
     });
     
     return newTeams;
-};
-
-const getTeamAnalysis = (team: Team) => {
-    const totalRawSkill = team.players.reduce((sum, p) => sum + p.skill, 0);
-    const totalAdjustedSkill = team.players.reduce((sum, p: any) => sum + (p.adjustedSkill || p.skill), 0);
-
-    const avgSkill = team.players.length > 0 ? (totalRawSkill / team.players.length).toFixed(1) : '0';
-    const avgAdjustedSkill = team.players.length > 0 ? (totalAdjustedSkill / team.players.length).toFixed(1) : '0';
-    const guyCount = team.players.filter(p => p.gender === 'Guy').length;
-    const galCount = team.players.filter(p => p.gender === 'Gal').length;
-    return { avgSkill, guyCount, galCount, avgAdjustedSkill };
 };
 
 
@@ -383,7 +385,7 @@ const getTeamAnalysis = (team: Team) => {
             {teams.map((team) => {
               const { avgSkill, guyCount, galCount } = getTeamAnalysis(team);
               return (
-              <Droppable droppableId={team.name} key={team.name} isCombineEnabled={false}>
+              <Droppable droppableId={team.name} key={team.name} isCombineEnabled={false} isDropDisabled={false}>
                 {(provided, snapshot) => (
                   <Card 
                     ref={provided.innerRef}
@@ -443,3 +445,4 @@ const getTeamAnalysis = (team: Team) => {
     </DragDropContext>
   );
 }
+
