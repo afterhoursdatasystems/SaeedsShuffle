@@ -61,47 +61,31 @@ export function TeamGenerator() {
       players: [],
     }));
 
-    const guys = allPlayers.filter(p => p.gender === 'Guy').sort((a, b) => b.skill - a.skill);
-    const gals = allPlayers.filter(p => p.gender === 'Gal').sort((a, b) => b.skill - a.skill);
+    // Shuffle players before sorting to ensure randomness for same-skilled players
+    const shuffledPlayers = shuffleArray(allPlayers);
 
+    const guys = shuffledPlayers.filter(p => p.gender === 'Guy').sort((a, b) => b.skill - a.skill);
+    const gals = shuffledPlayers.filter(p => p.gender === 'Gal').sort((a, b) => b.skill - a.skill);
+
+    let allDraftablePlayers = [];
+    let g = 0, l = 0;
+    // Weave the two lists together, alternating gender
+    while (g < guys.length || l < gals.length) {
+      if (l < gals.length) allDraftablePlayers.push(gals[l++]);
+      if (g < guys.length) allDraftablePlayers.push(guys[g++]);
+    }
+
+    // Snake draft the players
     let teamIndex = 0;
     let direction: 1 | -1 = 1;
-    let turn: 'gal' | 'guy' = gals.length >= guys.length ? 'gal' : 'guy';
-
-    while (gals.length > 0 || guys.length > 0) {
-        let playerToAdd: Player | undefined;
-
-        if (turn === 'gal' && gals.length > 0) {
-            playerToAdd = gals.shift();
-            turn = 'guy';
-        } else if (turn === 'guy' && guys.length > 0) {
-            playerToAdd = guys.shift();
-            turn = 'gal';
-        } else if (gals.length > 0) { // If preferred turn is unavailable, take other gender
-            playerToAdd = gals.shift();
-            turn = 'guy';
-        } else if (guys.length > 0) {
-            playerToAdd = guys.shift();
-            turn = 'gal';
-        } else {
-            break; // No players left
-        }
-
-        if (playerToAdd) {
-            newTeams[teamIndex].players.push(playerToAdd);
-        }
-
+    allDraftablePlayers.forEach(player => {
+        newTeams[teamIndex].players.push(player);
         teamIndex += direction;
-
-        if (teamIndex >= numTeams) {
-            direction = -1;
-            teamIndex = numTeams - 1;
+        if (teamIndex >= numTeams || teamIndex < 0) {
+            direction *= -1;
+            teamIndex += direction;
         }
-        if (teamIndex < 0) {
-            direction = 1;
-            teamIndex = 0;
-        }
-    }
+    });
 
     return newTeams;
 };
