@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { Player, Team } from '@/types';
@@ -52,68 +53,82 @@ export function TeamGenerator() {
   const presentPlayers = useMemo(() => players.filter((p) => p.present), [players]);
   const possibleTeamsCount = Math.floor(presentPlayers.length / teamSize);
   
-  const createBalancedTeams = (allPlayers: Player[], numTeams: number): Team[] => {
+  const createBalancedTeams = (allPlayers: Player[], numTeams: number, sizeOfTeam: number): Team[] => {
     const shuffledNames = shuffleArray(teamNames);
     const newTeams: Team[] = Array.from({ length: numTeams }, (_, i) => ({
         name: shuffledNames[i % shuffledNames.length],
         players: [],
     }));
 
-    // Separate players by gender and sort by skill
-    const guys = shuffleArray(allPlayers.filter(p => p.gender === 'Guy')).sort((a, b) => b.skill - a.skill);
-    const gals = shuffleArray(allPlayers.filter(p => p.gender === 'Gal')).sort((a, b) => b.skill - a.skill);
+    // 1. Categorize players into skill buckets
+    const buckets: { [key: string]: Player[] } = {
+        '10-9': [],
+        '8-6': [],
+        '5-4': [],
+        '3-1': [],
+    };
 
-    const playersToDraft = [...guys, ...gals];
+    allPlayers.forEach(player => {
+        if (player.skill >= 9) buckets['10-9'].push(player);
+        else if (player.skill >= 6) buckets['8-6'].push(player);
+        else if (player.skill >= 4) buckets['5-4'].push(player);
+        else buckets['3-1'].push(player);
+    });
 
-    // Snake draft
+    // 2. Shuffle each bucket to randomize draft order within tiers
+    for (const key in buckets) {
+        buckets[key] = shuffleArray(buckets[key]);
+    }
+
+    const draftPool = [
+        ...buckets['10-9'],
+        ...buckets['8-6'],
+        ...buckets['5-4'],
+        ...buckets['3-1'],
+    ];
+    
+    // 3. Snake draft
     let teamIndex = 0;
-    let direction = 1; // 1 for forward, -1 for backward
+    let direction: 1 | -1 = 1;
 
-    playersToDraft.forEach(player => {
-        // Find the team with the fewest players, then the lowest total skill
-        newTeams.sort((a, b) => {
-            if (a.players.length !== b.players.length) {
-                return a.players.length - b.players.length;
+    draftPool.forEach((player) => {
+        // Find team with fewest players first
+        const minPlayers = Math.min(...newTeams.map(t => t.players.length));
+        const teamsWithFewestPlayers = newTeams.filter(t => t.players.length === minPlayers);
+        
+        // Of those, find the one with the lowest skill sum
+        const targetTeam = teamsWithFewestPlayers.sort((a,b) => {
+             const skillA = a.players.reduce((sum, p) => sum + p.skill, 0);
+             const skillB = b.players.reduce((sum, p) => sum + p.skill, 0);
+             return skillA - skillB;
+        })[0];
+        
+        // Try to place the player on a valid team
+        let placed = false;
+        for (let i = 0; i < newTeams.length; i++) {
+            const currentTeam = newTeams[teamIndex];
+            if (currentTeam.players.length < sizeOfTeam) {
+                currentTeam.players.push(player);
+                placed = true;
+                break;
             }
-            const skillA = a.players.reduce((sum, p) => sum + p.skill, 0);
-            const skillB = b.players.reduce((sum, p) => sum + p.skill, 0);
-            return skillA - skillB;
-        });
-
-        const guysOnTeam = newTeams[teamIndex].players.filter(p => p.gender === 'Guy').length;
-        const galsOnTeam = newTeams[teamIndex].players.filter(p => p.gender === 'Gal').length;
-
-        // Try to balance genders
-        if (player.gender === 'Guy' && guysOnTeam > galsOnTeam + 1) {
-             // find a team that needs a guy
-            let alternateTeamIndex = (teamIndex + 1) % numTeams;
-            while(alternateTeamIndex !== teamIndex) {
-                 const alternateGuys = newTeams[alternateTeamIndex].players.filter(p => p.gender === 'Guy').length;
-                 const alternateGals = newTeams[alternateTeamIndex].players.filter(p => p.gender === 'Gal').length;
-                 if(alternateGuys <= alternateGals) {
-                    teamIndex = alternateTeamIndex;
-                    break;
-                 }
-                alternateTeamIndex = (alternateTeamIndex + 1) % numTeams;
-            }
-        } else if (player.gender === 'Gal' && galsOnTeam > guysOnTeam + 1) {
-            // find a team that needs a gal
-            let alternateTeamIndex = (teamIndex + 1) % numTeams;
-             while(alternateTeamIndex !== teamIndex) {
-                 const alternateGuys = newTeams[alternateTeamIndex].players.filter(p => p.gender === 'Guy').length;
-                 const alternateGals = newTeams[alternateTeamIndex].players.filter(p => p.gender === 'Gal').length;
-                 if(alternateGals <= alternateGuys) {
-                    teamIndex = alternateTeamIndex;
-                    break;
-                 }
-                alternateTeamIndex = (alternateTeamIndex + 1) % numTeams;
+            // Move to next team in snake order
+            teamIndex += direction;
+            if (teamIndex < 0 || teamIndex >= numTeams) {
+                direction *= -1;
+                teamIndex += direction;
             }
         }
-
-        newTeams[teamIndex].players.push(player);
         
+        if (!placed) {
+             // Fallback: if all teams in snake order are full, find any team with space
+             const teamWithSpace = newTeams.find(t => t.players.length < sizeOfTeam);
+             teamWithSpace?.players.push(player);
+        }
+
+        // Advance the snake draft index for the next player
         teamIndex += direction;
-        if (teamIndex >= numTeams || teamIndex < 0) {
+        if (teamIndex < 0 || teamIndex >= numTeams) {
             direction *= -1;
             teamIndex += direction;
         }
@@ -145,7 +160,7 @@ export function TeamGenerator() {
     setTeams([]);
     setSchedule([]);
     
-    const newTeams = createBalancedTeams(presentPlayers, numTeams);
+    const newTeams = createBalancedTeams(presentPlayers, numTeams, teamSize);
     setTeams(newTeams);
 
     toast({
