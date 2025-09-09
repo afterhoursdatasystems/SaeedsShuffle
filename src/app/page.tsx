@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -234,20 +235,6 @@ export default function PublicTeamsPage() {
             </div>
           ) : teams.length > 0 || gameFormat === 'blind-draw' ? (
             <div className="space-y-12">
-               {ruleIsActive && (
-                  <Card className="shadow-2xl transition-all duration-300 ease-in-out transform w-full bg-accent/20 border-accent border-2">
-                      <CardHeader className="text-center pb-4">
-                        <CardTitle className="text-2xl font-bold text-accent-foreground flex items-center justify-center gap-4">
-                          <Wand2 className="h-8 w-8 text-primary" />
-                          {activeRuleTitle}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="text-center">
-                        <p className="text-2xl font-bold text-primary">{activeRule?.name}</p>
-                        <p className="text-lg text-muted-foreground mt-2">{activeRule?.description}</p>
-                      </CardContent>
-                  </Card>
-               )}
 
                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
                 {teams.map((team) => (
@@ -324,6 +311,21 @@ export default function PublicTeamsPage() {
                     {isKOTC && gameFormat !== 'king-of-the-court' && KOTC_BASE_RULES}
                 </CardContent>
               </Card>}
+
+               {ruleIsActive && (
+                  <Card className="shadow-2xl transition-all duration-300 ease-in-out transform w-full bg-accent/20 border-accent border-2">
+                      <CardHeader className="text-center pb-4">
+                        <CardTitle className="text-2xl font-bold text-accent-foreground flex items-center justify-center gap-4">
+                          <Wand2 className="h-8 w-8 text-primary" />
+                          {activeRuleTitle}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="text-center">
+                        <p className="text-2xl font-bold text-primary">{activeRule?.name}</p>
+                        <p className="text-lg text-muted-foreground mt-2">{activeRule?.description}</p>
+                      </CardContent>
+                  </Card>
+               )}
 
             </div>
           ) : (
