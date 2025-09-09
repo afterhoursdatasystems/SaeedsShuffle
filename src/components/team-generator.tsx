@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import type { Player, Team } from '@/types';
@@ -55,87 +56,80 @@ export function TeamGenerator() {
   
   const createBalancedTeams = (allPlayers: Player[], numTeams: number, sizeOfTeam: number): Team[] => {
     const shuffledNames = shuffleArray(teamNames);
-    const newTeams: Team[] = Array.from({ length: numTeams }, (_, i) => ({
-        name: shuffledNames[i % shuffledNames.length],
-        players: [],
+    let newTeams: Team[] = Array.from({ length: numTeams }, (_, i) => ({
+      name: shuffledNames[i % shuffledNames.length],
+      players: [],
     }));
 
-    // 1. Categorize players into skill buckets
-    const buckets: { [key: string]: Player[] } = {
-        '10-9': [],
-        '8-6': [],
-        '5-4': [],
-        '3-1': [],
-    };
+    // 1. Separate players by gender and sort by skill
+    const guys = allPlayers.filter(p => p.gender === 'Guy').sort((a, b) => b.skill - a.skill);
+    const gals = allPlayers.filter(p => p.gender === 'Gal').sort((a, b) => b.skill - a.skill);
 
-    allPlayers.forEach(player => {
-        if (player.skill >= 9) buckets['10-9'].push(player);
-        else if (player.skill >= 6) buckets['8-6'].push(player);
-        else if (player.skill >= 4) buckets['5-4'].push(player);
-        else buckets['3-1'].push(player);
-    });
-
-    // 2. Shuffle each bucket to randomize draft order within tiers
-    for (const key in buckets) {
-        buckets[key] = shuffleArray(buckets[key]);
-    }
-
-    const draftPool = [
-        ...buckets['10-9'],
-        ...buckets['8-6'],
-        ...buckets['5-4'],
-        ...buckets['3-1'],
-    ];
-    
-    // 3. Snake draft
+    // 2. Perform alternating snake draft
     let teamIndex = 0;
     let direction: 1 | -1 = 1;
+    let turn: 'gal' | 'guy' = 'gal';
 
-    draftPool.forEach((player) => {
-        // Find team with fewest players first
-        const minPlayers = Math.min(...newTeams.map(t => t.players.length));
-        const teamsWithFewestPlayers = newTeams.filter(t => t.players.length === minPlayers);
-        
-        // Of those, find the one with the lowest skill sum
-        const targetTeam = teamsWithFewestPlayers.sort((a,b) => {
-             const skillA = a.players.reduce((sum, p) => sum + p.skill, 0);
-             const skillB = b.players.reduce((sum, p) => sum + p.skill, 0);
-             return skillA - skillB;
-        })[0];
-        
-        // Try to place the player on a valid team
-        let placed = false;
-        for (let i = 0; i < newTeams.length; i++) {
-            const currentTeam = newTeams[teamIndex];
-            if (currentTeam.players.length < sizeOfTeam) {
-                currentTeam.players.push(player);
-                placed = true;
-                break;
-            }
-            // Move to next team in snake order
+    while (gals.length > 0 || guys.length > 0) {
+      // Find a team that has space
+      let teamFound = false;
+      let initialTeamIndex = teamIndex;
+
+      while(!teamFound) {
+        if(newTeams[teamIndex].players.length < sizeOfTeam) {
+            teamFound = true;
+        } else {
             teamIndex += direction;
-            if (teamIndex < 0 || teamIndex >= numTeams) {
-                direction *= -1;
-                teamIndex += direction;
+            // If we've checked all teams, break to avoid infinite loop
+            if(teamIndex === initialTeamIndex) break; 
+            if (teamIndex >= numTeams) {
+                direction = -1;
+                teamIndex = numTeams - 1;
+            }
+            if (teamIndex < 0) {
+                direction = 1;
+                teamIndex = 0;
             }
         }
-        
-        if (!placed) {
-             // Fallback: if all teams in snake order are full, find any team with space
-             const teamWithSpace = newTeams.find(t => t.players.length < sizeOfTeam);
-             teamWithSpace?.players.push(player);
-        }
+      }
 
-        // Advance the snake draft index for the next player
-        teamIndex += direction;
-        if (teamIndex < 0 || teamIndex >= numTeams) {
-            direction *= -1;
-            teamIndex += direction;
+      if(!teamFound) break; // All teams are full
+
+      const targetTeam = newTeams[teamIndex];
+      let playerToAdd: Player | undefined;
+
+      // Determine which gender to draft based on turn and availability
+      if (turn === 'gal') {
+        if (gals.length > 0) {
+          playerToAdd = gals.shift();
         }
-    });
+        turn = 'guy'; // Switch turn even if no player was added
+      } else {
+        if (guys.length > 0) {
+          playerToAdd = guys.shift();
+        }
+        turn = 'gal'; // Switch turn
+      }
+      
+      if (playerToAdd) {
+        targetTeam.players.push(playerToAdd);
+      }
+
+      // Move to the next team for the next turn
+      teamIndex += direction;
+      if (teamIndex >= numTeams) {
+        direction = -1;
+        teamIndex = numTeams - 1;
+      }
+      if (teamIndex < 0) {
+        direction = 1;
+        teamIndex = 0;
+      }
+    }
 
     return newTeams;
-}
+  };
+
 
   const handleGenerateTeams = () => {
     if (presentPlayers.length < teamSize) {
