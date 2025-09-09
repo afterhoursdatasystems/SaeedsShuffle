@@ -55,19 +55,40 @@ export function TeamGenerator() {
   const possibleTeamsCount = presentPlayers.length >= teamSize ? Math.floor(presentPlayers.length / teamSize) : 0;
   
 const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] => {
-    // 1. Separate by gender and shuffle each list thoroughly
-    let guys = shuffleArray(allPlayers.filter(p => p.gender === 'Guy'));
-    let gals = shuffleArray(allPlayers.filter(p => p.gender === 'Gal'));
+    console.clear();
+    console.log("--- Starting New Draft Simulation ---");
+    console.log(`Total Players: ${allPlayers.length}, Team Size: ${formatSize}v${formatSize}`);
 
-    // 2. Determine team count and sizes
+    // 1. Separate by gender
+    let guys = allPlayers.filter(p => p.gender === 'Guy');
+    let gals = allPlayers.filter(p => p.gender === 'Gal');
+    console.log(`Player Pool: ${guys.length} guys, ${gals.length} gals`);
+
+    // 2. Shuffle each gender list to introduce randomness
+    guys = shuffleArray(guys);
+    gals = shuffleArray(gals);
+    console.log("Shuffled Guys Pool (Top 3):", guys.slice(0, 3).map(p => `${p.name} (${p.skill})`));
+    console.log("Shuffled Gals Pool (Top 3):", gals.slice(0, 3).map(p => `${p.name} (${p.skill})`));
+
+    // 3. Determine team count to ensure minimum team size
     const numPlayers = allPlayers.length;
-    const numTeams = Math.floor(numPlayers / formatSize);
-    
-    if (numTeams < 2) {
-      // Not enough players to make at least two teams.
-      return [];
+    let numTeams;
+
+    if (numPlayers < formatSize * 2) {
+        console.error("Not enough players to form at least two valid teams.");
+        return [];
     }
-    
+
+    let maxTeams = Math.floor(numPlayers / formatSize);
+    let minPlayersPerTeam = Math.floor(numPlayers / maxTeams);
+
+    while (minPlayersPerTeam < formatSize && maxTeams > 1) {
+        maxTeams--;
+        minPlayersPerTeam = Math.floor(numPlayers / maxTeams);
+    }
+    numTeams = maxTeams;
+    console.log(`Calculated Teams: ${numTeams}`);
+
     // Create empty teams
     const shuffledNames = shuffleArray(teamNames);
     const newTeams: Team[] = Array.from({ length: numTeams }, (_, i) => ({
@@ -75,26 +96,68 @@ const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] =
       players: [],
     }));
 
-    // 3. Deal players like cards to ensure gender balance
+    // 4. Deal players like cards, alternating between genders, using a snake draft
     let teamIndex = 0;
-    while (gals.length > 0) {
-        const player = gals.shift();
-        if (player) {
-            newTeams[teamIndex].players.push(player);
-            teamIndex = (teamIndex + 1) % numTeams;
+    let direction = 1; // 1 for forward, -1 for reverse
+    let draftingGals = true; // Start with gals
+
+    let playersToDraft = numPlayers;
+
+    while(playersToDraft > 0) {
+        let playerToDraft: Player | undefined;
+
+        // Determine which pool to draft from
+        if (draftingGals && gals.length > 0) {
+            playerToDraft = gals.shift();
+        } else if (!draftingGals && guys.length > 0) {
+            playerToDraft = guys.shift();
+        } else if (gals.length > 0) { // If one pool is empty, draft from the other
+            playerToDraft = gals.shift();
+        } else if (guys.length > 0) {
+            playerToDraft = guys.shift();
+        } else {
+            break; // No players left
+        }
+
+        if (playerToDraft) {
+            console.log(`Drafting ${playerToDraft.name} (${playerToDraft.gender}, Skill ${playerToDraft.skill}) to Team ${newTeams[teamIndex].name}`);
+            newTeams[teamIndex].players.push(playerToDraft);
+            playersToDraft--;
+
+            // Move to the next team based on snake draft direction
+            teamIndex += direction;
+
+            // Reverse direction if we've reached the end of the team list
+            if (teamIndex >= numTeams || teamIndex < 0) {
+                direction *= -1;
+                teamIndex += direction;
+                // Switch gender every full pass
+                draftingGals = !draftingGals; 
+                 console.log(`--- Snake Turn --- New Direction: ${direction === 1 ? 'Forward' : 'Reverse'}, Drafting: ${draftingGals ? 'Gals' : 'Guys'}`);
+            }
         }
     }
     
-    teamIndex = 0; // Reset for guys
-    while(guys.length > 0) {
-        const player = guys.shift();
-        if (player) {
-            newTeams[teamIndex].players.push(player);
-            teamIndex = (teamIndex + 1) % numTeams;
-        }
-    }
+    console.log("--- Final Team Rosters ---");
+    newTeams.forEach(team => {
+        const analysis = getTeamAnalysis(team);
+        console.log(
+            `Team: ${team.name} (${team.players.length} players) | ` +
+            `Avg Skill: ${analysis.avgSkill} | ` +
+            `Gender: ${analysis.guyCount}G / ${analysis.galCount}L`
+        );
+        console.table(team.players.map(p => ({ Name: p.name, Gender: p.gender, Skill: p.skill })));
+    });
+
 
     return newTeams;
+};
+
+const getTeamAnalysis = (team: Team) => {
+    const avgSkill = team.players.length > 0 ? (team.players.reduce((sum, p) => sum + p.skill, 0) / team.players.length).toFixed(1) : '0';
+    const guyCount = team.players.filter(p => p.gender === 'Guy').length;
+    const galCount = team.players.filter(p => p.gender === 'Gal').length;
+    return { avgSkill, guyCount, galCount };
 };
 
 
@@ -162,13 +225,6 @@ const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] =
       description: 'All teams have been cleared and the schedule has been reset.',
     });
   };
-
-  const getTeamAnalysis = (team: Team) => {
-    const avgSkill = team.players.length > 0 ? (team.players.reduce((sum, p) => sum + p.skill, 0) / team.players.length).toFixed(1) : '0';
-    const guyCount = team.players.filter(p => p.gender === 'Guy').length;
-    const galCount = team.players.filter(p => p.gender === 'Gal').length;
-    return { avgSkill, guyCount, galCount };
-  }
 
   const onDragEnd = (result: DropResult) => {
     const { source, destination } = result;
