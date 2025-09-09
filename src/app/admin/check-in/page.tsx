@@ -38,7 +38,7 @@ export default function CheckinPage() {
              <div style={{width: '160px'}}></div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7">
         {sortedPlayers.map((player) => (
             <Card
             key={player.id}
