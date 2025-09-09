@@ -11,8 +11,8 @@ import Link from 'next/link';
 
 const navItems = [
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/admin/player-management', label: 'Player Management', icon: UserPlus },
     { href: '/admin/check-in', label: 'Player Check-in', icon: UserCheck },
-    { href: '/admin/player-management', label: 'Player Roster', icon: UserPlus },
     { href: '/admin/teams', label: 'Team Management', icon: Users },
     { href: '/admin/schedule', label: 'Schedule Management', icon: Calendar },
     { href: '/admin/rule-generator', label: 'Rule Generator', icon: Wand2 },
