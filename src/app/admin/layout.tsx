@@ -5,9 +5,8 @@ import { useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { PlayerProvider } from '@/contexts/player-context';
-import AppHeader from '@/components/app-header';
 import { SidebarProvider, Sidebar, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from '@/components/ui/sidebar';
-import { LayoutDashboard, UserCheck, Users, Calendar, Wand2, Bot } from 'lucide-react';
+import { LayoutDashboard, UserCheck, Users, Calendar, Wand2, Bot, Volleyball } from 'lucide-react';
 import Link from 'next/link';
 
 const navItems = [
@@ -46,9 +45,14 @@ export default function AdminLayout({
     <PlayerProvider>
         <SidebarProvider>
             <div className="flex min-h-screen w-full flex-col bg-muted/40">
-                <AppHeader />
                 <div className="flex">
                     <Sidebar className="hidden lg:block border-r">
+                        <div className="flex h-14 items-center border-b px-6">
+                            <Link href="/admin" className="flex items-center gap-2 font-semibold">
+                                <Volleyball className="h-6 w-6 text-primary" />
+                                <span>Saeed's Shuffle</span>
+                            </Link>
+                        </div>
                         <SidebarMenu>
                             {navItems.map((item) => (
                                 <SidebarMenuItem key={item.href}>
@@ -62,9 +66,9 @@ export default function AdminLayout({
                             ))}
                         </SidebarMenu>
                     </Sidebar>
-                    <main className="flex-1">
+                    <div className="flex flex-col flex-1">
                         {children}
-                    </main>
+                    </div>
                 </div>
             </div>
         </SidebarProvider>
