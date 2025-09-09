@@ -25,17 +25,9 @@ import { cn } from '@/lib/utils';
 type SortKey = 'name' | 'team' | 'gender' | 'skill' | 'present';
 
 const teamColors = [
-  '#F3A6A6', // Light Coral
-  '#A6C1F3', // Light Blue
-  '#A6F3A6', // Light Green
-  '#F3ECA6', // Light Yellow
-  '#DDA0DD', // Plum
-  '#B0E0E6', // Powder Blue
-  '#FFDAB9', // Peach Puff
-  '#E6E6FA', // Lavender
-  '#F08080', // Light Coral
-  '#98FB98', // Pale Green
-  '#ADD8E6', // Light Blue
+  '#F3A6A6', '#A6C1F3', '#A6F3A6', '#F3ECA6', '#DDA0DD', '#B0E0E6', 
+  '#FFDAB9', '#E6E6FA', '#F08080', '#98FB98', '#ADD8E6', '#FFA07A', 
+  '#B2FFFF', '#FFB6C1', '#C1FFC1', '#FFFFB2', '#E0B2FF'
 ];
 
 const getSkillColor = (skill: number) => {
@@ -47,7 +39,7 @@ const getSkillColor = (skill: number) => {
 
 
 export default function PlayerManagementPage() {
-  const { players, teams, isLoading } = usePlayerContext();
+  const { players, teams, togglePlayerPresence, isLoading } = usePlayerContext();
   const [sortKey, setSortKey] = useState<SortKey>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
@@ -129,7 +121,7 @@ export default function PlayerManagementPage() {
         <div>
           <h1 className="text-3xl font-bold">Player Management</h1>
           <p className="text-muted-foreground">
-            Manage your league's players here.
+            Manage your league's players here. Click a player to toggle their presence.
           </p>
         </div>
         <Button>
@@ -150,6 +142,12 @@ export default function PlayerManagementPage() {
                   </Button>
                 </TableHead>
                 <TableHead>
+                   <Button variant="ghost" onClick={() => handleSort('present')}>
+                    Presence
+                    <span className="ml-2">{getSortIcon('present')}</span>
+                  </Button>
+                </TableHead>
+                <TableHead>
                    <Button variant="ghost" onClick={() => handleSort('team')}>
                     Team
                     <span className="ml-2">{getSortIcon('team')}</span>
@@ -167,12 +165,6 @@ export default function PlayerManagementPage() {
                     <span className="ml-2">{getSortIcon('skill')}</span>
                   </Button>
                 </TableHead>
-                 <TableHead>
-                   <Button variant="ghost" onClick={() => handleSort('present')}>
-                    Presence
-                    <span className="ml-2">{getSortIcon('present')}</span>
-                  </Button>
-                </TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -182,8 +174,24 @@ export default function PlayerManagementPage() {
                 const teamColor = teamName === 'Unassigned' ? '#EAEAEA' : teamColorMap.get(teamName);
 
                 return (
-                    <TableRow key={player.id}>
+                    <TableRow 
+                        key={player.id} 
+                        onClick={() => togglePlayerPresence(player.id)}
+                        className="cursor-pointer"
+                    >
                       <TableCell className="font-medium">{player.name}</TableCell>
+                       <TableCell>
+                         <Badge
+                          style={{
+                            backgroundColor: player.present ? '#D4EDDA' : '#F8D7DA',
+                            color: player.present ? '#155724' : '#721C24',
+                            borderColor: player.present ? '#C3E6CB' : '#F5C6CB'
+                          }}
+                           className="border"
+                        >
+                          {player.present ? 'Present' : 'Away'}
+                        </Badge>
+                      </TableCell>
                        <TableCell>
                           <Badge style={{ backgroundColor: teamColor, color: '#333' }} className='border-gray-300 border'>
                             {teamName}
@@ -212,18 +220,6 @@ export default function PlayerManagementPage() {
                            className="border-gray-300 border"
                         >
                           {player.skill}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                         <Badge
-                          style={{
-                            backgroundColor: player.present ? '#D4EDDA' : '#F8D7DA',
-                            color: player.present ? '#155724' : '#721C24',
-                            borderColor: player.present ? '#C3E6CB' : '#F5C6CB'
-                          }}
-                           className="border"
-                        >
-                          {player.present ? 'Present' : 'Away'}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
