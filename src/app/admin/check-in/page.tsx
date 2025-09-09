@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useMemo } from 'react';
 import { usePlayerContext } from '@/contexts/player-context';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, CheckCircle, XCircle } from 'lucide-react';
@@ -11,6 +12,15 @@ import Link from 'next/link';
 export default function CheckinPage() {
   const { players, togglePlayerPresence, isLoading: playersLoading } = usePlayerContext();
 
+  const { presentPlayers, presentCount, presentGuys, presentGals } = useMemo(() => {
+    const presentPlayers = players.filter(p => p.present);
+    const presentCount = presentPlayers.length;
+    const presentGuys = presentPlayers.filter(p => p.gender === 'Guy').length;
+    const presentGals = presentPlayers.filter(p => p.gender === 'Gal').length;
+    return { presentPlayers, presentCount, presentGuys, presentGals };
+  }, [players]);
+
+
   if (playersLoading) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
@@ -20,8 +30,7 @@ export default function CheckinPage() {
   }
 
   const sortedPlayers = [...players].sort((a, b) => a.name.localeCompare(b.name));
-  const presentCount = players.filter(p => p.present).length;
-
+  
   return (
     <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
         <div className="flex items-center justify-between mb-8">
@@ -33,7 +42,7 @@ export default function CheckinPage() {
             </Button>
             <div className='text-center'>
                 <h1 className="text-3xl font-bold">Player Check-in</h1>
-                <p className="text-muted-foreground">{presentCount} of {players.length} players present</p>
+                <p className="text-muted-foreground">{presentCount} of {players.length} players present ({presentGuys} Guys / {presentGals} Gals)</p>
             </div>
              <div style={{width: '160px'}}></div>
         </div>
