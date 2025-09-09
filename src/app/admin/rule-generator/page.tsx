@@ -32,12 +32,11 @@ const allPowerUps: PowerUp[] = [
 ];
 
 const kingsRansomRules: PowerUp[] = [
-    { name: 'Lowest Skill Swap', description: 'The player with the lowest skill rating from each team will be traded.' },
-    { name: 'Highest Skill Swap', description: 'The player with the highest skill rating from each team will be traded.' },
-    { name: 'Gender-for-Gender Swap', description: 'The losing team chooses one of their players to trade, and the winning team must offer a player of the same gender in return.' },
-    { name: 'Player\'s Choice (Winning Team)', description: 'The winning team chooses which of their players to offer for trade. The losing team must accept.' },
-    { name: 'Player\'s Choice (Losing Team)', description: 'The losing team chooses one of their players to trade, and the winning team must accept the trade.' },
-    { name: 'Calculated Risk', description: 'The two players with the most similar skill ratings from each team will be traded.'},
+    { name: 'Blind Choice', description: 'The losing team huddles and decides which player on the winning team they want to trade for. The winning team then gets to pick any player from the losing team in return.' },
+    { name: 'Off-Court Swap', description: 'The trade happens between players who are currently off the court. The losing team chooses one of their benched players to trade, and the winning team chooses one of their benched players in return.' },
+    { name: 'Team Captain\'s Choice', description: 'The two team captains negotiate and decide which players will be traded. Their decision is final.' },
+    { name: 'The Renegotiation', description: 'The losing team proposes a trade. The winning team can either ACCEPT the trade, or VETO it by giving the losing team 3 points.' },
+    { name: 'Forced Trade', description: 'The player who served the final losing point is automatically traded for the player who scored the winning point.' },
 ];
 
 
@@ -137,4 +136,3 @@ export default function RuleGeneratorPage() {
     </div>
   );
 }
-
