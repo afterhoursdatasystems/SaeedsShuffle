@@ -1,3 +1,4 @@
+
 'use client';
 
 import { usePlayerContext } from '@/contexts/player-context';
@@ -55,9 +56,11 @@ export default function CheckinPage() {
                 ) : (
                     <XCircle className="h-8 w-8 text-red-500 flex-shrink-0" />
                 )}
-                <p className="text-base sm:text-lg font-bold leading-tight break-words" title={player.name}>
-                    {player.name}
-                </p>
+                <div className="min-w-0 flex-1">
+                    <p className="text-base sm:text-lg font-bold leading-tight break-all" title={player.name}>
+                        {player.name}
+                    </p>
+                </div>
             </CardContent>
             </Card>
         ))}
