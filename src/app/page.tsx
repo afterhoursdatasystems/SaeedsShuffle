@@ -56,8 +56,8 @@ const formatDetails: Record<CombinedGameFormat, { title: string; description: Re
                     <li><strong>Choose Your Challenger:</strong> You may pick any team waiting in line to be your next opponent.</li>
                     <li><strong>Impose a Rule:</strong> You may add a fun, temporary rule for the next game only (e.g., “no jump serves”).</li>
                     <li><strong>Take a Royal Rest:</strong> You can choose to sit out one round. The next two teams will play each other to determine who challenges you next.</li>
-                    <li><strong>Serve Control:</strong> You decide which team serves first in the next match.</li>
-                    <li><strong>Court Side Advantage:</strong> You get to choose which side of the court you want to play on.</li>
+                    <li><strong>Challenger Handicap:</strong> Impose a small handicap on the challenging team (e.g., one player cannot block).</li>
+                    <li><strong>King's Court Alliance:</strong> Choose a waiting team as an ally. If you lose, your ally gets to immediately re-challenge the new King.</li>
                 </ul>
             </li>
         </ul>
