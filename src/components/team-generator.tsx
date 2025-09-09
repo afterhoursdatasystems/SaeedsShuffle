@@ -61,74 +61,50 @@ export function TeamGenerator() {
       players: [],
     }));
 
-    // 1. Separate players by gender and sort by skill
     const guys = allPlayers.filter(p => p.gender === 'Guy').sort((a, b) => b.skill - a.skill);
     const gals = allPlayers.filter(p => p.gender === 'Gal').sort((a, b) => b.skill - a.skill);
 
-    // 2. Perform alternating snake draft
     let teamIndex = 0;
     let direction: 1 | -1 = 1;
-    let turn: 'gal' | 'guy' = 'gal';
+    let turn: 'gal' | 'guy' = gals.length >= guys.length ? 'gal' : 'guy';
 
     while (gals.length > 0 || guys.length > 0) {
-      // Find a team that has space
-      let teamFound = false;
-      let initialTeamIndex = teamIndex;
+        let playerToAdd: Player | undefined;
 
-      while(!teamFound) {
-        if(newTeams[teamIndex].players.length < sizeOfTeam) {
-            teamFound = true;
+        if (turn === 'gal' && gals.length > 0) {
+            playerToAdd = gals.shift();
+            turn = 'guy';
+        } else if (turn === 'guy' && guys.length > 0) {
+            playerToAdd = guys.shift();
+            turn = 'gal';
+        } else if (gals.length > 0) { // If preferred turn is unavailable, take other gender
+            playerToAdd = gals.shift();
+            turn = 'guy';
+        } else if (guys.length > 0) {
+            playerToAdd = guys.shift();
+            turn = 'gal';
         } else {
-            teamIndex += direction;
-            // If we've checked all teams, break to avoid infinite loop
-            if(teamIndex === initialTeamIndex) break; 
-            if (teamIndex >= numTeams) {
-                direction = -1;
-                teamIndex = numTeams - 1;
-            }
-            if (teamIndex < 0) {
-                direction = 1;
-                teamIndex = 0;
-            }
+            break; // No players left
         }
-      }
 
-      if(!teamFound) break; // All teams are full
-
-      const targetTeam = newTeams[teamIndex];
-      let playerToAdd: Player | undefined;
-
-      // Determine which gender to draft based on turn and availability
-      if (turn === 'gal') {
-        if (gals.length > 0) {
-          playerToAdd = gals.shift();
+        if (playerToAdd) {
+            newTeams[teamIndex].players.push(playerToAdd);
         }
-        turn = 'guy'; // Switch turn even if no player was added
-      } else {
-        if (guys.length > 0) {
-          playerToAdd = guys.shift();
-        }
-        turn = 'gal'; // Switch turn
-      }
-      
-      if (playerToAdd) {
-        targetTeam.players.push(playerToAdd);
-      }
 
-      // Move to the next team for the next turn
-      teamIndex += direction;
-      if (teamIndex >= numTeams) {
-        direction = -1;
-        teamIndex = numTeams - 1;
-      }
-      if (teamIndex < 0) {
-        direction = 1;
-        teamIndex = 0;
-      }
+        teamIndex += direction;
+
+        if (teamIndex >= numTeams) {
+            direction = -1;
+            teamIndex = numTeams - 1;
+        }
+        if (teamIndex < 0) {
+            direction = 1;
+            teamIndex = 0;
+        }
     }
 
     return newTeams;
-  };
+};
 
 
   const handleGenerateTeams = () => {
