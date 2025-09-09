@@ -62,7 +62,6 @@ export function TeamGenerator() {
     const k = Math.max(2, Math.floor(Ntotal / formatSize));
     const S_base = Math.floor(Ntotal / k);
     const k_extra = Ntotal % k;
-
     const teamSizes = Array(k).fill(S_base);
     for (let i = 0; i < k_extra; i++) {
         teamSizes[i]++;
@@ -74,87 +73,50 @@ export function TeamGenerator() {
         players: [],
     }));
 
-    // 2. Player Valuation & Tiering
+    // 2. Player Valuation & Bucketing
     const valuedPlayers = allPlayers.map(p => ({
         ...p,
         adjustedSkill: p.skill + (p.gender === 'Gal' ? femaleSkillAdjustment : 0),
     }));
 
-    const guys = valuedPlayers.filter(p => p.gender === 'Guy');
-    const gals = valuedPlayers.filter(p => p.gender === 'Gal');
-
-    // Group by skill, then shuffle within those groups
-    const groupAndShuffle = (playerList: typeof valuedPlayers) => {
-        const grouped = playerList.reduce((acc, player) => {
-            const key = player.adjustedSkill;
-            if (!acc[key]) {
-                acc[key] = [];
-            }
-            acc[key].push(player);
-            return acc;
-        }, {} as Record<number, typeof valuedPlayers>);
-
-        Object.values(grouped).forEach(group => shuffleArray(group));
-        
-        return Object.values(grouped).flat().sort((a, b) => b.adjustedSkill - a.adjustedSkill);
+    const getBucket = (skill: number) => {
+        if (skill >= 9) return '9-10';
+        if (skill >= 7) return '7-8';
+        if (skill >= 4) return '4-6';
+        return '1-3';
     };
 
-    const sortedGuys = groupAndShuffle(guys);
-    const sortedGals = groupAndShuffle(gals);
+    const buckets: Record<string, Player[]> = { '9-10': [], '7-8': [], '4-6': [], '1-3': [] };
+    for (const player of valuedPlayers) {
+        buckets[getBucket(player.skill)].push(player);
+    }
+    
+    // 3. Randomization Layer
+    // Shuffle players within each bucket
+    for (const bucketKey in buckets) {
+        buckets[bucketKey] = shuffleArray(buckets[bucketKey]);
+    }
+    
+    // Shuffle the order of buckets to be drafted
+    const bucketOrder = shuffleArray(Object.keys(buckets));
 
-    // 3. The Snake Draft
+    // 4. Snake Draft Execution
+    const draftPool = bucketOrder.flatMap(key => buckets[key]);
+    
     let teamIndex = 0;
     let direction: 1 | -1 = 1;
-    const totalPlayersToDraft = teamSizes.reduce((a, b) => a + b, 0);
 
-    for (let i = 0; i < totalPlayersToDraft; i++) {
+    draftPool.forEach(playerToDraft => {
         const currentTeam = newTeams[teamIndex];
-        const remainingSpots = teamSizes[teamIndex] - currentTeam.players.length;
-        if(remainingSpots === 0) {
-            // This should not happen if logic is correct, but as a safeguard
-            teamIndex += direction;
-            if (teamIndex >= k || teamIndex < 0) {
-                direction *= -1;
-                teamIndex += direction;
-            }
-            i--; // retry this player
-            continue;
-        }
-
-        const genderNeeded = (() => {
-            const guyCount = currentTeam.players.filter(p => p.gender === 'Guy').length;
-            const galCount = currentTeam.players.filter(p => p.gender === 'Gal').length;
-            const guyRatio = sortedGuys.length / Ntotal;
-            const galRatio = sortedGals.length / Ntotal;
-
-            const desiredGalCount = Math.round(teamSizes[teamIndex] * galRatio);
-            
-            if (galCount < desiredGalCount && sortedGals.length > 0) return 'Gal';
-            if (guyCount < (teamSizes[teamIndex] - desiredGalCount) && sortedGuys.length > 0) return 'Guy';
-
-            // Fallback if ratios lead to dead-end
-            return sortedGals.length > sortedGuys.length ? 'Gal' : 'Guy';
-        })();
-
-
-        let playerToDraft;
-        if (genderNeeded === 'Gal' && sortedGals.length > 0) {
-            playerToDraft = sortedGals.shift()!;
-        } else if (sortedGuys.length > 0) {
-            playerToDraft = sortedGuys.shift()!;
-        } else {
-             playerToDraft = sortedGals.shift()!; // Take whatever is left
-        }
-
         currentTeam.players.push(playerToDraft);
 
-        // Move to the next team
+        // Move to the next team in snake order
         teamIndex += direction;
         if (teamIndex >= k || teamIndex < 0) {
             direction *= -1;
             teamIndex += direction;
         }
-    }
+    });
 
     return newTeams;
 };
