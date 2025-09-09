@@ -56,66 +56,30 @@ export function TeamGenerator() {
   
   const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] => {
     const Ntotal = allPlayers.length;
-    const femaleSkillAdjustment = -1.2;
-
-    // 1. Team Sizing & Structure
+    
+    // 1. Team Sizing
     const k = Math.max(2, Math.floor(Ntotal / formatSize));
-    const S_base = Math.floor(Ntotal / k);
-    const k_extra = Ntotal % k;
-    const teamSizes = Array(k).fill(S_base);
-    for (let i = 0; i < k_extra; i++) {
-        teamSizes[i]++;
-    }
-
     const shuffledNames = shuffleArray(teamNames);
     const newTeams: Team[] = Array.from({ length: k }, (_, i) => ({
         name: shuffledNames[i % shuffledNames.length],
         players: [],
     }));
 
-    // 2. Player Valuation & Bucketing
-    const valuedPlayers = allPlayers.map(p => ({
-        ...p,
-        adjustedSkill: p.skill + (p.gender === 'Gal' ? femaleSkillAdjustment : 0),
-    }));
-
-    const getBucket = (skill: number) => {
-        if (skill >= 9) return '9-10';
-        if (skill >= 7) return '7-8';
-        if (skill >= 4) return '4-6';
-        return '1-3';
-    };
-
-    const buckets: Record<string, Player[]> = { '9-10': [], '7-8': [], '4-6': [], '1-3': [] };
-    for (const player of valuedPlayers) {
-        buckets[getBucket(player.skill)].push(player);
-    }
+    // 2. Separate and Shuffle by Gender
+    const guys = shuffleArray(allPlayers.filter(p => p.gender === 'Guy'));
+    const gals = shuffleArray(allPlayers.filter(p => p.gender === 'Gal'));
     
-    // 3. Randomization Layer
-    // Shuffle players within each bucket
-    for (const bucketKey in buckets) {
-        buckets[bucketKey] = shuffleArray(buckets[bucketKey]);
-    }
-    
-    // Shuffle the order of buckets to be drafted
-    const bucketOrder = shuffleArray(Object.keys(buckets));
-
-    // 4. Snake Draft Execution
-    const draftPool = bucketOrder.flatMap(key => buckets[key]);
-    
+    // 3. Distribute Genders Evenly ("Dealing like cards")
     let teamIndex = 0;
-    let direction: 1 | -1 = 1;
+    gals.forEach(player => {
+        newTeams[teamIndex].players.push(player);
+        teamIndex = (teamIndex + 1) % k;
+    });
 
-    draftPool.forEach(playerToDraft => {
-        const currentTeam = newTeams[teamIndex];
-        currentTeam.players.push(playerToDraft);
-
-        // Move to the next team in snake order
-        teamIndex += direction;
-        if (teamIndex >= k || teamIndex < 0) {
-            direction *= -1;
-            teamIndex += direction;
-        }
+    teamIndex = 0;
+    guys.forEach(player => {
+        newTeams[teamIndex].players.push(player);
+        teamIndex = (teamIndex + 1) % k;
     });
 
     return newTeams;
