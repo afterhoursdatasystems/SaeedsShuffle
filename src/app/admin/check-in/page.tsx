@@ -50,17 +50,15 @@ export default function CheckinPage() {
                 : 'border-red-500 bg-red-50/20 text-muted-foreground'
             )}
             >
-            <CardContent className="flex items-center justify-start p-3 sm:p-4 gap-3 flex-grow">
+            <CardContent className="flex flex-col items-center justify-center text-center p-4 gap-2 flex-grow">
                 {player.present ? (
-                    <CheckCircle className="h-8 w-8 text-green-500 flex-shrink-0" />
+                    <CheckCircle className="h-10 w-10 text-green-500 flex-shrink-0" />
                 ) : (
-                    <XCircle className="h-8 w-8 text-red-500 flex-shrink-0" />
+                    <XCircle className="h-10 w-10 text-red-500 flex-shrink-0" />
                 )}
-                <div className="min-w-0 flex-1">
-                    <p className="text-base sm:text-lg font-bold leading-tight truncate whitespace-nowrap" title={player.name}>
-                        {player.name}
-                    </p>
-                </div>
+                <p className="text-base font-bold leading-tight break-words">
+                    {player.name}
+                </p>
             </CardContent>
             </Card>
         ))}
