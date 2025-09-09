@@ -28,7 +28,7 @@ const allPowerUps: PowerUp[] = [
   { name: 'Mimic', description: 'For the next rally, the opposing team must mimic your team\'s formation.' },
   { name: 'Double Trouble', description: 'For the next rally, your team is allowed to have two contacts in a row by the same player.' },
   { name: 'Low Ceiling', description: 'For the next rally, the opposing team is not allowed to send the ball over the net above the height of the antennae.' },
-  { name 'Friendly Fire', description: 'Your team can get a point if the opposing team has a miscommunication and two players run into each other.' },
+  { name: 'Friendly Fire', description: 'Your team can get a point if the opposing team has a miscommunication and two players run into each other.' },
   { name: 'Serve Swap', description: 'You may force any player on the opposing team to serve for the next point.' },
 ];
 
