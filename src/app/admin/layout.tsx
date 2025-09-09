@@ -48,20 +48,20 @@ export default function AdminLayout({
         <SidebarProvider defaultOpen={true}>
             <div className="flex min-h-screen w-full flex-col bg-muted/40">
                 <div className="flex">
-                    <Sidebar className="hidden lg:block border-r">
+                    <Sidebar>
                         <div className="flex h-14 items-center border-b px-6">
                             <Link href="/admin" className="flex items-center gap-2 font-semibold">
                                 <Volleyball className="h-6 w-6 text-primary" />
-                                <span>Saeed's Shuffle</span>
+                                <span className="group-data-[collapsible=icon]:hidden">Saeed's Shuffle</span>
                             </Link>
                         </div>
                         <SidebarMenu>
                             {navItems.map((item) => (
                                 <SidebarMenuItem key={item.href}>
-                                    <SidebarMenuButton asChild isActive={pathname === item.href}>
+                                     <SidebarMenuButton asChild isActive={pathname === item.href} tooltip={item.label}>
                                         <Link href={item.href}>
                                             <item.icon />
-                                            {item.label}
+                                            <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
                                         </Link>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
@@ -69,9 +69,7 @@ export default function AdminLayout({
                         </SidebarMenu>
                     </Sidebar>
                     <div className="flex flex-col flex-1">
-                        <AppHeader>
-                           <SidebarTrigger className="lg:hidden" />
-                        </AppHeader>
+                        <AppHeader />
                         {children}
                     </div>
                 </div>

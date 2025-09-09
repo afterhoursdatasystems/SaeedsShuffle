@@ -8,6 +8,7 @@ import { LogOut, Volleyball, LayoutDashboard, PanelLeft, UserCheck, Users, Calen
 import Link from 'next/link';
 import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
 import React from 'react';
+import { SidebarTrigger } from './ui/sidebar';
 
 const navItems = [
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -19,7 +20,7 @@ const navItems = [
     { href: '/admin/simulation', label: 'Simulate Standings', icon: Bot },
 ];
 
-export default function AppHeader({ children }: { children?: React.ReactNode }) {
+export default function AppHeader() {
   const { logout } = useAuth();
   const router = useRouter();
 
@@ -30,9 +31,13 @@ export default function AppHeader({ children }: { children?: React.ReactNode }) 
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:px-6">
+        <SidebarTrigger />
         <Sheet>
             <SheetTrigger asChild>
-               {children}
+                <Button variant="outline" size="icon" className="md:hidden">
+                    <PanelLeft className="h-5 w-5" />
+                    <span className="sr-only">Toggle Menu</span>
+                </Button>
             </SheetTrigger>
             <SheetContent side="left" className="sm:max-w-xs">
                 <nav className="grid gap-6 text-lg font-medium">
