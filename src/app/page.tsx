@@ -31,8 +31,6 @@ const formatDetails: Record<CombinedGameFormat, { title: string; description: Re
             <li><strong>On the Challenger Court (Court 2):</strong> The winning team of this match becomes the next in line to move up and challenge the current King.</li>
             <li><strong>Winning the Tournament:</strong> This process repeats continuously. The team with the most points (total wins) at the end of the time is the champion.</li>
         </ul>
-        <h4 className="font-bold text-xl mt-4 mb-2">Fair Play Inclusions</h4>
-        <p>This format includes The King’s Handicap Rule, Secret Missions, and the Cosmic Scramble to ensure all teams stay engaged. Teams can earn bonus points by completing their missions, and the Cosmic Scramble may be initiated by the TD to refresh team lineups and add a fun, random twist.</p>
       </div>
     ),
   },
@@ -61,8 +59,6 @@ const formatDetails: Record<CombinedGameFormat, { title: string; description: Re
                 </ul>
             </li>
         </ul>
-        <h4 className="font-bold text-xl mt-4 mb-2">Fair Play Inclusions</h4>
-        <p>To keep the monarchy from becoming a tyranny, this format incorporates The King’s Handicap Rule, Secret Missions, and the Cosmic Scramble. A struggling team can still achieve victory by completing their mission, and the Cosmic Scramble ensures that even a dominant Monarch’s roster isn’t safe from a fun, random shake-up.</p>
       </div>
     ),
   },
@@ -222,14 +218,14 @@ export default function PublicTeamsPage() {
         </div>
       </header>
       <main className="flex-1 p-6 md:p-8">
-        <div className="mx-auto w-full">
+        <div className="mx-auto w-full max-w-none">
           {isLoading ? (
              <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
               {renderTeamSkeletons()}
             </div>
           ) : teams.length > 0 ? (
             <div className="space-y-12">
-               <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+               <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
                 {teams.map((team) => (
                   <Card key={team.name} className="flex flex-col rounded-xl border-2 border-primary/50 shadow-2xl transition-transform hover:scale-105 bg-card">
                     <CardHeader className="p-6 bg-primary/10 rounded-t-lg">
