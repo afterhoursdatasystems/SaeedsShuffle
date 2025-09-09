@@ -152,32 +152,45 @@ export default function PublicTeamsPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchData() {
-      setIsLoading(true);
+    async function fetchData(isInitialLoad = false) {
+      if (isInitialLoad) {
+        setIsLoading(true);
+      }
       try {
         const result = await getPublishedData();
         if (result.success && result.data) {
-          setTeams(result.data.teams || []);
-          setSchedule(result.data.schedule || []);
-          setActiveRule(result.data.activeRule || null);
-          let format = result.data.format || 'round-robin';
-          setGameFormat(format as CombinedGameFormat);
+          // Only update state if the data has actually changed
+          if (JSON.stringify(result.data.teams) !== JSON.stringify(teams)) {
+            setTeams(result.data.teams || []);
+          }
+          if (JSON.stringify(result.data.schedule) !== JSON.stringify(schedule)) {
+            setSchedule(result.data.schedule || []);
+          }
+          if (JSON.stringify(result.data.activeRule) !== JSON.stringify(activeRule)) {
+            setActiveRule(result.data.activeRule || null);
+          }
+          const format = (result.data.format || 'round-robin') as CombinedGameFormat;
+          if (format !== gameFormat) {
+            setGameFormat(format);
+          }
         } else {
           console.error('Failed to fetch data:', result.error);
         }
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
-        setIsLoading(false);
+        if (isInitialLoad) {
+          setIsLoading(false);
+        }
       }
     }
     
-    fetchData();
+    fetchData(true);
     
-    const interval = setInterval(fetchData, 5000); // Refresh every 5 seconds
+    const interval = setInterval(() => fetchData(false), 5000); // Refresh every 5 seconds
     return () => clearInterval(interval);
 
-  }, []);
+  }, [teams, schedule, activeRule, gameFormat]);
 
   const renderTeamSkeletons = () => (
     Array.from({ length: 4 }).map((_, index) => (
@@ -200,12 +213,20 @@ export default function PublicTeamsPage() {
   );
 
   const renderScheduleSkeletons = () => (
-     <div className="space-y-2">
-      <Skeleton className="h-8 w-full" />
-      <Skeleton className="h-8 w-full" />
-      <Skeleton className="h-8 w-full" />
-      <Skeleton className="h-8 w-5/6" />
-    </div>
+    <Card className="rounded-xl border-2 shadow-2xl">
+      <CardHeader className="p-6 bg-muted/50 rounded-t-lg">
+        <CardTitle className="flex items-center gap-4 text-2xl font-bold">
+            <Skeleton className="h-7 w-7 rounded-md" />
+            <Skeleton className="h-7 w-48 rounded-md" />
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-6 space-y-2">
+        <Skeleton className="h-8 w-full" />
+        <Skeleton className="h-8 w-full" />
+        <Skeleton className="h-8 w-full" />
+        <Skeleton className="h-8 w-5/6" />
+      </CardContent>
+    </Card>
   );
 
   const isKOTC = ['king-of-the-court', 'monarch-of-the-court', 'king-s-ransom', 'power-up-round', 'standard'].includes(gameFormat);
@@ -230,9 +251,12 @@ export default function PublicTeamsPage() {
       <main className="flex-1 p-4 md:p-8">
         <div className="mx-auto w-full max-w-none">
           {isLoading ? (
-             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-              {renderTeamSkeletons()}
-            </div>
+             <div className="space-y-12">
+                <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+                  {renderTeamSkeletons()}
+                </div>
+                {renderScheduleSkeletons()}
+             </div>
           ) : teams.length > 0 || gameFormat === 'blind-draw' ? (
             <div className="space-y-12">
 
@@ -274,26 +298,24 @@ export default function PublicTeamsPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-6">
-                     {isLoading ? renderScheduleSkeletons() : (
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead className="w-[150px]">Court / Status</TableHead>
-                              <TableHead>Team A</TableHead>
-                              <TableHead>{ isKOTC ? 'vs Team B / Status' : 'Team B'}</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {schedule.map((match) => (
-                              <TableRow key={match.id} className="text-base">
-                                <TableCell><Badge>{match.court}</Badge></TableCell>
-                                <TableCell className="font-medium">{match.teamA}</TableCell>
-                                <TableCell className="font-medium">{match.teamB}</TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                     )}
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-[150px]">Court / Status</TableHead>
+                          <TableHead>Team A</TableHead>
+                          <TableHead>{ isKOTC ? 'vs Team B / Status' : 'Team B'}</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {schedule.map((match) => (
+                          <TableRow key={match.id} className="text-base">
+                            <TableCell><Badge>{match.court}</Badge></TableCell>
+                            <TableCell className="font-medium">{match.teamA}</TableCell>
+                            <TableCell className="font-medium">{match.teamB}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
                   </CardContent>
                 </Card>
               )}
@@ -343,3 +365,4 @@ export default function PublicTeamsPage() {
     </div>
   );
 }
+
