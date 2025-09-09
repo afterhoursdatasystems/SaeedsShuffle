@@ -82,8 +82,8 @@ const formatDetails: Record<CombinedGameFormat, { title: string; description: Re
         <p className="mb-4">A dramatic and strategic KOTC format where team rosters are not safe. It includes a player “steal” mechanic.</p>
         <h4 className="font-bold text-lg mb-2">Variant Rules</h4>
          <ul className="list-disc pl-5 space-y-2">
-            <li><strong>The Cosmic Scramble:</strong> After a team loses a match on the King Court, the Tournament Director will generate a random, fun "Cosmic Scramble" rule to determine which players are traded between the two teams.</li>
-             <li className="list-none pt-2"><strong>The active scramble rule will be displayed in a card at the top of this dashboard!</strong></li>
+            <li><strong>The Cosmic Scramble:</strong> In this variant, a special "Cosmic Scramble" rule is in effect, which causes players to be traded between teams after a match.</li>
+            <li className="list-none pt-2"><strong>See the active scramble rule displayed on this dashboard to know how the trade will happen!</strong></li>
         </ul>
       </div>
     ),
@@ -96,9 +96,8 @@ const formatDetails: Record<CombinedGameFormat, { title: string; description: Re
         <p className="mb-4">A fun, arcade-like twist on the classic KOTC format where teams get random advantages.</p>
         <h4 className="font-bold text-lg mb-2">Variant Rules</h4>
          <ul className="list-disc pl-5 space-y-2">
-            <li>Before a new game starts on the King's Court, the tournament director will generate a random power-up for the challenging team.</li>
-            <li>The power-up is active for that single game only.</li>
-            <li className="list-none pt-2"><strong>The active power-up will be displayed in a card at the top of this dashboard!</strong></li>
+            <li>A special "Power-Up" rule is in effect, granting an advantage to the challenging team for their game on the King's Court.</li>
+             <li className="list-none pt-2"><strong>See the active power-up rule displayed on this dashboard to know what advantage is in play!</strong></li>
         </ul>
       </div>
     ),
