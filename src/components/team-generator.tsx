@@ -73,6 +73,13 @@ export function TeamGenerator() {
   const presentPlayers = useMemo(() => players.filter((p) => p.present), [players]);
   const possibleTeamsCount = presentPlayers.length >= teamSize ? Math.floor(presentPlayers.length / teamSize) : 0;
   
+  const { presentGuys, presentGals } = useMemo(() => {
+    const presentGuys = presentPlayers.filter(p => p.gender === 'Guy').length;
+    const presentGals = presentPlayers.filter(p => p.gender === 'Gal').length;
+    return { presentGuys, presentGals };
+  }, [presentPlayers]);
+
+
 <<<<<<< HEAD
 const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] => {
   console.clear();
@@ -124,76 +131,72 @@ const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] =
       console.log(`${tier}: ${groups.guys.length} Guys, ${groups.gals.length} Gals`);
 =======
   const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] => {
-    // 1. Player Valuation
+    const numTeams = Math.floor(allPlayers.length / formatSize);
+    if (numTeams === 0) return [];
+
+    // 1. Player Valuation (no changes needed here)
     const valuedPlayers: PlayerWithAdjustedSkill[] = allPlayers.map(p => ({
       ...p,
       adjustedSkill: p.gender === 'Gal' ? p.skill * 0.85 : p.skill,
     }));
 
-    // Separate players by gender and sort by adjusted skill (descending)
     let guys = valuedPlayers.filter(p => p.gender === 'Guy').sort((a, b) => b.adjustedSkill - a.adjustedSkill);
     let gals = valuedPlayers.filter(p => p.gender === 'Gal').sort((a, b) => b.adjustedSkill - a.adjustedSkill);
-    
-    // 2. Determine Team Structure
-    const numTeams = Math.floor(allPlayers.length / formatSize);
-    if (numTeams === 0) return [];
-    
-    // 3. Initialize Teams
+
+    // 2. Determine Team Structure based on overall ratio
+    const totalGuys = guys.length;
+    const totalGals = gals.length;
+
+    const baseGuysPerTeam = Math.floor(totalGuys / numTeams);
+    const extraGuys = totalGuys % numTeams;
+
+    const baseGalsPerTeam = Math.floor(totalGals / numTeams);
+    const extraGals = totalGals % numTeams;
+
     const shuffledNames = shuffleArray(teamNames);
     const newTeams: Team[] = Array.from({ length: numTeams }, (_, i) => ({
       name: shuffledNames[i % shuffledNames.length],
       players: [],
     }));
 
-    // 4. Distribute genders as evenly as possible
-    const genderSlots: { [teamName: string]: ('Guy' | 'Gal')[] } = {};
-    newTeams.forEach(team => genderSlots[team.name] = []);
+    const genderSlots: ('Guy' | 'Gal')[][] = Array.from({ length: numTeams }, () => []);
 
-    // Distribute Gals
-    let galTeamIndex = 0;
-    while(gals.length > 0) {
-        genderSlots[newTeams[galTeamIndex % numTeams].name].push('Gal');
-        galTeamIndex++;
-    }
-    // Distribute Guys
-    let guyTeamIndex = 0;
-    while(guys.length > 0) {
-        genderSlots[newTeams[guyTeamIndex % numTeams].name].push('Guy');
-        guyTeamIndex++;
+    for(let i = 0; i < numTeams; i++) {
+        // Add base number of guys and gals
+        for (let j = 0; j < baseGuysPerTeam; j++) genderSlots[i].push('Guy');
+        for (let j = 0; j < baseGalsPerTeam; j++) genderSlots[i].push('Gal');
     }
 
-    // 5. Draft players based on skill into the slots
+    // Distribute the remainder
+    for (let i = 0; i < extraGuys; i++) genderSlots[i].push('Guy');
+    for (let i = 0; i < extraGals; i++) genderSlots[numTeams - 1 - i].push('Gal');
+    
+
+    // 3. Draft players using a snake draft
     const draftPool = [...valuedPlayers].sort((a, b) => b.adjustedSkill - a.adjustedSkill);
-    
-    let teamIndex = 0;
-    let direction = 1; // 1 for forward, -1 for reverse
-    
-    while(draftPool.length > 0) {
-        const team = newTeams[teamIndex];
-        const teamSlots = genderSlots[team.name];
-        
-        if (team.players.length < teamSlots.length) {
-            const neededGender = teamSlots[team.players.length];
-            
-            // Find the best player of the needed gender
+
+    for (let round = 0; round < formatSize; round++) {
+        const isSnake = round % 2 !== 0;
+        const teamOrder = isSnake ? newTeams.slice().reverse() : newTeams;
+
+        for (const team of teamOrder) {
+            const neededGender = genderSlots[newTeams.indexOf(team)][round];
             const playerIndex = draftPool.findIndex(p => p.gender === neededGender);
-            
+
             if (playerIndex !== -1) {
                 const [draftedPlayer] = draftPool.splice(playerIndex, 1);
                 team.players.push(draftedPlayer);
             } else {
-                 // This should not happen if gender distribution is correct, but as a fallback...
-                 const [draftedPlayer] = draftPool.splice(0, 1);
-                 team.players.push(draftedPlayer);
+                 // Fallback: if no player of the needed gender is left (should not happen with correct logic), draft the best available player.
+                 if(draftPool.length > 0) {
+                    const [draftedPlayer] = draftPool.splice(0, 1);
+                    team.players.push(draftedPlayer);
+                 }
             }
         }
-        
-        // Move to the next team in the snake
-        teamIndex += direction;
-        if (teamIndex < 0 || teamIndex >= numTeams) {
-            direction *= -1; // Reverse direction
-            teamIndex += direction;
-        }
+    }
+
+    return newTeams;
 >>>>>>> b6e2023 (are you looking at the gender ratio of all present players prior to draf)
     }
   });
@@ -482,6 +485,16 @@ const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] =
                             <p className="text-sm font-medium text-muted-foreground">Present Players</p>
                             <p className="text-2xl font-bold">{presentPlayers.length}</p>
                         </div>
+                        <Separator orientation='vertical' className='hidden sm:block h-12' />
+                         <div className="text-center">
+                            <p className="text-sm font-medium text-muted-foreground">Gender Ratio</p>
+                            <p className="text-2xl font-bold">
+                                <span className="text-blue-500">{presentGuys}</span>
+                                <span className="mx-2 text-muted-foreground">/</span>
+                                <span className="text-pink-500">{presentGals}</span>
+                            </p>
+                        </div>
+                        <Separator orientation='vertical' className='hidden sm:block h-12' />
                         <div className="text-center">
                             <p className="text-sm font-medium text-muted-foreground">Possible Teams</p>
                             <p className="text-2xl font-bold">{possibleTeamsCount}</p>
