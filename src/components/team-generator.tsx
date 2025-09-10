@@ -515,6 +515,16 @@ const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] =
                     {isPublishing ? 'Publishing...' : 'Publish to Dashboard'}
                 </Button>
             </div>
+             {unassignedPlayers.length > 0 && (
+                <Alert variant="destructive" className="mt-4">
+                    <Info className="h-4 w-4" />
+                    <AlertTitle>Unassigned Players</AlertTitle>
+                    <AlertDescription>
+                        There are {unassignedPlayers.length} unassigned players. Please manually assign them to a team before publishing.
+                        Publishing is disabled until all players are on a team.
+                    </AlertDescription>
+                </Alert>
+            )}
           </CardHeader>
           <CardContent className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {teams.map((team) => {
@@ -583,7 +593,54 @@ const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] =
           </CardContent>
         </Card>
       )}
+       {unassignedPlayers.length > 0 && (
+         <Card>
+            <CardHeader>
+                <CardTitle>Unassigned Players</CardTitle>
+                <CardDescription>Drag these players to a team.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Droppable droppableId="unassigned">
+                {(provided, snapshot) => (
+                   <div 
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                    className={cn(
+                      "grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 p-4 rounded-lg border-2 border-dashed min-h-[100px]",
+                      snapshot.isDraggingOver && "bg-primary/10"
+                    )}>
+                        {unassignedPlayers.map((player, index) => (
+                           <Draggable key={player.id} draggableId={player.id} index={index}>
+                                {(provided, snapshot) => (
+                                    <div
+                                        ref={provided.innerRef}
+                                        {...provided.draggableProps}
+                                        {...provided.dragHandleProps}
+                                        className={cn(
+                                            "flex items-center gap-3 p-2 rounded-md cursor-grab bg-background",
+                                            snapshot.isDragging ? 'bg-primary/20 shadow-lg' : 'border'
+                                        )}
+                                    >
+                                        <Avatar className="h-8 w-8 border-2 border-white">
+                                            <AvatarFallback className="bg-primary/20 text-primary font-bold">
+                                                {player.name.charAt(0)}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                        <span className="font-medium">{player.name}</span>
+                                        <Badge variant="outline" className="ml-auto">{player.skill}</Badge>
+                                    </div>
+                                )}
+                            </Draggable>
+                        ))}
+                        {provided.placeholder}
+                    </div>
+                )}
+              </Droppable>
+            </CardContent>
+         </Card>
+      )}
     </div>
     </DragDropContext>
   );
 }
+
