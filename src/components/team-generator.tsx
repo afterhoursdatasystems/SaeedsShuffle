@@ -471,10 +471,10 @@ const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] =
                          <div className="text-center">
                             <p className="text-sm font-medium text-muted-foreground">Gender Breakdown</p>
                             <p className="text-2xl font-bold">
-                                <span className="text-blue-500">{presentGuys}</span>
+                                <span className="text-blue-500">{presentGuys}G</span>
                                 <span className="mx-1 text-muted-foreground">/</span>
-                                <span className="text-pink-500">{presentGals}</span>
-                                <span className="ml-2 text-base font-normal">({overallGuyPercentage}%)</span>
+                                <span className="text-pink-500">{presentGals}L</span>
+                                <span className="ml-2 text-base font-normal">({overallGuyPercentage}% guys)</span>
                             </p>
                         </div>
                         <Separator orientation='vertical' className='hidden sm:block h-12' />
@@ -643,4 +643,3 @@ const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] =
     </DragDropContext>
   );
 }
-
