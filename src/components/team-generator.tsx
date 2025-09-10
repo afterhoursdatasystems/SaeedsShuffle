@@ -36,18 +36,14 @@ const shuffleArray = <T,>(array: T[]): T[] => {
   return newArray;
 };
 
-type PlayerWithAdjustedSkill = Player & { adjustedSkill: number };
-
 const getTeamAnalysis = (team: Team) => {
     const totalRawSkill = team.players.reduce((sum, p) => sum + p.skill, 0);
-    const totalAdjustedSkill = team.players.reduce((sum, p: any) => sum + (p.adjustedSkill || p.skill), 0);
-
+    
     const avgSkill = team.players.length > 0 ? (totalRawSkill / team.players.length).toFixed(1) : '0';
-    const avgAdjustedSkill = team.players.length > 0 ? (totalAdjustedSkill / team.players.length).toFixed(1) : '0';
     const guyCount = team.players.filter(p => p.gender === 'Guy').length;
     const galCount = team.players.filter(p => p.gender === 'Gal').length;
     const guyPercentage = team.players.length > 0 ? Math.round((guyCount / team.players.length) * 100) : 0;
-    return { avgSkill, guyCount, galCount, avgAdjustedSkill, guyPercentage };
+    return { avgSkill, guyCount, galCount, guyPercentage };
 };
 
 
@@ -132,12 +128,11 @@ export function TeamGenerator() {
         newTeams[teamIndex % numTeams].players.push(leftoverPlayers.shift()!);
         teamIndex++;
     }
-
+  
     newTeams.forEach(team => team.players.sort((a,b) => b.skill - a.skill));
 
     return newTeams;
-};
-
+  };
 
   const handleGenerateTeams = () => {
     if (presentPlayers.length < teamSize) {
@@ -337,15 +332,6 @@ export function TeamGenerator() {
                     {isPublishing ? 'Publishing...' : 'Publish to Dashboard'}
                 </Button>
             </div>
-             {presentPlayers.length > teams.reduce((acc, t) => acc + t.players.length, 0) && (
-                <Alert variant="destructive" className="mt-4">
-                    <Info className="h-4 w-4" />
-                    <AlertTitle>Unassigned Players</AlertTitle>
-                    <AlertDescription>
-                        There are unassigned players due to the team size. Please manually assign them or adjust settings. Publishing is disabled.
-                    </AlertDescription>
-                </Alert>
-            )}
           </CardHeader>
           <CardContent className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {teams.map((team) => {
