@@ -21,13 +21,11 @@ const KOTCBaseRules = ({ pointsToWin, teamCount }: { pointsToWin: number; teamCo
         <h4 className="font-bold text-lg mb-2">The Concept</h4>
         <p className="mb-4">The goal is to get to the “King Court” (the winner’s court) and hold it as long as possible against a constant stream of new challengers. It's a non-stop format that keeps everyone playing.</p>
         
-        <h4 className="font-bold text-lg mb-2">The Flow of Play</h4>
-        <ul className="list-disc pl-5 space-y-2 mb-6">
-            <li><strong>Court Setup:</strong> There are two courts in play. Court 1 is the "King Court" (the winner's court), and Court 2 is the "Challenger Court".</li>
-            <li><strong>The Goal:</strong> Have fun and try to stay on the King Court as long as you can!</li>
-        </ul>
+         <h4 className="font-bold text-lg mb-2">Court Setup:</h4>
+        <p className="mb-6">There are two courts in play. Court 1 is the "King Court" (the winner's court), and Court 2 is the "Challenger Court".</p>
 
-         <h4 className="font-bold text-lg mb-2">Winner & Loser Actions:</h4>
+
+        <h4 className="font-bold text-lg mb-2">Winner & Loser Actions:</h4>
         <ul className="list-disc pl-5 space-y-3 mb-6">
             <li><strong>King Court Winner:</strong> Stays on the King Court to defend their spot.</li>
             <li><strong>King Court Loser:</strong> Moves down to the Challenger Court (or the waiting line, depending on the number of teams).</li>
@@ -131,11 +129,10 @@ const getFormatDetails = (pointsToWin: number, teamCount: number): Record<Combin
     icon: KeyRound,
     description: (
       <div>
-        <p className="mb-4">A dramatic and strategic KOTC format where team rosters are not safe. It includes a player “steal” or "trade" mechanic after each game, dictated by a randomly generated rule.</p>
+        <p className="mb-4">A dramatic and strategic KOTC format where team rosters are not safe. It includes a player "trade" mechanic after each game on the King's Court, dictated by a randomly generated rule.</p>
         <h4 className="font-bold text-lg mb-2">Variant-Specific Rule</h4>
          <ul className="list-disc pl-5 space-y-2 mb-6">
-            <li><strong>The Cosmic Scramble:</strong> After a game on the King's Court, a special "Cosmic Scramble" rule is used. The rule dictates how a player from the losing team is traded with a player from the winning team.</li>
-            <li>This rule is generated randomly by the commissioner and will change throughout the night.</li>
+            <li><strong>The Cosmic Scramble:</strong> After losing a game on the King's Court, the losing team must use the active "Cosmic Scramble" rule to trade one of their players with a player from the winning team.</li>
         </ul>
          <div className='border-t pt-6 mt-6'>
              <h3 className="font-bold text-xl mb-4">Base King of the Court Rules</h3>
@@ -429,6 +426,8 @@ export default function PublicTeamsPage() {
     </div>
   );
 }
+
+    
 
     
 
