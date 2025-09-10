@@ -166,7 +166,7 @@
       ]
     }
   ],
-  "format": "king-s-ransom",
+  "format": "king-of-the-court",
   "schedule": [
     {
       "id": "246c150c-b29c-4faf-92bc-b883418a0c64",
@@ -193,9 +193,6 @@
       "court": "Challenger Line"
     }
   ],
-  "activeRule": {
-    "name": "Language Swap",
-    "description": "The player who can speak another language on the losing team swaps with the player who can speak another language on the other team (if one exists on both teams)."
-  },
+  "activeRule": null,
   "pointsToWin": 15
 }

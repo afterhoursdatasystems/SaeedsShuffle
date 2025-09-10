@@ -29,10 +29,10 @@ const KOTCBaseRules = ({ pointsToWin, teamCount }: { pointsToWin: number; teamCo
 
          <h4 className="font-bold text-lg mb-2">Winner & Loser Actions:</h4>
         <ul className="list-disc pl-5 space-y-3 mb-6">
-            <li><strong className='text-green-600'>King Court Winner:</strong> Stays on the King Court to defend their spot.</li>
-            <li><strong className='text-red-600'>King Court Loser:</strong> Moves down to the Challenger Court (or the waiting line, depending on the number of teams).</li>
-            <li><strong className='text-green-600'>Challenger Court Winner:</strong> Moves up to the King Court to challenge the winners.</li>
-            <li><strong className='text-red-600'>Challenger Court Loser:</strong> Stays on the Challenger Court (or moves to the waiting line, depending on the number of teams).</li>
+            <li><strong>King Court Winner:</strong> Stays on the King Court to defend their spot.</li>
+            <li><strong>King Court Loser:</strong> Moves down to the Challenger Court (or the waiting line, depending on the number of teams).</li>
+            <li><strong>Challenger Court Winner:</strong> Moves up to the King Court to challenge the winners.</li>
+            <li><strong>Challenger Court Loser:</strong> Stays on the Challenger Court (or moves to the waiting line, depending on the number of teams).</li>
         </ul>
         
         <h4 className="font-bold text-lg mb-4">Game Flow Based on Number of Teams:</h4>
@@ -429,5 +429,7 @@ export default function PublicTeamsPage() {
     </div>
   );
 }
+
+    
 
     
