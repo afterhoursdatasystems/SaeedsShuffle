@@ -166,7 +166,7 @@
       ]
     }
   ],
-  "format": "power-up-round",
+  "format": "king-s-ransom",
   "schedule": [
     {
       "id": "246c150c-b29c-4faf-92bc-b883418a0c64",
@@ -194,8 +194,8 @@
     }
   ],
   "activeRule": {
-    "name": "Point Boost",
-    "description": "Start the next game with a 2-point lead."
+    "name": "Language Swap",
+    "description": "The player who can speak another language on the losing team swaps with the player who can speak another language on the other team (if one exists on both teams)."
   },
   "pointsToWin": 15
 }

@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
@@ -25,8 +24,15 @@ const KOTCBaseRules = ({ pointsToWin, teamCount }: { pointsToWin: number; teamCo
         <h4 className="font-bold text-lg mb-2">The Flow of Play</h4>
         <ul className="list-disc pl-5 space-y-2 mb-6">
             <li><strong>Court Setup:</strong> One court is designated the “King Court” (top court). All other courts are “Challenger Courts.”</li>
-            <li><strong>Winning & Losing:</strong> The winner of a game on the King Court stays on that court. The winner of a Challenger Court moves up to the King Court. Losing teams move down or to the waiting line, depending on the number of teams.</li>
             <li><strong>The Goal:</strong> Have fun and try to stay on the King Court as long as you can!</li>
+        </ul>
+
+         <h4 className="font-bold text-lg mb-2">Winner & Loser Actions:</h4>
+        <ul className="list-disc pl-5 space-y-3 mb-6">
+            <li><strong className='text-green-600'>King Court Winner:</strong> Stays on the King Court to defend their spot.</li>
+            <li><strong className='text-red-600'>King Court Loser:</strong> Moves down to the Challenger Court (or the waiting line, depending on the number of teams).</li>
+            <li><strong className='text-green-600'>Challenger Court Winner:</strong> Moves up to the King Court to challenge the winners.</li>
+            <li><strong className='text-red-600'>Challenger Court Loser:</strong> Stays on the Challenger Court (or moves to the waiting line, depending on the number of teams).</li>
         </ul>
         
         <h4 className="font-bold text-lg mb-4">Game Flow Based on Number of Teams:</h4>
@@ -423,7 +429,5 @@ export default function PublicTeamsPage() {
     </div>
   );
 }
-
-    
 
     
