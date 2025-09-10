@@ -25,10 +25,10 @@ export function KOTCFlowDiagram({
             <CardTitle className="text-lg text-primary">King Court</CardTitle>
           </CardHeader>
           <CardContent className="p-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-2 items-center">
-            <span className="font-semibold text-green-600">Winner:</span>
+            <span className="font-semibold">Winner:</span>
             <span>{kingCourtWinner}</span>
             
-            <span className="font-semibold text-red-600">Loser:</span>
+            <span className="font-semibold">Loser:</span>
             <span>{kingCourtLoser}</span>
           </CardContent>
         </Card>
@@ -39,10 +39,10 @@ export function KOTCFlowDiagram({
             <CardTitle className="text-lg text-secondary-foreground">Challenger Court</CardTitle>
           </CardHeader>
           <CardContent className="p-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-2 items-center">
-            <span className="font-semibold text-green-600">Winner:</span>
+            <span className="font-semibold">Winner:</span>
             <span>{challengerCourtWinner}</span>
 
-            <span className="font-semibold text-red-600">Loser:</span>
+            <span className="font-semibold">Loser:</span>
             <span>{challengerCourtLoser}</span>
           </CardContent>
         </Card>
