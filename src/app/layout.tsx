@@ -9,7 +9,7 @@ import { AuthProvider } from '@/contexts/auth-context';
 
 export const metadata: Metadata = {
   title: "Saeed's Shuffle",
-  description: "The official hub for Saeed's weekly volleyball shuffle.",
+  description: "Good vibes, great serves, and a fresh draft weekly.",
 };
 
 export default function RootLayout({
