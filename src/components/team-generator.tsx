@@ -82,6 +82,7 @@ export function TeamGenerator() {
     if (allPlayers.length < baseTeamSize) return [];
 
     const numTeams = Math.floor(allPlayers.length / baseTeamSize);
+    if (numTeams === 0) return [];
 
     const getSkillBucket = (skill: number) => {
       if (skill <= 4) return '1-4';
@@ -118,34 +119,31 @@ export function TeamGenerator() {
         return undefined;
     };
     
-    // --- Start of Gender Distribution Logic ---
     const totalGuys = allPlayers.filter(p => p.gender === 'Guy').length;
     const totalGals = allPlayers.filter(p => p.gender === 'Gal').length;
 
-    const guyRatio = totalGuys / allPlayers.length;
-
     const teamBlueprints = Array.from({ length: numTeams }, () => ({ guys: 0, gals: 0 }));
 
-    for (let i = 0; i < baseTeamSize * numTeams; i++) {
-        const teamIndex = i % numTeams;
-        const currentTeamSize = teamBlueprints[teamIndex].guys + teamBlueprints[teamIndex].gals;
-        const currentGuyRatio = teamBlueprints[teamIndex].guys / (currentTeamSize || 1);
+    const baseGalsPerTeam = Math.floor(totalGals / numTeams);
+    let extraGals = totalGals % numTeams;
 
-        if (currentGuyRatio < guyRatio) {
-            if (totalGuys - teamBlueprints.reduce((acc, t) => acc + t.guys, 0) > 0) {
-                 teamBlueprints[teamIndex].guys++;
-            } else {
-                 teamBlueprints[teamIndex].gals++;
-            }
-        } else {
-             if (totalGals - teamBlueprints.reduce((acc, t) => acc + t.gals, 0) > 0) {
-                teamBlueprints[teamIndex].gals++;
-            } else {
-                teamBlueprints[teamIndex].guys++;
-            }
+    for (let i = 0; i < numTeams; i++) {
+        teamBlueprints[i].gals = baseGalsPerTeam;
+        if (extraGals > 0) {
+            teamBlueprints[i].gals++;
+            extraGals--;
         }
     }
-    // --- End of Gender Distribution Logic ---
+    
+    const baseGuysPerTeam = Math.floor(totalGuys / numTeams);
+    let extraGuys = totalGuys % numTeams;
+     for (let i = 0; i < numTeams; i++) {
+        teamBlueprints[i].guys = baseGuysPerTeam;
+        if (extraGuys > 0) {
+            teamBlueprints[i].guys++;
+            extraGuys--;
+        }
+    }
     
     const shuffledNames = shuffleArray(teamNames);
     const newTeams: Team[] = Array.from({ length: numTeams }, (_, i) => ({
@@ -153,32 +151,29 @@ export function TeamGenerator() {
         players: [],
     }));
     
-    // Draft players based on blueprints
     const snakeDraftOrder = (round: number) => (round % 2 === 0) ? Array.from({ length: numTeams }, (_, i) => i) : Array.from({ length: numTeams }, (_, i) => numTeams - 1 - i);
 
     for (let i = 0; i < numTeams; i++) {
-      const blueprint = teamBlueprints[i];
-      for(let j = 0; j < blueprint.guys; j++) {
-        const player = draftPlayer('Guy');
-        if (player) newTeams[i].players.push(player);
-      }
-      for(let j = 0; j < blueprint.gals; j++) {
-         const player = draftPlayer('Gal');
-        if (player) newTeams[i].players.push(player);
-      }
+        const blueprint = teamBlueprints[i];
+        for (let j = 0; j < blueprint.guys; j++) {
+            const player = draftPlayer('Guy');
+            if (player) newTeams[i].players.push(player);
+        }
+        for (let j = 0; j < blueprint.gals; j++) {
+            const player = draftPlayer('Gal');
+            if (player) newTeams[i].players.push(player);
+        }
     }
     
-    // Distribute all remaining players (leftovers from buckets + extras from uneven total)
-    const remainingPlayers = [...guyBuckets['9-10'], ...guyBuckets['7-8'], ...guyBuckets['5-6'], ...guyBuckets['1-4'], ...galBuckets['9-10'], ...galBuckets['7-8'], ...galBuckets['5-6'], ...galBuckets['1-4']];
-
-    let teamIndex = 0;
+    const remainingPlayers = [...Object.values(guyBuckets), ...Object.values(galBuckets)].flat();
+    
+    let teamIdx = 0;
     while(remainingPlayers.length > 0) {
-      const player = remainingPlayers.shift();
-      if(player) {
-         // Sort teams by current size to add players to the smallest teams first
-        newTeams.sort((a,b) => a.players.length - b.players.length);
-        newTeams[0].players.push(player);
-      }
+        const player = remainingPlayers.shift();
+        if (player) {
+            newTeams.sort((a,b) => a.players.length - b.players.length);
+            newTeams[0].players.push(player);
+        }
     }
   
     newTeams.forEach(team => team.players.sort((a,b) => b.skill - a.skill));
@@ -451,3 +446,5 @@ export function TeamGenerator() {
     </DragDropContext>
   );
 }
+
+    
