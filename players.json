@@ -144,7 +144,7 @@
     "name": "Pat Sobotka",
     "gender": "Guy",
     "skill": 6,
-    "present": true
+    "present": false
   },
   {
     "id": "22",
