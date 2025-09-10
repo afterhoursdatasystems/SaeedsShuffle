@@ -92,6 +92,7 @@ export function TeamGenerator() {
         gals: { '9-10': [], '7-8': [], '5-6': [], '1-4': [] },
     };
 
+    // Separate players into buckets and shuffle them
     for (const player of allPlayers) {
         const genderKey = player.gender === 'Guy' ? 'guys' : 'gals';
         let bucketKey: string;
@@ -122,47 +123,25 @@ export function TeamGenerator() {
     const totalGals = allPlayers.length - totalGuys;
     
     const teamBlueprints = Array.from({ length: numTeams }, () => ({ guys: 0, gals: 0 }));
+
+    // Phase 1: Base Distribution
+    const baseGuysPerTeam = Math.floor(totalGuys / numTeams);
+    const baseGalsPerTeam = Math.floor(totalGals / numTeams);
+
+    teamBlueprints.forEach(bp => {
+        bp.guys = baseGuysPerTeam;
+        bp.gals = baseGalsPerTeam;
+    });
     
-    let guysToAssign = totalGuys;
-    let galsToAssign = totalGals;
+    // Phase 2: Remainder Distribution
+    let remainingGuys = totalGuys % numTeams;
+    let remainingGals = totalGals % numTeams;
 
-    // Distribute base players
-    for (let i = 0; i < numTeams; i++) {
-        const guysForTeam = Math.floor(guysToAssign / (numTeams - i));
-        const galsForTeam = Math.floor(galsToAssign / (numTeams - i));
-        
-        teamBlueprints[i].guys = guysForTeam;
-        teamBlueprints[i].gals = galsForTeam;
-
-        guysToAssign -= guysForTeam;
-        galsToAssign -= galsForTeam;
+    for (let i = 0; i < remainingGuys; i++) {
+        teamBlueprints[i % numTeams].guys++;
     }
-
-    // Distribute remaining players to meet teamSize requirement
-    for (let i = 0; i < numTeams; i++) {
-        let teamPlayerCount = teamBlueprints[i].guys + teamBlueprints[i].gals;
-        while(teamPlayerCount < baseTeamSize) {
-            if(galsToAssign > 0){
-                teamBlueprints[i].gals++;
-                galsToAssign--;
-            } else if (guysToAssign > 0) {
-                teamBlueprints[i].guys++;
-                guysToAssign--;
-            }
-            teamPlayerCount++;
-        }
-    }
-    
-    // Distribute final "extra" remainders
-    if (guysToAssign > 0) {
-        for(let i=0; i<guysToAssign; i++){
-            teamBlueprints[i % numTeams].guys++;
-        }
-    }
-    if (galsToAssign > 0) {
-         for(let i=0; i<galsToAssign; i++){
-            teamBlueprints[i % numTeams].gals++;
-        }
+    for (let i = 0; i < remainingGals; i++) {
+        teamBlueprints[i % numTeams].gals++;
     }
 
 
@@ -171,9 +150,11 @@ export function TeamGenerator() {
         players: [],
     }));
 
+    // Draft players to fill the blueprints
     const draftOrder = ['guys', 'gals'];
     for(const gender of draftOrder) {
         for (let i = 0; i < allPlayers.length; i++) {
+             // Use a snake draft order for skill distribution
             const teamIndex = i % numTeams;
             const snakeIndex = (Math.floor(i / numTeams) % 2 === 0) ? teamIndex : numTeams - 1 - teamIndex;
             
@@ -181,10 +162,10 @@ export function TeamGenerator() {
             const team = newTeams[snakeIndex];
 
             const genderKey = gender as 'guys' | 'gals';
-            const currentGenderCount = team.players.filter(p => p.gender.toLowerCase() === gender.slice(0,-1)).length;
-            const blueprintGenderCount = blueprint[genderKey];
-
-            if (currentGenderCount < blueprintGenderCount) {
+            const genderName = genderKey.slice(0, -1); // 'guy' or 'gal'
+            const currentGenderCount = team.players.filter(p => p.gender.toLowerCase() === genderName).length;
+            
+            if (currentGenderCount < blueprint[genderKey]) {
                  const player = draftPlayer(genderKey);
                  if(player) team.players.push(player);
             }
@@ -199,17 +180,20 @@ export function TeamGenerator() {
     
     remainingPlayers.sort((a,b) => b.skill - a.skill);
     
+    // Distribute any final remaining players
     if (remainingPlayers.length > 0) {
-      let teamIdx = 0;
-      const sortedTeams = [...newTeams].sort((a,b) => {
+      // Sort teams by current size, then by skill to add players to smaller/weaker teams first
+      const sortedTeams = [...newTeams].sort((a, b) => {
+        if (a.players.length !== b.players.length) {
+          return a.players.length - b.players.length;
+        }
         const aSkill = a.players.reduce((sum, p) => sum + p.skill, 0);
         const bSkill = b.players.reduce((sum, p) => sum + p.skill, 0);
         return aSkill - bSkill;
       });
 
-      remainingPlayers.forEach(player => {
-        sortedTeams[teamIdx % numTeams].players.push(player);
-        teamIdx++;
+      remainingPlayers.forEach((player, index) => {
+        sortedTeams[index % numTeams].players.push(player);
       });
     }
 
