@@ -18,14 +18,15 @@ type CombinedGameFormat = GameFormat | GameVariant;
 
 const KOTCBaseRules = ({ pointsToWin, teamCount }: { pointsToWin: number; teamCount: number }) => (
     <>
-        <p className="mb-4">A high-energy, continuous-play format designed to maximize playtime and interaction. All games are to {pointsToWin} points.</p>
+        <p className="mb-4">A high-energy, continuous-play format designed to maximize playtime and interaction. All games are rally-scoring to {pointsToWin} points (win by 2).</p>
         <h4 className="font-bold text-lg mb-2">The Concept</h4>
-        <p className="mb-4">A dynamic, non-stop format where the goal is to seize control of the “winner’s court” and hold it against a constant stream of new challengers.</p>
+        <p className="mb-4">A dynamic, non-stop format where the goal is to seize control of the “King/Queen Court” (the winner’s court) and hold it against a constant stream of new challengers.</p>
         
         <h4 className="font-bold text-lg mb-2">The Flow of Play</h4>
         <ul className="list-disc pl-5 space-y-2 mb-6">
-            <li><strong>Court Setup:</strong> Court 1 is the “King/Queen Court”. Court 2 is the “Challenger Court.”</li>
-            <li><strong>Winning the Tournament:</strong> The team with the most points (total wins on King Court) at the end of the night is the champion.</li>
+            <li><strong>Court Setup:</strong> One court is designated the “King/Queen Court” (top court). All other courts are “Challenger Courts.”</li>
+            <li><strong>Scoring Points:</strong> A team only scores a "tournament point" for each win on the King/Queen Court.</li>
+            <li><strong>Winning the Tournament:</strong> The team with the most tournament points at the end of the night is the champion.</li>
         </ul>
         
         <h4 className="font-bold text-lg mb-4">Game Flow Based on Number of Teams:</h4>
@@ -34,9 +35,9 @@ const KOTCBaseRules = ({ pointsToWin, teamCount }: { pointsToWin: number; teamCo
           <Card className="bg-muted/30 p-4">
             <CardTitle className="text-xl mb-2">Scenario: 4 Teams</CardTitle>
             <CardContent className="p-0">
-              <p className="mb-4">With 4 teams, it’s a straightforward rotation. Two teams play on each court.</p>
+              <p className="mb-4">With 4 teams, it’s a straightforward rotation. Two teams play on each court. Winners move up (or stay), losers move down (or stay).</p>
               <KOTCFlowDiagram 
-                kingCourtWinner="Stays on King Court"
+                kingCourtWinner="Stays on King Court (+1 Point)"
                 kingCourtLoser="Goes to Challenger Court"
                 challengerCourtWinner="Goes to King Court"
                 challengerCourtLoser="Stays on Challenger Court"
@@ -49,13 +50,13 @@ const KOTCBaseRules = ({ pointsToWin, teamCount }: { pointsToWin: number; teamCo
            <Card className="bg-muted/30 p-4">
             <CardTitle className="text-xl mb-2">Scenario: {teamCount} Teams</CardTitle>
             <CardContent className="p-0">
-               <p className="mb-4">With {teamCount} teams, a waiting line forms. The goal is to get to the King Court and stay there.</p>
+               <p className="mb-4">With {teamCount} teams, a waiting line forms. The goal is to get to the King Court and stay there, as teams from the line feed into the Challenger Court.</p>
               <KOTCFlowDiagram 
                 kingCourtWinner="Stays on King Court (+1 Point)"
                 kingCourtLoser="Goes to Back of the Line"
                 challengerCourtWinner="Goes to King Court"
                 challengerCourtLoser="Goes to Front of the Line"
-                waitingLineText={`The other ${teamCount - 4} team(s) wait in line. The winner of the Challenger Court goes to the King Court.`}
+                waitingLineText={`The waiting team(s) challenge the loser of the Challenger Court. The winner of that match goes to the King Court.`}
               />
             </CardContent>
           </Card>
@@ -65,13 +66,13 @@ const KOTCBaseRules = ({ pointsToWin, teamCount }: { pointsToWin: number; teamCo
            <Card className="bg-muted/30 p-4">
             <CardTitle className="text-xl mb-2">Scenario: {teamCount}+ Teams</CardTitle>
             <CardContent className="p-0">
-              <p className="mb-4">With a large number of teams, the flow ensures constant movement and minimizes sitting time.</p>
+              <p className="mb-4">With a large number of teams, the flow ensures constant movement and minimizes sitting time. Losing on any court sends you to the back of the line.</p>
                <KOTCFlowDiagram 
                 kingCourtWinner="Stays on King Court (+1 Point)"
                 kingCourtLoser="Goes to Back of the Line"
                 challengerCourtWinner="Goes to Front of the Line"
                 challengerCourtLoser="Goes to Back of the Line"
-                waitingLineText={`The other ${teamCount - 4} teams wait in line. The winner of the Challenger Court moves to the *front* of the line to wait for the King Court.`}
+                waitingLineText={`The teams in line play each other to determine who moves up to the Challenger court. The winner of the Challenger Court moves to the *front* of the line to wait for the King Court.`}
               />
             </CardContent>
           </Card>
@@ -100,19 +101,20 @@ const getFormatDetails = (pointsToWin: number, teamCount: number): Record<Combin
     icon: Gem,
     description: (
       <div>
-        <p className="mb-4">A classic King of the Court format with a fun, social twist that gives the winning team a small “power” after their win, adding a layer of strategy and interaction.</p>
-        <h4 className="font-bold text-lg mb-2">Variant Rules</h4>
+        <p className="mb-4">A social twist on KOTC. After winning on the King Court, the "Monarchs" get a strategic advantage for their next game.</p>
+        <h4 className="font-bold text-lg mb-2">Variant-Specific Rule</h4>
          <ul className="list-disc pl-5 space-y-2 mb-6">
             <li>After winning a game on the King Court, your team is crowned “The Monarchs”.</li>
-            <li>Before the next challenger begins their game against you, you must choose one of the following powers:
+            <li>Before the next game against you begins, you must choose one of the following powers:
                 <ul className="list-circle pl-5 mt-2 space-y-1">
                     <li><strong>Choose Your Challenger:</strong> You may pick any team waiting in line to be your next opponent.</li>
-                    <li><strong>Impose a Rule:</strong> You may add a fun, temporary rule for the next game only (e.g., “no jump serves”).</li>
-                    <li><strong>Take a Royal Rest:</strong> You can choose to sit out one round. The next two teams will play each other to determine who challenges you next.</li>
+                    <li><strong>Impose a Rule:</strong> You may add a fun, temporary rule for the next game only (e.g., “no jump serves,” “losing team buys winning team drinks”).</li>
+                    <li><strong>Take a Royal Rest:</strong> You can choose to sit out one round. The next two teams in line will play each other to determine who challenges you next.</li>
                 </ul>
             </li>
         </ul>
         <div className='border-t pt-6 mt-6'>
+             <h3 className="font-bold text-xl mb-4">Base King of the Court Rules</h3>
             <KOTCBaseRules pointsToWin={pointsToWin} teamCount={teamCount} />
         </div>
       </div>
@@ -123,13 +125,14 @@ const getFormatDetails = (pointsToWin: number, teamCount: number): Record<Combin
     icon: KeyRound,
     description: (
       <div>
-        <p className="mb-4">A dramatic and strategic KOTC format where team rosters are not safe. It includes a player “steal” mechanic.</p>
-        <h4 className="font-bold text-lg mb-2">Variant Rules</h4>
+        <p className="mb-4">A dramatic and strategic KOTC format where team rosters are not safe. It includes a player “steal” or "trade" mechanic after each game, dictated by a randomly generated rule.</p>
+        <h4 className="font-bold text-lg mb-2">Variant-Specific Rule</h4>
          <ul className="list-disc pl-5 space-y-2 mb-6">
-            <li><strong>The Cosmic Scramble:</strong> In this variant, a special "Cosmic Scramble" rule is in effect, which causes players to be traded between teams after a match.</li>
+            <li><strong>The Cosmic Scramble:</strong> In this variant, a special "Cosmic Scramble" rule is in effect, which causes players to be traded between teams after a match. This rule is generated randomly by the commissioner.</li>
             <li className="list-none pt-2"><strong>See the active scramble rule displayed on this dashboard to know how the trade will happen!</strong></li>
         </ul>
          <div className='border-t pt-6 mt-6'>
+             <h3 className="font-bold text-xl mb-4">Base King of the Court Rules</h3>
             <KOTCBaseRules pointsToWin={pointsToWin} teamCount={teamCount} />
         </div>
       </div>
@@ -140,13 +143,14 @@ const getFormatDetails = (pointsToWin: number, teamCount: number): Record<Combin
     icon: Zap,
     description: (
        <div>
-        <p className="mb-4">A fun, arcade-like twist on the classic KOTC format where teams get random advantages.</p>
-        <h4 className="font-bold text-lg mb-2">Variant Rules</h4>
+        <p className="mb-4">A fun, arcade-like twist on the classic KOTC format where teams get random advantages that can turn the tide of a game.</p>
+        <h4 className="font-bold text-lg mb-2">Variant-Specific Rule</h4>
          <ul className="list-disc pl-5 space-y-2 mb-6">
             <li>A special "Power-Up" rule is in effect, granting an advantage to the challenging team for their game on the King's Court. This can be used once per match.</li>
-             <li className="list-none pt-2"><strong>See the active power-up rule displayed on this dashboard to know what advantage is in play!</strong></li>
+             <li className="list-none pt-2"><strong>See the active power-up rule displayed on this dashboard to know what advantage is in play!</strong> The commissioner will generate a new rule periodically.</li>
         </ul>
         <div className='border-t pt-6 mt-6'>
+            <h3 className="font-bold text-xl mb-4">Base King of the Court Rules</h3>
             <KOTCBaseRules pointsToWin={pointsToWin} teamCount={teamCount} />
         </div>
       </div>
@@ -159,7 +163,7 @@ const getFormatDetails = (pointsToWin: number, teamCount: number): Record<Combin
       <div>
         <p className="mb-4">A classic tournament format where teams first compete in a round-robin style "pool play" to determine seeding, followed by a single-elimination bracket to crown the champion. All games are to {pointsToWin} points.</p>
         <h4 className="font-bold text-lg mb-2">Phase 1: Pool Play</h4>
-        <p className="mb-4">All teams will play against each other once in a round-robin format. The results of these matches (wins, losses, and point differential) will be used to rank the teams and determine their seeding for the bracket.</p>
+        <p className="mb-4">All teams will play against other teams in their assigned pool. The results of these matches (wins, losses, and point differential) will be used to rank the teams and determine their seeding for the bracket.</p>
         <h4 className="font-bold text-lg mb-2">Phase 2: Bracket Play</h4>
         <p>After pool play is complete, teams are seeded into a single-elimination tournament. The top-ranked team plays the lowest-ranked team, and so on. In this phase, if you win, you advance; if you lose, you're out. The last team standing is the tournament champion!</p>
       </div>
@@ -419,3 +423,5 @@ export default function PublicTeamsPage() {
     </div>
   );
 }
+
+    

@@ -166,7 +166,7 @@
       ]
     }
   ],
-  "format": "power-up-round",
+  "format": "monarch-of-the-court",
   "schedule": [
     {
       "id": "246c150c-b29c-4faf-92bc-b883418a0c64",
@@ -194,8 +194,8 @@
     }
   ],
   "activeRule": {
-    "name": "One-Handed Wonder",
-    "description": "One player on the opposing team must play with one hand behind their back for the next rally."
+    "name": "Point Boost",
+    "description": "Start the next game with a 2-point lead."
   },
   "pointsToWin": 15
 }
