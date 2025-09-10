@@ -23,7 +23,7 @@ import { usePlayerContext } from '@/contexts/player-context';
 const teamNames = [
   'Birkdale Bombers', 'Cool Fish Commandos', 'Jetton Juggernauts',
   'Peninsula Powerhouse', 'Soda Shop Slammers',
-  'Langtree Lightning', 'Bailey\'s Bruisers', 'Antiquity Attackers',
+  'Langtree Lightning', 'Bailey Bruisers', 'Antiquity Attackers',
   'Summit Strikers', 'Toast Titans'
 ];
 
