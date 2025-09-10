@@ -3,13 +3,14 @@
 
 import type { Player, Team, Match, GameFormat, GameVariant, PowerUp } from '@/types';
 import React, { createContext, useContext, useState, type ReactNode, useEffect } from 'react';
-import { getPlayers, updatePlayerPresence, getPublishedData } from '@/app/actions';
+import { getPlayers, updatePlayerPresence, getPublishedData, updatePlayer } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 
 interface PlayerContextType {
   players: Player[];
   setPlayers: React.Dispatch<React.SetStateAction<Player[]>>;
   togglePlayerPresence: (playerId: string) => void;
+  updatePlayer: (player: Player) => Promise<boolean>;
   isLoading: boolean;
   teams: Team[];
   setTeams: React.Dispatch<React.SetStateAction<Team[]>>;
@@ -126,10 +127,40 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const handleUpdatePlayer = async (playerToUpdate: Player) => {
+    const originalPlayers = players;
+    // Optimistically update the UI
+    setPlayers(currentPlayers =>
+      currentPlayers.map(p =>
+        p.id === playerToUpdate.id ? playerToUpdate : p
+      )
+    );
+
+    const result = await updatePlayer(playerToUpdate);
+
+    if (result.success) {
+      toast({
+        title: "Player Updated",
+        description: `${playerToUpdate.name}'s information has been saved.`
+      });
+      return true;
+    } else {
+      // Revert on failure
+      setPlayers(originalPlayers);
+      toast({
+        title: "Update Failed",
+        description: result.error || "Could not save player changes.",
+        variant: "destructive"
+      });
+      return false;
+    }
+  };
+
   const value = {
     players,
     setPlayers,
     togglePlayerPresence,
+    updatePlayer: handleUpdatePlayer,
     isLoading,
     teams,
     setTeams,

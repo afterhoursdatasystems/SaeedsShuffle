@@ -53,7 +53,7 @@
     "name": "Abby Gilpin",
     "gender": "Gal",
     "skill": 6,
-    "present": true
+    "present": false
   },
   {
     "id": "9",

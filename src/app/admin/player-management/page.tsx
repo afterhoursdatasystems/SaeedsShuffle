@@ -20,7 +20,7 @@ import { UserPlus, Edit, Trash2, ArrowUpDown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useMemo, useState } from 'react';
 import type { Player } from '@/types';
-import { cn } from '@/lib/utils';
+import { EditPlayerDialog } from '@/components/edit-player-dialog';
 
 type SortKey = 'name' | 'team' | 'gender' | 'skill' | 'present';
 
@@ -42,6 +42,7 @@ export default function PlayerManagementPage() {
   const { players, teams, togglePlayerPresence, isLoading } = usePlayerContext();
   const [sortKey, setSortKey] = useState<SortKey>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
 
   const playerTeamMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -116,129 +117,138 @@ export default function PlayerManagementPage() {
   }
 
   return (
-    <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">Player Management</h1>
-          <p className="text-muted-foreground">
-            Manage your league's players here. Click a player to toggle their presence.
-          </p>
+    <>
+      <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold">Player Management</h1>
+            <p className="text-muted-foreground">
+              Manage your league's players here. Click a player to toggle their presence.
+            </p>
+          </div>
+          <Button>
+            <UserPlus className="mr-2 h-4 w-4" />
+            Add Player
+          </Button>
         </div>
-        <Button>
-          <UserPlus className="mr-2 h-4 w-4" />
-          Add Player
-        </Button>
+
+        <Card>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>
+                    <Button variant="ghost" onClick={() => handleSort('name')}>
+                      Name
+                      <span className="ml-2">{getSortIcon('name')}</span>
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                    <Button variant="ghost" onClick={() => handleSort('present')}>
+                      Presence
+                      <span className="ml-2">{getSortIcon('present')}</span>
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                    <Button variant="ghost" onClick={() => handleSort('team')}>
+                      Team
+                      <span className="ml-2">{getSortIcon('team')}</span>
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                    <Button variant="ghost" onClick={() => handleSort('gender')}>
+                      Gender
+                      <span className="ml-2">{getSortIcon('gender')}</span>
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                    <Button variant="ghost" onClick={() => handleSort('skill')}>
+                      Skill
+                      <span className="ml-2">{getSortIcon('skill')}</span>
+                    </Button>
+                  </TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {sortedPlayers.map((player) => {
+                  const teamName = playerTeamMap.get(player.id) || 'Unassigned';
+                  const teamColor = teamName === 'Unassigned' ? '#EAEAEA' : teamColorMap.get(teamName);
+
+                  return (
+                      <TableRow 
+                          key={player.id} 
+                          className="cursor-pointer"
+                      >
+                        <TableCell className="font-medium" onClick={() => togglePlayerPresence(player.id)}>{player.name}</TableCell>
+                        <TableCell onClick={() => togglePlayerPresence(player.id)}>
+                          <Badge
+                            style={{
+                              backgroundColor: player.present ? '#D4EDDA' : '#F8D7DA',
+                              color: player.present ? '#155724' : '#721C24',
+                              borderColor: player.present ? '#C3E6CB' : '#F5C6CB'
+                            }}
+                            className="border"
+                          >
+                            {player.present ? 'Present' : 'Away'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell onClick={() => togglePlayerPresence(player.id)}>
+                            <Badge style={{ backgroundColor: teamColor, color: '#333' }} className='border-gray-300 border'>
+                              {teamName}
+                            </Badge>
+                        </TableCell>
+                        <TableCell onClick={() => togglePlayerPresence(player.id)}>
+                          <Badge
+                            style={{
+                              backgroundColor: player.gender === 'Guy' ? '#A2D2FF' : '#FFC4D6',
+                              color: '#333',
+                            }}
+                            className="border-gray-300 border"
+                          >
+                            {player.gender}
+                          </Badge>
+                        </TableCell>
+                        <TableCell onClick={() => togglePlayerPresence(player.id)}>
+                          <Badge
+                            style={{
+                              backgroundColor: getSkillColor(player.skill),
+                              color: '#333',
+                              minWidth: '30px',
+                              textAlign: 'center',
+                              display: 'inline-block'
+                            }}
+                            className="border-gray-300 border"
+                          >
+                            {player.skill}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setEditingPlayer(player); }}>
+                            <Edit className="h-4 w-4" />
+                            <span className="sr-only">Edit Player</span>
+                          </Button>
+                          <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                            <Trash2 className="h-4 w-4" />
+                            <span className="sr-only">Delete Player</span>
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       </div>
 
-      <Card>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>
-                   <Button variant="ghost" onClick={() => handleSort('name')}>
-                    Name
-                    <span className="ml-2">{getSortIcon('name')}</span>
-                  </Button>
-                </TableHead>
-                <TableHead>
-                   <Button variant="ghost" onClick={() => handleSort('present')}>
-                    Presence
-                    <span className="ml-2">{getSortIcon('present')}</span>
-                  </Button>
-                </TableHead>
-                <TableHead>
-                   <Button variant="ghost" onClick={() => handleSort('team')}>
-                    Team
-                    <span className="ml-2">{getSortIcon('team')}</span>
-                  </Button>
-                </TableHead>
-                <TableHead>
-                   <Button variant="ghost" onClick={() => handleSort('gender')}>
-                    Gender
-                    <span className="ml-2">{getSortIcon('gender')}</span>
-                  </Button>
-                </TableHead>
-                <TableHead>
-                   <Button variant="ghost" onClick={() => handleSort('skill')}>
-                    Skill
-                    <span className="ml-2">{getSortIcon('skill')}</span>
-                  </Button>
-                </TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {sortedPlayers.map((player) => {
-                const teamName = playerTeamMap.get(player.id) || 'Unassigned';
-                const teamColor = teamName === 'Unassigned' ? '#EAEAEA' : teamColorMap.get(teamName);
-
-                return (
-                    <TableRow 
-                        key={player.id} 
-                        onClick={() => togglePlayerPresence(player.id)}
-                        className="cursor-pointer"
-                    >
-                      <TableCell className="font-medium">{player.name}</TableCell>
-                       <TableCell>
-                         <Badge
-                          style={{
-                            backgroundColor: player.present ? '#D4EDDA' : '#F8D7DA',
-                            color: player.present ? '#155724' : '#721C24',
-                            borderColor: player.present ? '#C3E6CB' : '#F5C6CB'
-                          }}
-                           className="border"
-                        >
-                          {player.present ? 'Present' : 'Away'}
-                        </Badge>
-                      </TableCell>
-                       <TableCell>
-                          <Badge style={{ backgroundColor: teamColor, color: '#333' }} className='border-gray-300 border'>
-                            {teamName}
-                          </Badge>
-                       </TableCell>
-                      <TableCell>
-                        <Badge
-                          style={{
-                            backgroundColor: player.gender === 'Guy' ? '#A2D2FF' : '#FFC4D6',
-                            color: '#333',
-                          }}
-                          className="border-gray-300 border"
-                        >
-                          {player.gender}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          style={{
-                            backgroundColor: getSkillColor(player.skill),
-                            color: '#333',
-                            minWidth: '30px',
-                            textAlign: 'center',
-                            display: 'inline-block'
-                          }}
-                           className="border-gray-300 border"
-                        >
-                          {player.skill}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button variant="ghost" size="icon">
-                          <Edit className="h-4 w-4" />
-                           <span className="sr-only">Edit Player</span>
-                        </Button>
-                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
-                          <Trash2 className="h-4 w-4" />
-                           <span className="sr-only">Delete Player</span>
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-    </div>
+       {editingPlayer && (
+        <EditPlayerDialog
+          player={editingPlayer}
+          isOpen={!!editingPlayer}
+          onClose={() => setEditingPlayer(null)}
+        />
+      )}
+    </>
   );
 }
