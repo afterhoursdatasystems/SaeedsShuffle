@@ -17,7 +17,7 @@ type CombinedGameFormat = GameFormat | GameVariant;
 
 const KOTCBaseRules = ({ pointsToWin, teamCount }: { pointsToWin: number; teamCount: number }) => (
     <>
-        <p className="mb-4">A high-energy, continuous-play format designed to maximize playtime and interaction. All games are rally-scoring to {pointsToWin} points.</p>
+        <p className="mb-4">A high-energy, continuous-play format designed to maximize playtime and interaction. All games are rally-scoring, straight up to {pointsToWin} points.</p>
         <h4 className="font-bold text-lg mb-2">The Concept</h4>
         <p className="mb-4">The goal is to get to the “King Court” (the winner’s court) and hold it as long as possible against a constant stream of new challengers. It's a non-stop format that keeps everyone playing.</p>
         
@@ -134,8 +134,8 @@ const getFormatDetails = (pointsToWin: number, teamCount: number): Record<Combin
         <p className="mb-4">A dramatic and strategic KOTC format where team rosters are not safe. It includes a player “steal” or "trade" mechanic after each game, dictated by a randomly generated rule.</p>
         <h4 className="font-bold text-lg mb-2">Variant-Specific Rule</h4>
          <ul className="list-disc pl-5 space-y-2 mb-6">
-            <li><strong>The Cosmic Scramble:</strong> In this variant, a special "Cosmic Scramble" rule is in effect, which causes players to be traded between teams after a match. This rule is generated randomly by the commissioner.</li>
-            <li className="list-none pt-2"><strong>See the active scramble rule displayed on this dashboard to know how the trade will happen!</strong></li>
+            <li><strong>The Cosmic Scramble:</strong> After a game on the King's Court, a special "Cosmic Scramble" rule is used. The rule dictates how a player from the losing team is traded with a player from the winning team.</li>
+            <li>This rule is generated randomly by the commissioner and will change throughout the night.</li>
         </ul>
          <div className='border-t pt-6 mt-6'>
              <h3 className="font-bold text-xl mb-4">Base King of the Court Rules</h3>
