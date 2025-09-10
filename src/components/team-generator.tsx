@@ -96,17 +96,17 @@ export function TeamGenerator() {
         guys: Record<string, Player[]>,
         gals: Record<string, Player[]>
     } = {
-        guys: { '1-4': [], '5-6': [], '7-8': [], '9-10': [] },
-        gals: { '1-4': [], '5-6': [], '7-8': [], '9-10': [] },
+        guys: { '1-3': [], '4-5': [], '6-7': [], '8-10': [] },
+        gals: { '1-3': [], '4-5': [], '6-7': [], '8-10': [] },
     };
 
     for (const player of allPlayers) {
         const genderKey = player.gender === 'Guy' ? 'guys' : 'gals';
         let bucketKey: string;
-        if (player.skill <= 4) bucketKey = '1-4';
-        else if (player.skill <= 6) bucketKey = '5-6';
-        else if (player.skill <= 8) bucketKey = '7-8';
-        else bucketKey = '9-10';
+        if (player.skill <= 3) bucketKey = '1-3';
+        else if (player.skill <= 5) bucketKey = '4-5';
+        else if (player.skill <= 7) bucketKey = '6-7';
+        else bucketKey = '8-10';
         buckets[genderKey][bucketKey].push(player);
     }
     
@@ -117,15 +117,15 @@ export function TeamGenerator() {
         }
     }
 
-    // Create a flat, shuffled draft pool from the buckets, highest to lowest
+    // Create a flat, shuffled draft pool from the buckets, highest to lowest to middle
     const draftPool = {
         guys: [
-            ...buckets.guys['9-10'], ...buckets.guys['7-8'],
-            ...buckets.guys['5-6'], ...buckets.guys['1-4']
+            ...buckets.guys['8-10'], ...buckets.guys['1-3'],
+            ...buckets.guys['4-5'], ...buckets.guys['6-7']
         ],
         gals: [
-            ...buckets.gals['9-10'], ...buckets.gals['7-8'],
-            ...buckets.gals['5-6'], ...buckets.gals['1-4']
+            ...buckets.gals['8-10'], ...buckets.gals['1-3'],
+            ...buckets.gals['4-5'], ...buckets.gals['6-7']
         ],
     };
 
