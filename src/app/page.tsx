@@ -18,7 +18,7 @@ type CombinedGameFormat = GameFormat | GameVariant;
 
 const KOTCBaseRules = ({ pointsToWin, teamCount }: { pointsToWin: number; teamCount: number }) => (
     <>
-        <p className="mb-4">A high-energy, continuous-play format designed to maximize playtime and interaction. All games are rally-scoring to {pointsToWin} points (win by 2).</p>
+        <p className="mb-4">A high-energy, continuous-play format designed to maximize playtime and interaction. All games are rally-scoring to {pointsToWin} points.</p>
         <h4 className="font-bold text-lg mb-2">The Concept</h4>
         <p className="mb-4">The goal is to get to the “King Court” (the winner’s court) and hold it as long as possible against a constant stream of new challengers. It's a non-stop format that keeps everyone playing.</p>
         
@@ -37,10 +37,10 @@ const KOTCBaseRules = ({ pointsToWin, teamCount }: { pointsToWin: number; teamCo
             <CardContent className="p-0">
               <p className="mb-4">With 4 teams, it’s a straightforward rotation. The winners of the King Court stay, while the winners of the Challenger Court move up to play them. Losers move down to the Challenger Court.</p>
               <KOTCFlowDiagram 
-                kingCourtWinner="Stays on King Court"
-                kingCourtLoser="Moves to Challenger Court"
-                challengerCourtWinner="Moves to King Court"
-                challengerCourtLoser="Stays on Challenger Court"
+                kingCourtWinner="Winner of King Court stays on King Court."
+                kingCourtLoser="Loser of King Court moves to the Challenger Court."
+                challengerCourtWinner="Winner of Challenger Court moves to the King Court."
+                challengerCourtLoser="Loser of Challenger Court stays on the Challenger Court."
               />
             </CardContent>
           </Card>
@@ -52,10 +52,10 @@ const KOTCBaseRules = ({ pointsToWin, teamCount }: { pointsToWin: number; teamCo
             <CardContent className="p-0">
                <p className="mb-4">With {teamCount} teams, a waiting line forms. Losing on the King Court sends you to the back of the line. Winning on the Challenger Court moves you to the King Court, while losing on the Challenger Court sends you to the front of the line to wait.</p>
               <KOTCFlowDiagram 
-                kingCourtWinner="Stays on King Court"
-                kingCourtLoser="Goes to Back of the Line"
-                challengerCourtWinner="Goes to King Court"
-                challengerCourtLoser="Goes to Front of the Line"
+                kingCourtWinner="Winner of King Court stays on King Court."
+                kingCourtLoser="Loser of King Court goes to the back of the waiting line."
+                challengerCourtWinner="Winner of Challenger Court moves to the King Court."
+                challengerCourtLoser="Loser of Challenger Court goes to the front of the waiting line."
                 waitingLineText={`The team at the front of the line comes on to play the loser of the Challenger Court match.`}
               />
             </CardContent>
@@ -68,10 +68,10 @@ const KOTCBaseRules = ({ pointsToWin, teamCount }: { pointsToWin: number; teamCo
             <CardContent className="p-0">
               <p className="mb-4">With many teams, the flow ensures constant movement. Losing on any court sends you to the back of the waiting line. Winning on a challenger court moves you up to the *front* of the line to wait for your shot at the King Court.</p>
                <KOTCFlowDiagram 
-                kingCourtWinner="Stays on King Court"
-                kingCourtLoser="Goes to Back of the Line"
-                challengerCourtWinner="Goes to Front of the Line"
-                challengerCourtLoser="Goes to Back of the Line"
+                kingCourtWinner="Winner of King Court stays on King Court."
+                kingCourtLoser="Loser of King Court goes to the back of the waiting line."
+                challengerCourtWinner="Winner of Challenger Court goes to the front of the waiting line."
+                challengerCourtLoser="Loser of Challenger Court goes to the back of the waiting line."
                 waitingLineText={`Teams in the waiting line play each other to determine who moves up to challenge for a spot on a Challenger Court.`}
               />
             </CardContent>
