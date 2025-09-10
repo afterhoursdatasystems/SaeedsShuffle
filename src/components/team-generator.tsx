@@ -72,7 +72,7 @@ export function TeamGenerator() {
   }, []);
 
   const presentPlayers = useMemo(() => players.filter((p) => p.present), [players]);
-  const possibleTeamsCount = presentPlayers.length >= teamSize ? Math.floor(presentPlayers.length / teamSize) : 0;
+  const possibleTeamsCount = presentPlayers.length > 0 ? Math.round(presentPlayers.length / teamSize) : 0;
   
   const { presentGuys, presentGals, overallGuyPercentage } = useMemo(() => {
     const presentGuys = presentPlayers.filter(p => p.gender === 'Guy').length;
@@ -133,27 +133,18 @@ const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] =
       console.log(`${tier}: ${groups.guys.length} Guys, ${groups.gals.length} Gals`);
 =======
   const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] => {
-    const numTeams = Math.floor(allPlayers.length / formatSize);
+    if (allPlayers.length === 0) return [];
+    
+    // Use Math.round to ensure all players are included
+    const numTeams = Math.round(allPlayers.length / formatSize);
     if (numTeams === 0) return [];
 
-    // 1. Player Valuation (no changes needed here)
     const valuedPlayers: PlayerWithAdjustedSkill[] = allPlayers.map(p => ({
       ...p,
       adjustedSkill: p.gender === 'Gal' ? p.skill * 0.85 : p.skill,
     }));
-
-    let guys = valuedPlayers.filter(p => p.gender === 'Guy').sort((a, b) => b.adjustedSkill - a.adjustedSkill);
-    let gals = valuedPlayers.filter(p => p.gender === 'Gal').sort((a, b) => b.adjustedSkill - a.adjustedSkill);
-
-    // 2. Determine Team Structure based on overall ratio
-    const totalGuys = guys.length;
-    const totalGals = gals.length;
-
-    const baseGuysPerTeam = Math.floor(totalGuys / numTeams);
-    const extraGuys = totalGuys % numTeams;
-
-    const baseGalsPerTeam = Math.floor(totalGals / numTeams);
-    const extraGals = totalGals % numTeams;
+    
+    const draftPool = [...valuedPlayers].sort((a, b) => b.adjustedSkill - a.adjustedSkill);
 
     const shuffledNames = shuffleArray(teamNames);
     const newTeams: Team[] = Array.from({ length: numTeams }, (_, i) => ({
@@ -161,42 +152,20 @@ const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] =
       players: [],
     }));
 
-    const genderSlots: ('Guy' | 'Gal')[][] = Array.from({ length: numTeams }, () => []);
-
-    for(let i = 0; i < numTeams; i++) {
-        // Add base number of guys and gals
-        for (let j = 0; j < baseGuysPerTeam; j++) genderSlots[i].push('Guy');
-        for (let j = 0; j < baseGalsPerTeam; j++) genderSlots[i].push('Gal');
-    }
-
-    // Distribute the remainder
-    for (let i = 0; i < extraGuys; i++) genderSlots[i].push('Guy');
-    for (let i = 0; i < extraGals; i++) genderSlots[numTeams - 1 - i].push('Gal');
+    // Distribute players one by one in a snake draft
+    let teamIndex = 0;
+    let direction = 1; // 1 for forward, -1 for reverse
     
+    while(draftPool.length > 0) {
+        const playerToDraft = draftPool.shift()!;
+        newTeams[teamIndex].players.push(playerToDraft);
 
-    // 3. Draft players using a snake draft
-    const draftPool = [...valuedPlayers].sort((a, b) => b.adjustedSkill - a.adjustedSkill);
-
-    for (let round = 0; round < formatSize; round++) {
-        const isSnake = round % 2 !== 0;
-        const teamOrder = isSnake ? newTeams.slice().reverse() : newTeams;
-
-        for (const team of teamOrder) {
-            if (team.players.length >= formatSize) continue;
-
-            const neededGender = genderSlots[newTeams.indexOf(team)][round];
-            const playerIndex = draftPool.findIndex(p => p.gender === neededGender);
-
-            if (playerIndex !== -1) {
-                const [draftedPlayer] = draftPool.splice(playerIndex, 1);
-                team.players.push(draftedPlayer);
-            } else {
-                 // Fallback: if no player of the needed gender is left (should not happen with correct logic), draft the best available player.
-                 if(draftPool.length > 0) {
-                    const [draftedPlayer] = draftPool.splice(0, 1);
-                    team.players.push(draftedPlayer);
-                 }
-            }
+        teamIndex += direction;
+        
+        // Reverse direction at the end of a "round"
+        if (teamIndex < 0 || teamIndex >= numTeams) {
+            direction *= -1;
+            teamIndex += direction;
         }
     }
 
@@ -332,10 +301,10 @@ const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] =
 
 
   const handleGenerateTeams = () => {
-    if (presentPlayers.length < teamSize * 2 && presentPlayers.length > 0) {
+    if (presentPlayers.length < teamSize) {
       toast({
         title: 'Not enough players',
-        description: `You need at least ${teamSize * 2} present players to generate at least two teams.`,
+        description: `You need at least ${teamSize} present players to generate teams.`,
         variant: 'destructive',
       });
       return;
@@ -540,7 +509,7 @@ const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] =
           </CardHeader>
           <CardContent className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {teams.map((team) => {
-              const { avgSkill, guyPercentage } = getTeamAnalysis(team);
+              const { avgSkill, guyCount, galCount, guyPercentage } = getTeamAnalysis(team);
               return (
               <Droppable droppableId={team.name} key={team.name} isCombineEnabled={false}>
                 {(provided, snapshot) => (
@@ -587,8 +556,15 @@ const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] =
                     </CardContent>
                     <CardFooter className="flex-col items-start gap-2 border-t bg-muted/50 p-4 text-sm text-muted-foreground">
                         <div className="flex w-full justify-between">
-                            <div className='flex items-center gap-2'>Avg Skill: <span className="font-bold text-foreground">{avgSkill}</span></div>
-                             <div className="flex items-center gap-2">Guy %: <span className="font-bold text-foreground">{guyPercentage}%</span></div>
+                           <div className='flex items-center gap-2'>Avg Skill: <span className="font-bold text-foreground">{avgSkill}</span></div>
+                           <div className="flex items-center gap-2">Guy %: <span className="font-bold text-foreground">{guyPercentage}%</span></div>
+                        </div>
+                        <div className="flex w-full justify-between">
+                            <div className='flex items-center gap-2'>Gender: 
+                                <span className="font-bold text-blue-500">{guyCount}</span>
+                                <span className="text-muted-foreground">/</span>
+                                <span className="font-bold text-pink-500">{galCount}</span>
+                            </div>
                         </div>
                     </CardFooter>
                   </Card>
