@@ -53,7 +53,7 @@
     "name": "Abby Gilpin",
     "gender": "Gal",
     "skill": 6,
-    "present": false
+    "present": true
   },
   {
     "id": "9",
@@ -81,7 +81,7 @@
     "name": "Giovanni Salvatore",
     "gender": "Guy",
     "skill": 7,
-    "present": false
+    "present": true
   },
   {
     "id": "13",
@@ -95,7 +95,7 @@
     "name": "Eric Ahrens",
     "gender": "Guy",
     "skill": 7,
-    "present": false
+    "present": true
   },
   {
     "id": "15",
