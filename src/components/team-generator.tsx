@@ -88,8 +88,8 @@ export function TeamGenerator() {
         guys: Record<string, Player[]>,
         gals: Record<string, Player[]>
     } = {
-        guys: { '9-10': [], '7-8': [], '4-6': [], '1-3': [] },
-        gals: { '9-10': [], '7-8': [], '4-6': [], '1-3': [] },
+        guys: { '9-10': [], '7-8': [], '5-6': [], '1-4': [] },
+        gals: { '9-10': [], '7-8': [], '5-6': [], '1-4': [] },
     };
 
     for (const player of allPlayers) {
@@ -97,8 +97,8 @@ export function TeamGenerator() {
         let bucketKey: string;
         if (player.skill >= 9) bucketKey = '9-10';
         else if (player.skill >= 7) bucketKey = '7-8';
-        else if (player.skill >= 4) bucketKey = '4-6';
-        else bucketKey = '1-3';
+        else if (player.skill >= 5) bucketKey = '5-6';
+        else bucketKey = '1-4';
         buckets[genderKey][bucketKey].push(player);
     }
     
@@ -109,7 +109,7 @@ export function TeamGenerator() {
     }
 
     const draftPlayer = (gender: 'guys' | 'gals'): Player | undefined => {
-        const order = ['9-10', '7-8', '4-6', '1-3'];
+        const order = ['9-10', '7-8', '5-6', '1-4'];
         for (const bucketKey of order) {
             if (buckets[gender][bucketKey].length > 0) {
                 return buckets[gender][bucketKey].shift();
@@ -167,7 +167,7 @@ export function TeamGenerator() {
 
 
     const newTeams: Team[] = Array.from({ length: numTeams }, (_, i) => ({
-        name: shuffledTeamNames[i],
+        name: shuffledTeamNames[i % shuffledTeamNames.length],
         players: [],
     }));
 
@@ -328,12 +328,7 @@ export function TeamGenerator() {
   
   const isBlindDraw = gameFormat === 'blind-draw';
 
-  if (!isClient) {
-    return null; 
-  }
-
   return (
-    <DragDropContext onDragEnd={onDragEnd}>
     <div className="space-y-8">
       <Card>
         <CardHeader>
@@ -400,89 +395,92 @@ export function TeamGenerator() {
         )}
       </Card>
       
-      {teams.length > 0 && !isBlindDraw && (
-        <Card>
-          <CardHeader>
-             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <CardTitle>Tonight's Teams</CardTitle>
-                  <CardDescription>Drag and drop players between teams to swap or move them.</CardDescription>
+      {isClient && teams.length > 0 && !isBlindDraw && (
+        <DragDropContext onDragEnd={onDragEnd}>
+            <Card>
+            <CardHeader>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                    <CardTitle>Tonight's Teams</CardTitle>
+                    <CardDescription>Drag and drop players between teams to swap or move them.</CardDescription>
+                    </div>
+                    <Button onClick={handlePublish} disabled={isPublishing}>
+                        <Send className="mr-2 h-4 w-4" />
+                        {isPublishing ? 'Publishing...' : 'Publish to Dashboard'}
+                    </Button>
                 </div>
-                 <Button onClick={handlePublish} disabled={isPublishing}>
-                    <Send className="mr-2 h-4 w-4" />
-                    {isPublishing ? 'Publishing...' : 'Publish to Dashboard'}
-                </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {teams.map((team, index) => {
-              const { avgSkill, guyCount, galCount, guyPercentage } = getTeamAnalysis(team);
-              const droppableId = `${team.name}-${index}`;
-              return (
-              <Droppable droppableId={droppableId} key={droppableId}>
-                {(provided, snapshot) => (
-                  <Card 
-                    ref={provided.innerRef}
-                    {...provided.droppableProps}
-                    className={cn(
-                      "flex flex-col",
-                      snapshot.isDraggingOver && "bg-primary/10"
-                    )}
-                  >
-                    <CardHeader className="p-4">
-                      <CardTitle className="text-lg">{team.name}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="flex-grow p-4 pt-0">
-                      <div className="space-y-3 min-h-[100px]">
-                        {[...team.players]
-                          .sort((a, b) => b.skill - a.skill)
-                          .map((player, index) => (
-                            <Draggable key={player.id} draggableId={player.id} index={index}>
-                                {(provided, snapshot) => (
-                                    <div
-                                        ref={provided.innerRef}
-                                        {...provided.draggableProps}
-                                        {...provided.dragHandleProps}
-                                        className={cn(
-                                            "flex items-center gap-3 p-2 rounded-md cursor-grab",
-                                            snapshot.isDragging ? 'bg-primary/20 shadow-lg' : 'bg-transparent'
-                                        )}
-                                    >
-                                        <Avatar className="h-8 w-8 border-2 border-white">
-                                            <AvatarFallback className="bg-primary/20 text-primary font-bold">
-                                                {player.name.charAt(0)}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                        <span className="font-medium">{player.name}</span>
-                                        <Badge variant="outline" className="ml-auto">{player.skill}</Badge>
-                                    </div>
-                                )}
-                            </Draggable>
-                        ))}
-                        {provided.placeholder}
-                      </div>
-                    </CardContent>
-                    <CardFooter className="flex-col items-start gap-2 border-t bg-muted/50 p-4 text-sm text-muted-foreground">
-                        <div className="flex w-full justify-between">
-                           <div className='flex items-center gap-2'>Avg Skill: <span className="font-bold text-foreground">{avgSkill}</span></div>
-                           <div className="flex items-center gap-2">Guy %: <span className="font-bold text-foreground">{guyPercentage}%</span></div>
+            </CardHeader>
+            <CardContent className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {teams.map((team, index) => {
+                const { avgSkill, guyCount, galCount, guyPercentage } = getTeamAnalysis(team);
+                const droppableId = `${team.name}-${index}`;
+                return (
+                <Droppable droppableId={droppableId} key={droppableId}>
+                    {(provided, snapshot) => (
+                    <Card 
+                        ref={provided.innerRef}
+                        {...provided.droppableProps}
+                        className={cn(
+                        "flex flex-col",
+                        snapshot.isDraggingOver && "bg-primary/10"
+                        )}
+                    >
+                        <CardHeader className="p-4">
+                        <CardTitle className="text-lg">{team.name}</CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex-grow p-4 pt-0">
+                        <div className="space-y-3 min-h-[100px]">
+                            {[...team.players]
+                            .sort((a, b) => b.skill - a.skill)
+                            .map((player, index) => (
+                                <Draggable key={player.id} draggableId={player.id} index={index}>
+                                    {(provided, snapshot) => (
+                                        <div
+                                            ref={provided.innerRef}
+                                            {...provided.draggableProps}
+                                            {...provided.dragHandleProps}
+                                            className={cn(
+                                                "flex items-center gap-3 p-2 rounded-md cursor-grab",
+                                                snapshot.isDragging ? 'bg-primary/20 shadow-lg' : 'bg-transparent'
+                                            )}
+                                        >
+                                            <Avatar className="h-8 w-8 border-2 border-white">
+                                                <AvatarFallback className="bg-primary/20 text-primary font-bold">
+                                                    {player.name.charAt(0)}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                            <span className="font-medium">{player.name}</span>
+                                            <Badge variant="outline" className="ml-auto">{player.skill}</Badge>
+                                        </div>
+                                    )}
+                                </Draggable>
+                            ))}
+                            {provided.placeholder}
                         </div>
-                        <div className="flex w-full justify-between">
-                            <div className='flex items-center gap-2'>Gender: 
-                                <span className="font-bold text-blue-500">{guyCount}G</span>
-                                <span className="text-muted-foreground">/</span>
-                                <span className="font-bold text-pink-500">{galCount}L</span>
+                        </CardContent>
+                        <CardFooter className="flex-col items-start gap-2 border-t bg-muted/50 p-4 text-sm text-muted-foreground">
+                            <div className="flex w-full justify-between">
+                            <div className='flex items-center gap-2'>Avg Skill: <span className="font-bold text-foreground">{avgSkill}</span></div>
+                            <div className="flex items-center gap-2">Guy %: <span className="font-bold text-foreground">{guyPercentage}%</span></div>
                             </div>
-                        </div>
-                    </CardFooter>
-                  </Card>
-                )}
-              </Droppable>
-            )})}
-          </CardContent>
-        </Card>
+                            <div className="flex w-full justify-between">
+                                <div className='flex items-center gap-2'>Gender: 
+                                    <span className="font-bold text-blue-500">{guyCount}G</span>
+                                    <span className="text-muted-foreground">/</span>
+                                    <span className="font-bold text-pink-500">{galCount}L</span>
+                                </div>
+                            </div>
+                        </CardFooter>
+                    </Card>
+                    )}
+                </Droppable>
+                )})}
+            </CardContent>
+            </Card>
+        </DragDropContext>
       )}
     </div>
-    </DragDropContext>
   );
 }
+
+    
