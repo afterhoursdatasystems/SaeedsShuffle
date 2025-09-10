@@ -3,7 +3,7 @@
 
 import type { Player, Team, Match, GameFormat, GameVariant, PowerUp } from '@/types';
 import React, { createContext, useContext, useState, type ReactNode, useEffect } from 'react';
-import { getPlayers, updatePlayerPresence } from '@/app/actions';
+import { getPlayers, updatePlayerPresence, getPublishedData } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 
 interface PlayerContextType {
@@ -39,21 +39,59 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
 
   useEffect(() => {
-    const fetchPlayers = async () => {
+    const fetchData = async () => {
         setIsLoading(true);
-        const result = await getPlayers();
-        if (result.success && result.data) {
-            setPlayers(result.data);
-        } else {
-            toast({
-                title: "Error fetching players",
-                description: result.error || "Could not load player data.",
+        try {
+            const [playerResult, publishedDataResult] = await Promise.all([
+                getPlayers(),
+                getPublishedData()
+            ]);
+
+            if (playerResult.success && playerResult.data) {
+                setPlayers(playerResult.data);
+            } else {
+                 toast({
+                    title: "Error fetching players",
+                    description: playerResult.error || "Could not load player data.",
+                    variant: 'destructive',
+                });
+            }
+
+            if (publishedDataResult.success && publishedDataResult.data) {
+                const { teams, format, schedule, activeRule, pointsToWin } = publishedDataResult.data;
+                setTeams(teams || []);
+                setSchedule(schedule || []);
+                setActiveRule(activeRule || null);
+                setPointsToWin(pointsToWin || 15);
+                
+                // Handle complex format state
+                if (format === 'monarch-of-the-court' || format === 'king-s-ransom' || format === 'power-up-round' || format === 'standard') {
+                    setGameFormat('king-of-the-court');
+                    setGameVariant(format);
+                } else {
+                    setGameFormat(format as GameFormat);
+                    setGameVariant('standard');
+                }
+
+            } else {
+                 toast({
+                    title: "Error fetching settings",
+                    description: publishedDataResult.error || "Could not load tournament settings.",
+                    variant: 'destructive',
+                });
+            }
+
+        } catch (error) {
+             toast({
+                title: "Failed to load initial data",
+                description: "There was an error loading data from the server.",
                 variant: 'destructive',
             });
+        } finally {
+            setIsLoading(false);
         }
-        setIsLoading(false);
     };
-    fetchPlayers();
+    fetchData();
   }, [toast]);
 
 
