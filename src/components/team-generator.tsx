@@ -82,29 +82,24 @@ export function TeamGenerator() {
     if (numTeams === 0) {
         return [];
     }
-
     const shuffledTeamNames = shuffleArray(teamNames);
-    let newTeams: Team[] = Array.from({ length: numTeams }, (_, i) => ({
-        name: shuffledTeamNames[i],
-        players: [],
-    }));
 
     // 1. Create skill buckets and shuffle within them
     const buckets: {
         guys: Record<string, Player[]>,
         gals: Record<string, Player[]>
     } = {
-        guys: { '9-10': [], '7-8': [], '5-6': [], '1-4': [] },
-        gals: { '9-10': [], '7-8': [], '5-6': [], '1-4': [] },
+        guys: { '9-10': [], '6-8': [], '4-5': [], '1-3': [] },
+        gals: { '9-10': [], '6-8': [], '4-5': [], '1-3': [] },
     };
 
     for (const player of allPlayers) {
         const genderKey = player.gender === 'Guy' ? 'guys' : 'gals';
         let bucketKey: string;
         if (player.skill >= 9) bucketKey = '9-10';
-        else if (player.skill >= 7) bucketKey = '7-8';
-        else if (player.skill >= 5) bucketKey = '5-6';
-        else bucketKey = '1-4';
+        else if (player.skill >= 6) bucketKey = '6-8';
+        else if (player.skill >= 4) bucketKey = '4-5';
+        else bucketKey = '1-3';
         buckets[genderKey][bucketKey].push(player);
     }
     
@@ -116,7 +111,7 @@ export function TeamGenerator() {
     }
 
     const draftPlayer = (gender: 'guys' | 'gals'): Player | undefined => {
-        const order = ['9-10', '7-8', '5-6', '1-4'];
+        const order = ['9-10', '6-8', '4-5', '1-3'];
         for (const bucketKey of order) {
             if (buckets[gender][bucketKey].length > 0) {
                 return buckets[gender][bucketKey].shift();
@@ -124,67 +119,73 @@ export function TeamGenerator() {
         }
         return undefined;
     };
-    
-    const allDraftablePlayers = [
-        ...buckets.guys['9-10'], ...buckets.guys['7-8'], ...buckets.guys['5-6'], ...buckets.guys['1-4'],
-        ...buckets.gals['9-10'], ...buckets.gals['7-8'], ...buckets.gals['5-6'], ...buckets.gals['1-4'],
-    ];
 
-    // Determine target gender counts
+    // 2. Create team blueprints based on gender ratio
     const totalGuys = allPlayers.filter(p => p.gender === 'Guy').length;
     const totalGals = allPlayers.length - totalGuys;
     
-    const playersToAssign = numTeams * baseTeamSize;
-    let guysToAssign = Math.round(playersToAssign * (totalGuys / allPlayers.length));
-    let galsToAssign = playersToAssign - guysToAssign;
+    const teamBlueprints = Array.from({ length: numTeams }, () => ({ guys: 0, gals: 0 }));
     
-    // Adjust if not enough of one gender
-    if (guysToAssign > totalGuys) {
-        galsToAssign += guysToAssign - totalGuys;
-        guysToAssign = totalGuys;
-    }
-    if (galsToAssign > totalGals) {
-        guysToAssign += galsToAssign - totalGals;
-        galsToAssign = totalGals;
-    }
-    
-    let assignedPlayers = 0;
-    let turn = 0;
-    
-    // Distribute players ensuring minimum size is met, respecting gender ratios
-    while (assignedPlayers < playersToAssign) {
-        const teamIndex = turn % numTeams;
-        const actualIndex = (Math.floor(turn / numTeams) % 2 === 0) ? teamIndex : numTeams - 1 - teamIndex;
-        
-        const currentGuyCount = newTeams[actualIndex].players.filter(p => p.gender === 'Guy').length;
-        const currentGalCount = newTeams[actualIndex].players.length - currentGuyCount;
-        const assignedGuysTotal = newTeams.flat().reduce((sum, t) => sum + t.players.filter(p => p.gender === 'Guy').length, 0);
-        const assignedGalsTotal = assignedPlayers - assignedGuysTotal;
-        
-        let playerToDraft: Player | undefined;
+    const baseGuys = Math.floor(totalGuys / numTeams);
+    const extraGuys = totalGuys % numTeams;
+    const baseGals = Math.floor(totalGals / numTeams);
+    const extraGals = totalGals % numTeams;
 
-        if (Math.random() < (guysToAssign - assignedGuysTotal) / (playersToAssign - assignedPlayers)) {
-             playerToDraft = draftPlayer('guys');
-             if (!playerToDraft) playerToDraft = draftPlayer('gals');
-        } else {
-            playerToDraft = draftPlayer('gals');
-            if (!playerToDraft) playerToDraft = draftPlayer('guys');
-        }
-        
-        if (playerToDraft) {
-            newTeams[actualIndex].players.push(playerToDraft);
-            assignedPlayers++;
-        }
-        turn++;
+    for (let i = 0; i < numTeams; i++) {
+        teamBlueprints[i].guys = baseGuys + (i < extraGuys ? 1 : 0);
+        teamBlueprints[i].gals = baseGals + (i < extraGals ? 1 : 0);
     }
 
-    // Distribute all remaining players (leftovers)
+    // Adjust blueprints to ensure they sum to the base team size first
+    let assignedCounts = teamBlueprints.map(bp => bp.guys + bp.gals);
+    for(let i=0; i < numTeams; i++) {
+        let currentSize = assignedCounts[i];
+        while(currentSize < baseTeamSize) {
+             // Find who has more left to assign - guys or gals?
+             const remainingGuys = totalGuys - teamBlueprints.reduce((sum, bp) => sum + bp.guys, 0);
+             const remainingGals = totalGals - teamBlueprints.reduce((sum, bp) => sum + bp.gals, 0);
+
+             if(remainingGals > remainingGuys) {
+                 teamBlueprints[i].gals++;
+             } else {
+                 teamBlueprints[i].guys++;
+             }
+             currentSize++;
+        }
+    }
+    
+    const newTeams: Team[] = Array.from({ length: numTeams }, (_, i) => ({
+        name: shuffledTeamNames[i],
+        players: [],
+    }));
+
+    // 3. Snake draft players based on blueprints
+    const draftOrder = ['guys', 'gals'];
+    for(const gender of draftOrder) {
+        for (let i = 0; i < numTeams * baseTeamSize; i++) {
+            const teamIndex = i % numTeams;
+            const snakeIndex = (Math.floor(i / numTeams) % 2 === 0) ? teamIndex : numTeams - 1 - teamIndex;
+            
+            const blueprint = teamBlueprints[snakeIndex];
+            const team = newTeams[snakeIndex];
+
+            if (gender === 'guys' && team.players.filter(p => p.gender === 'Guy').length < blueprint.guys) {
+                 const player = draftPlayer('guys');
+                 if(player) team.players.push(player);
+            } else if (gender === 'gals' && team.players.filter(p => p.gender === 'Gal').length < blueprint.gals) {
+                 const player = draftPlayer('gals');
+                 if(player) team.players.push(player);
+            }
+        }
+    }
+
+
+    // 4. Distribute all remaining players (leftovers)
     let remainingPlayers = [
          ...Object.values(buckets.guys).flat(),
          ...Object.values(buckets.gals).flat()
     ];
     
-    // Sort remaining by skill to try and balance the last adds
     remainingPlayers.sort((a,b) => b.skill - a.skill);
     
     let teamIndexForLeftovers = 0;
