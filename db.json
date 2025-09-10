@@ -194,8 +194,8 @@
     }
   ],
   "activeRule": {
-    "name": "Butterfingers",
-    "description": "The opposing team is not allowed to set the ball for the next two rallies (must bump-set)."
+    "name": "One-Handed Wonder",
+    "description": "One player on the opposing team must play with one hand behind their back for the next rally."
   },
   "pointsToWin": 15
 }

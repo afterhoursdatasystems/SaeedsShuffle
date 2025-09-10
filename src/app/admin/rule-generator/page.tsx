@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
@@ -60,6 +60,11 @@ export default function RuleGeneratorPage() {
   const { toast } = useToast();
   const { teams, schedule, gameFormat, gameVariant, activeRule, setActiveRule, pointsToWin } = usePlayerContext();
   const [isLoading, setIsLoading] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const isPowerUpRound = gameFormat === 'king-of-the-court' && gameVariant === 'power-up-round';
   const isKingsRansom = gameFormat === 'king-of-the-court' && gameVariant === 'king-s-ransom';
@@ -71,8 +76,9 @@ export default function RuleGeneratorPage() {
 
   const handleGenerate = async () => {
     setIsLoading(true);
-
-    // Simulate a short delay for a better user experience
+    
+    // Defer the random selection to a timeout to ensure it runs client-side
+    // and avoids hydration mismatches.
     setTimeout(async () => {
       const randomIndex = Math.floor(Math.random() * ruleSet.length);
       let selectedRule = ruleSet[randomIndex];
@@ -107,7 +113,7 @@ export default function RuleGeneratorPage() {
         });
       }
 
-    }, 300);
+    }, 50); // A small timeout is enough
   };
 
   return (
@@ -130,7 +136,7 @@ export default function RuleGeneratorPage() {
         {validFormat ? (
         <>
             <div className="text-center mb-8">
-                <Button onClick={handleGenerate} disabled={isLoading} size="lg">
+                <Button onClick={handleGenerate} disabled={isLoading || !isClient} size="lg">
                     {isLoading ? (
                     <RefreshCw className="mr-2 h-5 w-5 animate-spin" />
                     ) : (
@@ -154,6 +160,7 @@ export default function RuleGeneratorPage() {
                 <Card className="text-center py-20 border-2 border-dashed">
                 <CardContent>
                     <p className="text-lg text-muted-foreground">{initialText}</p>
+
                 </CardContent>
                 </Card>
             )}
