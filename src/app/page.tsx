@@ -23,7 +23,7 @@ const KOTCBaseRules = ({ pointsToWin, teamCount }: { pointsToWin: number; teamCo
         
         <h4 className="font-bold text-lg mb-2">The Flow of Play</h4>
         <ul className="list-disc pl-5 space-y-2 mb-6">
-            <li><strong>Court Setup:</strong> One court is designated the “King Court” (top court). All other courts are “Challenger Courts.”</li>
+            <li><strong>Court Setup:</strong> There are two courts in play. Court 1 is the "King Court" (the winner's court), and Court 2 is the "Challenger Court".</li>
             <li><strong>The Goal:</strong> Have fun and try to stay on the King Court as long as you can!</li>
         </ul>
 
@@ -429,6 +429,8 @@ export default function PublicTeamsPage() {
     </div>
   );
 }
+
+    
 
     
 
