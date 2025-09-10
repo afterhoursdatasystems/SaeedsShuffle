@@ -68,7 +68,7 @@ export function TeamGenerator() {
   }, []);
 
   const presentPlayers = useMemo(() => players.filter((p) => p.present), [players]);
-  const possibleTeamsCount = presentPlayers.length > 0 ? Math.round(presentPlayers.length / teamSize) : 0;
+  const possibleTeamsCount = presentPlayers.length > 0 ? Math.floor(presentPlayers.length / teamSize) : 0;
   
   const { presentGuys, presentGals, overallGuyPercentage } = useMemo(() => {
     const presentGuys = presentPlayers.filter(p => p.gender === 'Guy').length;
@@ -79,23 +79,73 @@ export function TeamGenerator() {
 
 
  const createBalancedTeams = (allPlayers: Player[], baseTeamSize: number): Team[] => {
+    if (allPlayers.length < baseTeamSize) return [];
+
     const numTeams = Math.floor(allPlayers.length / baseTeamSize);
-    if (numTeams === 0) {
-      setUnassignedPlayers(allPlayers);
-      return [];
+
+    const getSkillBucket = (skill: number) => {
+      if (skill <= 4) return '1-4';
+      if (skill <= 6) return '5-6';
+      if (skill <= 8) return '7-8';
+      return '9-10';
+    };
+
+    type SkillBucket = '1-4' | '5-6' | '7-8' | '9-10';
+    const guyBuckets: Record<SkillBucket, Player[]> = { '1-4': [], '5-6': [], '7-8': [], '9-10': [] };
+    const galBuckets: Record<SkillBucket, Player[]> = { '1-4': [], '5-6': [], '7-8': [], '9-10': [] };
+
+    for (const player of allPlayers) {
+      const bucket = getSkillBucket(player.skill);
+      if (player.gender === 'Guy') {
+        guyBuckets[bucket].push(player);
+      } else {
+        galBuckets[bucket].push(player);
+      }
     }
 
-    const guys = allPlayers.filter(p => p.gender === 'Guy').sort((a, b) => b.skill - a.skill);
-    const gals = allPlayers.filter(p => p.gender === 'Gal').sort((a, b) => b.skill - a.skill);
+    // Shuffle within each bucket
+    for (const bucket of Object.values(guyBuckets)) shuffleArray(bucket);
+    for (const bucket of Object.values(galBuckets)) shuffleArray(bucket);
 
-    const totalGuys = guys.length;
-    const totalGals = gals.length;
+    const draftPlayer = (gender: 'Guy' | 'Gal'): Player | undefined => {
+        const buckets = gender === 'Guy' ? guyBuckets : galBuckets;
+        const bucketOrder: SkillBucket[] = ['9-10', '7-8', '5-6', '1-4'];
+        for (const bucketName of bucketOrder) {
+            if(buckets[bucketName].length > 0) {
+                return buckets[bucketName].shift();
+            }
+        }
+        return undefined;
+    };
+    
+    // --- Start of Gender Distribution Logic ---
+    const totalGuys = allPlayers.filter(p => p.gender === 'Guy').length;
+    const totalGals = allPlayers.filter(p => p.gender === 'Gal').length;
 
-    const baseGuysPerTeam = Math.floor(totalGuys / numTeams);
-    const extraGuys = totalGuys % numTeams;
+    const guyRatio = totalGuys / allPlayers.length;
 
-    const baseGalsPerTeam = Math.floor(totalGals / numTeams);
-    const extraGals = totalGals % numTeams;
+    const teamBlueprints = Array.from({ length: numTeams }, () => ({ guys: 0, gals: 0 }));
+
+    for (let i = 0; i < baseTeamSize * numTeams; i++) {
+        const teamIndex = i % numTeams;
+        const currentTeamSize = teamBlueprints[teamIndex].guys + teamBlueprints[teamIndex].gals;
+        const currentGuyRatio = teamBlueprints[teamIndex].guys / (currentTeamSize || 1);
+
+        if (currentGuyRatio < guyRatio) {
+            if (totalGuys - teamBlueprints.reduce((acc, t) => acc + t.guys, 0) > 0) {
+                 teamBlueprints[teamIndex].guys++;
+            } else {
+                 teamBlueprints[teamIndex].gals++;
+            }
+        } else {
+             if (totalGals - teamBlueprints.reduce((acc, t) => acc + t.gals, 0) > 0) {
+                teamBlueprints[teamIndex].gals++;
+            } else {
+                teamBlueprints[teamIndex].guys++;
+            }
+        }
+    }
+    // --- End of Gender Distribution Logic ---
     
     const shuffledNames = shuffleArray(teamNames);
     const newTeams: Team[] = Array.from({ length: numTeams }, (_, i) => ({
@@ -103,30 +153,32 @@ export function TeamGenerator() {
         players: [],
     }));
     
-    // Distribute base players
-    for (let i = 0; i < numTeams; i++) {
-        for (let j = 0; j < baseGuysPerTeam; j++) {
-            if(guys.length > 0) newTeams[i].players.push(guys.shift()!);
-        }
-        for (let j = 0; j < baseGalsPerTeam; j++) {
-             if(gals.length > 0) newTeams[i].players.push(gals.shift()!);
-        }
-    }
+    // Draft players based on blueprints
+    const snakeDraftOrder = (round: number) => (round % 2 === 0) ? Array.from({ length: numTeams }, (_, i) => i) : Array.from({ length: numTeams }, (_, i) => numTeams - 1 - i);
 
-    // Distribute extra players
-    for (let i = 0; i < extraGuys; i++) {
-        if(guys.length > 0) newTeams[i].players.push(guys.shift()!);
-    }
-     for (let i = 0; i < extraGals; i++) {
-        if(gals.length > 0) newTeams[i].players.push(gals.shift()!);
+    for (let i = 0; i < numTeams; i++) {
+      const blueprint = teamBlueprints[i];
+      for(let j = 0; j < blueprint.guys; j++) {
+        const player = draftPlayer('Guy');
+        if (player) newTeams[i].players.push(player);
+      }
+      for(let j = 0; j < blueprint.gals; j++) {
+         const player = draftPlayer('Gal');
+        if (player) newTeams[i].players.push(player);
+      }
     }
     
-    // Distribute leftover players from uneven team sizes (e.g. 19 players for 4v4)
-    const leftoverPlayers = [...guys, ...gals].sort((a,b) => b.skill - a.skill);
+    // Distribute all remaining players (leftovers from buckets + extras from uneven total)
+    const remainingPlayers = [...guyBuckets['9-10'], ...guyBuckets['7-8'], ...guyBuckets['5-6'], ...guyBuckets['1-4'], ...galBuckets['9-10'], ...galBuckets['7-8'], ...galBuckets['5-6'], ...galBuckets['1-4']];
+
     let teamIndex = 0;
-    while(leftoverPlayers.length > 0) {
-        newTeams[teamIndex % numTeams].players.push(leftoverPlayers.shift()!);
-        teamIndex++;
+    while(remainingPlayers.length > 0) {
+      const player = remainingPlayers.shift();
+      if(player) {
+         // Sort teams by current size to add players to the smallest teams first
+        newTeams.sort((a,b) => a.players.length - b.players.length);
+        newTeams[0].players.push(player);
+      }
     }
   
     newTeams.forEach(team => team.players.sort((a,b) => b.skill - a.skill));
@@ -149,7 +201,6 @@ export function TeamGenerator() {
     
     const newTeams = createBalancedTeams(presentPlayers, teamSize);
     setTeams(newTeams);
-    setUnassignedPlayers([]);
 
     toast({
       title: 'Teams Generated!',
@@ -166,15 +217,7 @@ export function TeamGenerator() {
       });
       return;
     }
-    if (unassignedPlayers.length > 0) {
-      toast({
-        title: 'Unassigned Players',
-        description: 'Please assign all players to a team before publishing.',
-        variant: 'destructive',
-      });
-      return;
-    }
-    
+
     setIsPublishing(true);
     const result = await publishData(teams, gameFormat, schedule, activeRule, pointsToWin);
     setIsPublishing(false);
@@ -210,7 +253,7 @@ export function TeamGenerator() {
   };
 
   const onDragEnd = (result: DropResult) => {
-    const { source, destination } = result;
+    const { source, destination, draggableId } = result;
 
     if (!destination) {
       return;
@@ -219,29 +262,33 @@ export function TeamGenerator() {
     const sourceTeamName = source.droppableId;
     const destTeamName = destination.droppableId;
 
-    let newTeams = JSON.parse(JSON.stringify(teams));
-    let sourceTeam = newTeams.find((t: Team) => t.name === sourceTeamName);
-    let destTeam = newTeams.find((t: Team) => t.name === destTeamName);
-    let player;
-
-    if (!sourceTeam || !destTeam) return;
-
-    // Find and remove player from source team
-    const playerIndex = sourceTeam.players.findIndex((p: Player) => p.id === draggableId);
-    if(playerIndex > -1) {
-        [player] = sourceTeam.players.splice(playerIndex, 1);
+    if(sourceTeamName === destTeamName && source.index === destination.index) {
+        return;
     }
 
-    if (!player) return;
+    const newTeams = JSON.parse(JSON.stringify(teams)) as Team[];
+    let sourceTeam = newTeams.find((t: Team) => t.name === sourceTeamName);
+    let destTeam = newTeams.find((t: Team) => t.name === destTeamName);
+    
+    if (!sourceTeam) return;
 
-    // Add player to destination team
-    destTeam.players.splice(destination.index, 0, player);
+    const playerIndex = sourceTeam.players.findIndex((p: Player) => p.id === draggableId);
+    if(playerIndex === -1) return;
 
+    const [movedPlayer] = sourceTeam.players.splice(playerIndex, 1);
+
+    if(sourceTeamName === destTeamName) {
+        sourceTeam.players.splice(destination.index, 0, movedPlayer);
+    } else {
+        if(!destTeam) return;
+        destTeam.players.splice(destination.index, 0, movedPlayer);
+    }
+    
     setTeams(newTeams);
 
     toast({
         title: "Player Moved",
-        description: `${player.name} has been moved from ${sourceTeam.name} to ${destTeam.name}.`
+        description: `${movedPlayer.name} has been moved.`,
     });
   };
   
@@ -327,7 +374,7 @@ export function TeamGenerator() {
                   <CardTitle>Tonight's Teams</CardTitle>
                   <CardDescription>Drag and drop players between teams to swap or move them.</CardDescription>
                 </div>
-                 <Button onClick={handlePublish} disabled={isPublishing || unassignedPlayers.length > 0}>
+                 <Button onClick={handlePublish} disabled={isPublishing}>
                     <Send className="mr-2 h-4 w-4" />
                     {isPublishing ? 'Publishing...' : 'Publish to Dashboard'}
                 </Button>
