@@ -78,136 +78,100 @@ export function TeamGenerator() {
   }, [presentPlayers]);
 
 
-  const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] => {
-    console.clear();
-    console.log('=== TEAM GENERATION START ===');
-    console.log(`Players: ${allPlayers.length} | Format: ${formatSize}v${formatSize}`);
-    
-    // 1. Calculate adjusted skills
-    const adjustedPlayers: PlayerWithAdjustedSkill[] = allPlayers.map(p => ({
-      ...p,
-      adjustedSkill: p.skill * (p.gender === 'Gal' ? 0.85 : 1)
-    }));
-    
-    // Calculate gender ratio for reference
-    const totalGals = adjustedPlayers.filter(p => p.gender === 'Gal').length;
-    const targetGalRatio = totalGals / allPlayers.length;
-    console.log(`Gender Distribution: ${totalGals} Gals, ${allPlayers.length - totalGals} Guys`);
-    console.log(`Target Gal Ratio: ${(targetGalRatio * 100).toFixed(1)}%`);
-    
-    // 2. Create skill buckets (5 tiers, 2 skill levels each)
-    type BucketType = { guys: PlayerWithAdjustedSkill[], gals: PlayerWithAdjustedSkill[] };
-    const buckets: { [key: string]: BucketType } = {
-      'tier1': { guys: [], gals: [] }, // 9-10
-      'tier2': { guys: [], gals: [] }, // 7-8
-      'tier3': { guys: [], gals: [] }, // 5-6
-      'tier4': { guys: [], gals: [] }, // 3-4
-      'tier5': { guys: [], gals: [] }  // 1-2
-    };
-    
-    // 3. Distribute players into buckets by skill AND gender
-    adjustedPlayers.forEach(p => {
-      const genderGroup = p.gender === 'Gal' ? 'gals' : 'guys';
-      if (p.skill >= 9) buckets.tier1[genderGroup].push(p);
-      else if (p.skill >= 7) buckets.tier2[genderGroup].push(p);
-      else if (p.skill >= 5) buckets.tier3[genderGroup].push(p);
-      else if (p.skill >= 3) buckets.tier4[genderGroup].push(p);
-      else buckets.tier5[genderGroup].push(p);
-    });
-    
-    // 4. Shuffle within each bucket/gender group for randomness
-    Object.values(buckets).forEach(tier => {
-      tier.guys = shuffleArray(tier.guys);
-      tier.gals = shuffleArray(tier.gals);
-    });
-    
-    // Log bucket distribution
-    console.log('\n=== SKILL BUCKETS (after shuffle) ===');
-    Object.entries(buckets).forEach(([tier, groups]) => {
-      if (groups.guys.length > 0 || groups.gals.length > 0) {
-        console.log(`${tier}: ${groups.guys.length} Guys, ${groups.gals.length} Gals`);
-      }
-    });
-    
-    // 5. Create draft pool maintaining tier order but alternating gender
-    const draftPool: PlayerWithAdjustedSkill[] = [];
-    ['tier1', 'tier2', 'tier3', 'tier4', 'tier5'].forEach(tier => {
-      const guys = [...buckets[tier].guys];
-      const gals = [...buckets[tier].gals];
-      
-      // Interleave guys and gals within each tier for better distribution
-      while (guys.length > 0 || gals.length > 0) {
-        if (guys.length > 0) draftPool.push(guys.shift()!);
-        if (gals.length > 0) draftPool.push(gals.shift()!);
-      }
-    });
-    
-    // 6. Determine team structure
-    const numTeams = Math.floor(allPlayers.length / formatSize);
-    if (numTeams < 2) {
-      console.log('Not enough players for 2 teams');
+  const createBalancedTeams = (allPlayers: Player[], baseTeamSize: number): Team[] => {
+    if (allPlayers.length < baseTeamSize) {
       return [];
     }
-    
-    const baseTeamSize = Math.floor(allPlayers.length / numTeams);
-    const teamsWithExtra = allPlayers.length % numTeams;
-    
-    console.log(`\n=== TEAM STRUCTURE ===`);
-    console.log(`Teams: ${numTeams} | Base size: ${baseTeamSize} | Teams with extra: ${teamsWithExtra}`);
-    
-    // Initialize teams with random names
-    const shuffledNames = shuffleArray(teamNames);
-    const newTeams: Team[] = Array.from({ length: numTeams }, (_, i) => ({
-      name: shuffledNames[i % shuffledNames.length],
-      players: [],
+
+    const numTeams = Math.floor(allPlayers.length / baseTeamSize);
+    let newTeams: Team[] = Array.from({ length: numTeams }, (_, i) => ({
+        name: shuffleArray(teamNames)[i],
+        players: [],
     }));
-    
-    // Track gender counts for each team
-    const teamGenderCounts = newTeams.map(() => ({ guys: 0, gals: 0 }));
-    
-    // 7. Draft players to ensure diversity
-    while (draftPool.length > 0) {
-      for (let i = 0; i < numTeams; i++) {
-        if (newTeams[i].players.length < baseTeamSize + (i < teamsWithExtra ? 1 : 0)) {
-          const player = draftPool.shift()!;
-          newTeams[i].players.push(player);
-          
-          // Update gender counts
-          if (player.gender === 'Gal') {
-            teamGenderCounts[i].gals++;
-          } else {
-            teamGenderCounts[i].guys++;
-          }
+
+    // 1. Create skill buckets and shuffle within them
+    const buckets = {
+        guys: { '1-4': [], '5-6': [], '7-8': [], '9-10': [] } as Record<string, Player[]>,
+        gals: { '1-4': [], '5-6': [], '7-8': [], '9-10': [] } as Record<string, Player[]>,
+    };
+
+    for (const player of allPlayers) {
+        const gender = player.gender === 'Guy' ? 'guys' : 'gals';
+        let bucket: string;
+        if (player.skill <= 4) bucket = '1-4';
+        else if (player.skill <= 6) bucket = '5-6';
+        else if (player.skill <= 8) bucket = '7-8';
+        else bucket = '9-10';
+        buckets[gender][bucket].push(player);
+    }
+
+    for (const gender of Object.keys(buckets)) {
+        for (const bucket of Object.keys(buckets[gender as 'guys' | 'gals'])) {
+            buckets[gender as 'guys' | 'gals'][bucket] = shuffleArray(buckets[gender as 'guys' | 'gals'][bucket]);
         }
-      }
     }
     
-    // Shuffle teams to ensure randomness
-    shuffleArray(newTeams);
+    // Flatten buckets into a single draftable pool for each gender, preserving skill tier order
+    const guysPool = [
+        ...buckets.guys['9-10'], ...buckets.guys['7-8'], ...buckets.guys['5-6'], ...buckets.guys['1-4']
+    ];
+    const galsPool = [
+        ...buckets.gals['9-10'], ...buckets.gals['7-8'], ...buckets.gals['5-6'], ...buckets.gals['1-4']
+    ];
+
+    // 2. Determine ideal gender distribution
+    const totalPlayers = allPlayers.length;
+    const totalGuys = guysPool.length;
+    const totalGals = galsPool.length;
+
+    const baseGuysPerTeam = Math.floor(totalGuys / numTeams);
+    const baseGalsPerTeam = Math.floor(totalGals / numTeams);
+    let extraGuys = totalGuys % numTeams;
+    let extraGals = totalGals % numTeams;
+
+    // 3. Draft base players
+    let snakeDraftOrder = true; // true for forwards, false for backwards
+    for (let i = 0; i < baseGuysPerTeam; i++) {
+        const teamIndices = snakeDraftOrder ? Array.from(Array(numTeams).keys()) : Array.from(Array(numTeams).keys()).reverse();
+        for (const teamIndex of teamIndices) {
+            if (guysPool.length > 0) newTeams[teamIndex].players.push(guysPool.shift()!);
+        }
+        snakeDraftOrder = !snakeDraftOrder;
+    }
+    for (let i = 0; i < baseGalsPerTeam; i++) {
+        const teamIndices = snakeDraftOrder ? Array.from(Array(numTeams).keys()) : Array.from(Array(numTeams).keys()).reverse();
+        for (const teamIndex of teamIndices) {
+            if (galsPool.length > 0) newTeams[teamIndex].players.push(galsPool.shift()!);
+        }
+        snakeDraftOrder = !snakeDraftOrder;
+    }
+
+    // 4. Distribute extra gender players
+    const extraGuysIndices = shuffleArray(Array.from(Array(numTeams).keys()));
+    while(extraGuys > 0) {
+        if(guysPool.length > 0) {
+            newTeams[extraGuysIndices.pop()!].players.push(guysPool.shift()!);
+        }
+        extraGuys--;
+    }
+    const extraGalsIndices = shuffleArray(Array.from(Array(numTeams).keys()));
+     while(extraGals > 0) {
+        if(galsPool.length > 0) {
+            newTeams[extraGalsIndices.pop()!].players.push(galsPool.shift()!);
+        }
+        extraGals--;
+    }
     
-    // Final team analysis
-    console.log('\n=== FINAL TEAMS ===');
-    newTeams.forEach((team, index) => {
-      const { avgSkill, guyCount, galCount, avgAdjustedSkill } = getTeamAnalysis(team);
-      console.log(`\n${team.name} (${team.players.length} players)`);
-      console.log(`  Avg Raw Skill: ${avgSkill}`);
-      console.log(`  Avg Adjusted Skill: ${avgAdjustedSkill}`);
-      console.log(`  Gender: ${guyCount} Guys, ${galCount} Gals (${(galCount / team.players.length * 100).toFixed(1)}% Gal)`);
-      console.log(`  Roster: ${team.players.map(p => `${p.name}(${p.skill})`).join(', ')}`);
-    });
-    
-    // Calculate and display diversity metrics
-    const genderDiversity = newTeams.map(team => {
-      const totalGals = teamGenderCounts[team.name].gals;
-      const totalGuys = teamGenderCounts[team.name].guys;
-      return Math.abs(totalGals - (totalPlayers / numTeams)) + Math.abs(totalGuys - (totalPlayers / numTeams));
-    });
-    
-    console.log(`\n=== DIVERSITY METRICS ===`);
-    console.log(`Average Gender Diversity: ${genderDiversity.reduce((sum, diversity) => sum + diversity, 0) / numTeams}`);
-    
+    // 5. Distribute remaining players (leftovers from floor division)
+    let remainingPlayers = [...guysPool, ...galsPool].sort((a,b) => b.skill - a.skill);
+    let teamIndexForLeftovers = 0;
+    while(remainingPlayers.length > 0) {
+        newTeams[teamIndexForLeftovers % numTeams].players.push(remainingPlayers.shift()!);
+        teamIndexForLeftovers++;
+    }
+
     return newTeams;
-  }; 
+};
 
   const handleGenerateTeams = () => {
     if (presentPlayers.length < teamSize) {
@@ -407,7 +371,7 @@ export function TeamGenerator() {
             {teams.map((team) => {
               const { avgSkill, guyCount, galCount, guyPercentage } = getTeamAnalysis(team);
               return (
-              <Droppable droppableId={team.name} key={team.name} isCombineEnabled={false}>
+              <Droppable droppableId={team.name} key={team.name}>
                 {(provided, snapshot) => (
                   <Card 
                     ref={provided.innerRef}
@@ -457,9 +421,9 @@ export function TeamGenerator() {
                         </div>
                         <div className="flex w-full justify-between">
                             <div className='flex items-center gap-2'>Gender: 
-                                <span className="font-bold text-blue-500">{guyCount}</span>
+                                <span className="font-bold text-blue-500">{guyCount}G</span>
                                 <span className="text-muted-foreground">/</span>
-                                <span className="font-bold text-pink-500">{galCount}</span>
+                                <span className="font-bold text-pink-500">{galCount}L</span>
                             </div>
                         </div>
                     </CardFooter>
@@ -474,5 +438,3 @@ export function TeamGenerator() {
     </DragDropContext>
   );
 }
-
-    

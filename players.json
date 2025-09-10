@@ -23,9 +23,9 @@
   {
     "id": "4",
     "name": "Kyle Novak",
-    "gender": "Guy",
+    "gender": "Gal",
     "skill": 9,
-    "present": false
+    "present": true
   },
   {
     "id": "5",
