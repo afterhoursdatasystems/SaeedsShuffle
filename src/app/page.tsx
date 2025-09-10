@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
@@ -129,10 +130,10 @@ const getFormatDetails = (pointsToWin: number, teamCount: number): Record<Combin
     icon: KeyRound,
     description: (
       <div>
-        <p className="mb-4">A dramatic and strategic KOTC format where team rosters are not safe. It includes a player "trade" mechanic after each game on the King's Court, dictated by a randomly generated rule.</p>
+        <p className="mb-4">A dramatic and strategic KOTC format where team rosters are not safe. It includes a player "trade" mechanic dictated by a randomly generated rule.</p>
         <h4 className="font-bold text-lg mb-2">Variant-Specific Rule</h4>
          <ul className="list-disc pl-5 space-y-2 mb-6">
-            <li><strong>The Cosmic Scramble:</strong> After losing a game on the King's Court, the losing team must use the active "Cosmic Scramble" rule to trade one of their players with a player from the winning team.</li>
+            <li><strong>The Cosmic Scramble:</strong> This rule is only triggered when a team successfully defends their title on the King's Court. After the game, the losing challenger must use the active "Cosmic Scramble" rule to trade one of their players with a player from the winning team. If the challenger wins, no trade occurs.</li>
         </ul>
          <div className='border-t pt-6 mt-6'>
              <h3 className="font-bold text-xl mb-4">Base King of the Court Rules</h3>
@@ -434,3 +435,4 @@ export default function PublicTeamsPage() {
     
 
     
+

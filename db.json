@@ -166,7 +166,7 @@
       ]
     }
   ],
-  "format": "power-up-round",
+  "format": "king-s-ransom",
   "schedule": [
     {
       "id": "246c150c-b29c-4faf-92bc-b883418a0c64",
@@ -194,8 +194,8 @@
     }
   ],
   "activeRule": {
-    "name": "Ace In The Hole",
-    "description": "If your team serves an ace, you get 3 points instead of 1."
+    "name": "Pet Swap",
+    "description": "The two players (one from each team) with the most unique or unusual pet must swap."
   },
   "pointsToWin": 15
 }
