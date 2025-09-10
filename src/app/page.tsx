@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
@@ -11,10 +12,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { KOTCFlowDiagram } from '@/components/ui/kotc-flow-diagram';
 
 type CombinedGameFormat = GameFormat | GameVariant;
 
-const getFormatDetails = (pointsToWin: number): Record<CombinedGameFormat, { title: string; description: React.ReactNode; icon: React.ElementType }> => ({
+const getFormatDetails = (pointsToWin: number, teamCount: number): Record<CombinedGameFormat, { title: string; description: React.ReactNode; icon: React.ElementType }> => ({
   'king-of-the-court': {
     title: 'Continuous King of the Court',
     icon: Crown,
@@ -23,14 +25,65 @@ const getFormatDetails = (pointsToWin: number): Record<CombinedGameFormat, { tit
         <p className="mb-4">A high-energy, continuous-play format designed to maximize playtime and interaction. All games are to {pointsToWin} points.</p>
         <h4 className="font-bold text-lg mb-2">The Concept</h4>
         <p className="mb-4">A dynamic, non-stop format where the goal is to seize control of the “winner’s court” and hold it against a constant stream of new challengers.</p>
+        
         <h4 className="font-bold text-lg mb-2">The Flow of Play</h4>
-        <ul className="list-disc pl-5 space-y-2">
-            <li><strong>Court Setup:</strong> Court 1 will be the designated “King/Queen Court” and Court 2 will be the “Challenger Court.”</li>
-            <li><strong>Starting the Game:</strong> The first two teams in line will play on the King Court, and the next two teams will play on the Challenger Court.</li>
-            <li><strong>On the King Court (Court 1):</strong> The winning team stays on the court and earns one point on the main scoreboard. The losing team leaves the court and goes to the back of the challenger line.</li>
-            <li><strong>On the Challenger Court (Court 2):</strong> The winning team of this match becomes the next in line to move up and challenge the current King.</li>
-            <li><strong>Winning the Tournament:</strong> This process repeats continuously. The team with the most points (total wins) at the end of the time is the champion.</li>
+        <ul className="list-disc pl-5 space-y-2 mb-6">
+            <li><strong>Court Setup:</strong> Court 1 is the “King/Queen Court”. Court 2 is the “Challenger Court.”</li>
+            <li><strong>Winning the Tournament:</strong> The team with the most points (total wins on King Court) at the end of the night is the champion.</li>
         </ul>
+        
+        <h4 className="font-bold text-lg mb-4">Game Flow Based on Number of Teams:</h4>
+        
+        {teamCount === 4 && (
+          <Card className="bg-muted/30 p-4">
+            <CardTitle className="text-xl mb-2">Scenario: 4 Teams</CardTitle>
+            <CardContent className="p-0">
+              <p className="mb-4">With 4 teams, it’s a straightforward rotation. Two teams play on each court.</p>
+              <KOTCFlowDiagram 
+                kingCourtWinner="Stays on King Court"
+                kingCourtLoser="Goes to Challenger Court"
+                challengerCourtWinner="Goes to King Court"
+                challengerCourtLoser="Stays on Challenger Court"
+              />
+            </CardContent>
+          </Card>
+        )}
+
+        {(teamCount === 5 || teamCount === 6) && (
+           <Card className="bg-muted/30 p-4">
+            <CardTitle className="text-xl mb-2">Scenario: {teamCount} Teams</CardTitle>
+            <CardContent className="p-0">
+               <p className="mb-4">With {teamCount} teams, a waiting line forms. The goal is to get to the King Court and stay there.</p>
+              <KOTCFlowDiagram 
+                kingCourtWinner="Stays on King Court (+1 Point)"
+                kingCourtLoser="Goes to Back of the Line"
+                challengerCourtWinner="Goes to King Court"
+                challengerCourtLoser="Goes to Front of the Line"
+                waitingLineText={`The other ${teamCount - 4} team(s) wait in line. The winner of the Challenger Court goes to the King Court.`}
+              />
+            </CardContent>
+          </Card>
+        )}
+        
+         {teamCount >= 7 && (
+           <Card className="bg-muted/30 p-4">
+            <CardTitle className="text-xl mb-2">Scenario: {teamCount}+ Teams</CardTitle>
+            <CardContent className="p-0">
+              <p className="mb-4">With a large number of teams, the flow ensures constant movement and minimizes sitting time.</p>
+               <KOTCFlowDiagram 
+                kingCourtWinner="Stays on King Court (+1 Point)"
+                kingCourtLoser="Goes to Back of the Line"
+                challengerCourtWinner="Goes to Front of the Line"
+                challengerCourtLoser="Goes to Back of the Line"
+                waitingLineText={`The other ${teamCount - 4} teams wait in line. The winner of the Challenger Court moves to the *front* of the line to wait for the King Court.`}
+              />
+            </CardContent>
+          </Card>
+        )}
+
+        {teamCount < 4 && (
+            <p className="text-muted-foreground">Flow diagrams will appear here once 4 or more teams are published.</p>
+        )}
       </div>
     ),
   },
@@ -218,7 +271,7 @@ export default function PublicTeamsPage() {
     </Card>
   );
 
-  const formatDetails = useMemo(() => getFormatDetails(pointsToWin), [pointsToWin]);
+  const formatDetails = useMemo(() => getFormatDetails(pointsToWin, teams.length), [pointsToWin, teams.length]);
   const isKOTC = ['king-of-the-court', 'monarch-of-the-court', 'king-s-ransom', 'power-up-round', 'standard'].includes(gameFormat);
   const currentFormatDetails = isKOTC ? formatDetails[gameFormat] : formatDetails[gameFormat];
   const CurrentFormatIcon = currentFormatDetails?.icon || ShieldQuestion;
@@ -367,3 +420,5 @@ export default function PublicTeamsPage() {
     </div>
   );
 }
+
+    
