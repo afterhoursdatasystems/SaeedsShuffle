@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 export default function AdminPage() {
     const { 
       gameFormat, setGameFormat, 
-      gameVariant, setGameVariant, 
+      gameVariant, handleSetGameVariant, 
       teams, schedule, 
       pointsToWin, setPointsToWin,
       publishSettings 
@@ -70,7 +70,7 @@ export default function AdminPage() {
                             { isKOTC && (
                                 <div className='space-y-2'>
                                     <Label>Game Variant</Label>
-                                    <Select value={gameVariant} onValueChange={(val: GameVariant) => setGameVariant(val)}>
+                                    <Select value={gameVariant} onValueChange={(val: GameVariant) => handleSetGameVariant(val)}>
                                       <SelectTrigger className="w-full sm:w-[240px]">
                                         <SelectValue placeholder="Select a variant" />
                                       </SelectTrigger>
