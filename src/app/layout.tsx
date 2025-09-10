@@ -4,9 +4,12 @@ import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/contexts/auth-context';
 
+// To add a favicon, place your favicon.ico file in this `app` directory.
+// Next.js will automatically detect it.
+
 export const metadata: Metadata = {
   title: "Saeed's Shuffle",
-  description: 'Manage your volleyball league with ease.',
+  description: "The official hub for Saeed's weekly volleyball shuffle.",
 };
 
 export default function RootLayout({
