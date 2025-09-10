@@ -85,88 +85,101 @@ export function TeamGenerator() {
 
     const numTeams = Math.floor(allPlayers.length / baseTeamSize);
     let newTeams: Team[] = Array.from({ length: numTeams }, (_, i) => ({
-        name: shuffleArray(teamNames)[i],
+        name: shuffleArray(teamNames)[i % teamNames.length],
         players: [],
     }));
 
     // 1. Create skill buckets and shuffle within them
-    const buckets = {
-        guys: { '1-4': [], '5-6': [], '7-8': [], '9-10': [] } as Record<string, Player[]>,
-        gals: { '1-4': [], '5-6': [], '7-8': [], '9-10': [] } as Record<string, Player[]>,
+    const buckets: {
+        guys: Record<string, Player[]>,
+        gals: Record<string, Player[]>
+    } = {
+        guys: { '1-4': [], '5-6': [], '7-8': [], '9-10': [] },
+        gals: { '1-4': [], '5-6': [], '7-8': [], '9-10': [] },
     };
 
     for (const player of allPlayers) {
-        const gender = player.gender === 'Guy' ? 'guys' : 'gals';
-        let bucket: string;
-        if (player.skill <= 4) bucket = '1-4';
-        else if (player.skill <= 6) bucket = '5-6';
-        else if (player.skill <= 8) bucket = '7-8';
-        else bucket = '9-10';
-        buckets[gender][bucket].push(player);
+        const genderKey = player.gender === 'Guy' ? 'guys' : 'gals';
+        let bucketKey: string;
+        if (player.skill <= 4) bucketKey = '1-4';
+        else if (player.skill <= 6) bucketKey = '5-6';
+        else if (player.skill <= 8) bucketKey = '7-8';
+        else bucketKey = '9-10';
+        buckets[genderKey][bucketKey].push(player);
     }
 
-    for (const gender of Object.keys(buckets)) {
-        for (const bucket of Object.keys(buckets[gender as 'guys' | 'gals'])) {
-            buckets[gender as 'guys' | 'gals'][bucket] = shuffleArray(buckets[gender as 'guys' | 'gals'][bucket]);
+    for (const genderKey of Object.keys(buckets)) {
+        for (const bucketKey of Object.keys(buckets[genderKey as 'guys' | 'gals'])) {
+            buckets[genderKey as 'guys' | 'gals'][bucketKey] = shuffleArray(buckets[genderKey as 'guys' | 'gals'][bucketKey]);
         }
     }
-    
-    // Flatten buckets into a single draftable pool for each gender, preserving skill tier order
-    const guysPool = [
-        ...buckets.guys['9-10'], ...buckets.guys['7-8'], ...buckets.guys['5-6'], ...buckets.guys['1-4']
-    ];
-    const galsPool = [
-        ...buckets.gals['9-10'], ...buckets.gals['7-8'], ...buckets.gals['5-6'], ...buckets.gals['1-4']
-    ];
 
-    // 2. Determine ideal gender distribution
-    const totalPlayers = allPlayers.length;
-    const totalGuys = guysPool.length;
-    const totalGals = galsPool.length;
+    // 2. Draft players from buckets
+    const draftPool = {
+        guys: [
+            ...buckets.guys['9-10'], ...buckets.guys['7-8'],
+            ...buckets.guys['5-6'], ...buckets.guys['1-4']
+        ],
+        gals: [
+            ...buckets.gals['9-10'], ...buckets.gals['7-8'],
+            ...buckets.gals['5-6'], ...buckets.gals['1-4']
+        ],
+    };
+
+    const totalGuys = draftPool.guys.length;
+    const totalGals = draftPool.gals.length;
 
     const baseGuysPerTeam = Math.floor(totalGuys / numTeams);
     const baseGalsPerTeam = Math.floor(totalGals / numTeams);
     let extraGuys = totalGuys % numTeams;
     let extraGals = totalGals % numTeams;
 
-    // 3. Draft base players
-    let snakeDraftOrder = true; // true for forwards, false for backwards
+    // Snake draft for base players
+    let forward = true;
     for (let i = 0; i < baseGuysPerTeam; i++) {
-        const teamIndices = snakeDraftOrder ? Array.from(Array(numTeams).keys()) : Array.from(Array(numTeams).keys()).reverse();
+        const teamIndices = forward ? Array.from(Array(numTeams).keys()) : Array.from(Array(numTeams).keys()).reverse();
         for (const teamIndex of teamIndices) {
-            if (guysPool.length > 0) newTeams[teamIndex].players.push(guysPool.shift()!);
+            if (draftPool.guys.length > 0) newTeams[teamIndex].players.push(draftPool.guys.shift()!);
         }
-        snakeDraftOrder = !snakeDraftOrder;
+        forward = !forward;
     }
     for (let i = 0; i < baseGalsPerTeam; i++) {
-        const teamIndices = snakeDraftOrder ? Array.from(Array(numTeams).keys()) : Array.from(Array(numTeams).keys()).reverse();
+        const teamIndices = forward ? Array.from(Array(numTeams).keys()) : Array.from(Array(numTeams).keys()).reverse();
         for (const teamIndex of teamIndices) {
-            if (galsPool.length > 0) newTeams[teamIndex].players.push(galsPool.shift()!);
+            if (draftPool.gals.length > 0) newTeams[teamIndex].players.push(draftPool.gals.shift()!);
         }
-        snakeDraftOrder = !snakeDraftOrder;
+        forward = !forward;
     }
 
-    // 4. Distribute extra gender players
-    const extraGuysIndices = shuffleArray(Array.from(Array(numTeams).keys()));
+    // Distribute extra gender players using the same snake draft logic
+    const teamOrderForExtras = forward ? Array.from(Array(numTeams).keys()) : Array.from(Array(numTeams).keys()).reverse();
+    let extraIndex = 0;
     while(extraGuys > 0) {
-        if(guysPool.length > 0) {
-            newTeams[extraGuysIndices.pop()!].players.push(guysPool.shift()!);
+        if(draftPool.guys.length > 0) {
+            newTeams[teamOrderForExtras[extraIndex % numTeams]].players.push(draftPool.guys.shift()!);
+            extraIndex++;
         }
         extraGuys--;
     }
-    const extraGalsIndices = shuffleArray(Array.from(Array(numTeams).keys()));
-     while(extraGals > 0) {
-        if(galsPool.length > 0) {
-            newTeams[extraGalsIndices.pop()!].players.push(galsPool.shift()!);
+    while(extraGals > 0) {
+        if(draftPool.gals.length > 0) {
+            newTeams[teamOrderForExtras[extraIndex % numTeams]].players.push(draftPool.gals.shift()!);
+             extraIndex++;
         }
         extraGals--;
     }
-    
-    // 5. Distribute remaining players (leftovers from floor division)
-    let remainingPlayers = [...guysPool, ...galsPool].sort((a,b) => b.skill - a.skill);
+
+    // 3. Distribute all remaining players (leftovers from floor division)
+    let remainingPlayers = [...draftPool.guys, ...draftPool.gals];
+    // Sort remaining by skill to try and balance the last few adds
+    remainingPlayers.sort((a,b) => b.skill - a.skill);
+
     let teamIndexForLeftovers = 0;
+    const teamOrderForLeftovers = forward ? Array.from(Array(numTeams).keys()) : Array.from(Array(numTeams).keys()).reverse();
+
     while(remainingPlayers.length > 0) {
-        newTeams[teamIndexForLeftovers % numTeams].players.push(remainingPlayers.shift()!);
+        const teamIdx = teamOrderForLeftovers[teamIndexForLeftovers % numTeams];
+        newTeams[teamIdx].players.push(remainingPlayers.shift()!);
         teamIndexForLeftovers++;
     }
 

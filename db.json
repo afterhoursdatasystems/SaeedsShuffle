@@ -1,92 +1,42 @@
 {
   "teams": [
     {
-      "name": "Bailey's Bruisers",
+      "name": "Antiquity Attackers",
       "players": [
         {
-          "id": "7",
-          "name": "Brian Kempert",
-          "gender": "Guy",
-          "skill": 8,
-          "present": true,
-          "adjustedSkill": 8
-        },
-        {
-          "id": "15",
-          "name": "Stephen Jaqua",
-          "gender": "Guy",
-          "skill": 4,
-          "present": true,
-          "adjustedSkill": 4
-        },
-        {
-          "id": "23",
-          "name": "Joy Swasy",
-          "gender": "Gal",
-          "skill": 6,
-          "present": true,
-          "adjustedSkill": 5.1
-        },
-        {
-          "id": "18",
-          "name": "William Van Meter",
-          "gender": "Guy",
-          "skill": 3,
-          "present": true,
-          "adjustedSkill": 3
-        },
-        {
-          "id": "19",
-          "name": "Colleen Palman",
-          "gender": "Gal",
-          "skill": 2,
-          "present": true,
-          "adjustedSkill": 1.7
-        }
-      ]
-    },
-    {
-      "name": "Cool Fish Commandos",
-      "players": [
-        {
-          "id": "11",
-          "name": "Aditya Singh",
+          "id": "26",
+          "name": "Matt Taylor",
           "gender": "Guy",
           "skill": 7,
-          "present": true,
-          "adjustedSkill": 7
+          "present": true
         },
         {
           "id": "17",
           "name": "Shaylyn Murphy",
           "gender": "Gal",
           "skill": 8,
-          "present": true,
-          "adjustedSkill": 6.8
+          "present": true
         },
         {
-          "id": "1",
-          "name": "Cole Deaver",
-          "gender": "Guy",
-          "skill": 6,
-          "present": true,
-          "adjustedSkill": 6
-        },
-        {
-          "id": "8",
-          "name": "Abby Gilpin",
+          "id": "20",
+          "name": "Rachel Nystrom",
           "gender": "Gal",
-          "skill": 6,
-          "present": true,
-          "adjustedSkill": 5.1
+          "skill": 8,
+          "present": true
         },
         {
-          "id": "9",
-          "name": "Miranda Griego",
+          "id": "24",
+          "name": "Jesica Bullrich",
           "gender": "Gal",
-          "skill": 3,
-          "present": true,
-          "adjustedSkill": 2.55
+          "skill": 2,
+          "present": true
+        },
+        {
+          "id": "22",
+          "name": "Jasona Jones",
+          "gender": "Gal",
+          "skill": 1,
+          "present": true
         }
       ]
     },
@@ -94,36 +44,72 @@
       "name": "McGuire Nuclear Knockouts",
       "players": [
         {
-          "id": "20",
-          "name": "Rachel Nystrom",
+          "id": "1",
+          "name": "Cole Deaver",
+          "gender": "Guy",
+          "skill": 6,
+          "present": true
+        },
+        {
+          "id": "3",
+          "name": "Kristin Drinka",
           "gender": "Gal",
-          "skill": 8,
-          "present": true,
-          "adjustedSkill": 6.8
+          "skill": 7,
+          "present": true
+        },
+        {
+          "id": "23",
+          "name": "Joy Swasy",
+          "gender": "Gal",
+          "skill": 6,
+          "present": true
+        },
+        {
+          "id": "9",
+          "name": "Miranda Griego",
+          "gender": "Gal",
+          "skill": 3,
+          "present": true
+        }
+      ]
+    },
+    {
+      "name": "McGuire Nuclear Knockouts",
+      "players": [
+        {
+          "id": "21",
+          "name": "Pat Sobotka",
+          "gender": "Guy",
+          "skill": 6,
+          "present": true
+        },
+        {
+          "id": "16",
+          "name": "Lindsey Victoria",
+          "gender": "Gal",
+          "skill": 7,
+          "present": true
         },
         {
           "id": "28",
           "name": "Alexandra Broskey",
           "gender": "Gal",
           "skill": 6,
-          "present": true,
-          "adjustedSkill": 5.1
+          "present": true
         },
         {
-          "id": "14",
-          "name": "Eric Ahrens",
-          "gender": "Guy",
-          "skill": 7,
-          "present": true,
-          "adjustedSkill": 7
+          "id": "19",
+          "name": "Colleen Palman",
+          "gender": "Gal",
+          "skill": 2,
+          "present": true
         },
         {
-          "id": "21",
-          "name": "Pat Sobotka",
+          "id": "18",
+          "name": "William Van Meter",
           "gender": "Guy",
-          "skill": 6,
-          "present": true,
-          "adjustedSkill": 6
+          "skill": 3,
+          "present": true
         }
       ]
     },
@@ -131,36 +117,32 @@
       "name": "Peninsula Powerhouse",
       "players": [
         {
-          "id": "10",
-          "name": "Jonathan Bradley",
+          "id": "15",
+          "name": "Stephen Jaqua",
           "gender": "Guy",
-          "skill": 5,
-          "present": true,
-          "adjustedSkill": 5
+          "skill": 4,
+          "present": true
         },
         {
-          "id": "2",
-          "name": "Melissa Roy",
+          "id": "4",
+          "name": "Kyle Novak",
           "gender": "Gal",
-          "skill": 6,
-          "present": true,
-          "adjustedSkill": 5.1
-        },
-        {
-          "id": "5",
-          "name": "Nicole Malone",
-          "gender": "Gal",
-          "skill": 5,
-          "present": true,
-          "adjustedSkill": 4.25
+          "skill": 9,
+          "present": true
         },
         {
           "id": "13",
           "name": "Emily Victoria",
           "gender": "Gal",
           "skill": 6,
-          "present": true,
-          "adjustedSkill": 5.1
+          "present": true
+        },
+        {
+          "id": "6",
+          "name": "Heidi Kempert",
+          "gender": "Gal",
+          "skill": 4,
+          "present": true
         }
       ]
     }
@@ -168,17 +150,17 @@
   "format": "power-up-round",
   "schedule": [
     {
-      "id": "04df92f6-4645-4243-87a1-155f8a07a95c",
-      "teamA": "Peninsula Powerhouse",
-      "teamB": "McGuire Nuclear Knockouts",
+      "id": "d76b6003-1044-4363-ad85-164a565e0def",
+      "teamA": "McGuire Nuclear Knockouts",
+      "teamB": "Antiquity Attackers",
       "resultA": null,
       "resultB": null,
       "court": "King Court"
     },
     {
-      "id": "a8c5f299-4319-41f4-a50f-207969cd6687",
-      "teamA": "Bailey's Bruisers",
-      "teamB": "Cool Fish Commandos",
+      "id": "e7908999-ab08-47d5-b235-1caef11148a0",
+      "teamA": "Peninsula Powerhouse",
+      "teamB": "McGuire Nuclear Knockouts",
       "resultA": null,
       "resultB": null,
       "court": "Challenger Court"
