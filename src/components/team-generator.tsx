@@ -46,7 +46,8 @@ const getTeamAnalysis = (team: Team) => {
     const avgAdjustedSkill = team.players.length > 0 ? (totalAdjustedSkill / team.players.length).toFixed(1) : '0';
     const guyCount = team.players.filter(p => p.gender === 'Guy').length;
     const galCount = team.players.filter(p => p.gender === 'Gal').length;
-    return { avgSkill, guyCount, galCount, avgAdjustedSkill };
+    const guyPercentage = team.players.length > 0 ? Math.round((guyCount / team.players.length) * 100) : 0;
+    return { avgSkill, guyCount, galCount, avgAdjustedSkill, guyPercentage };
 };
 
 
@@ -73,10 +74,11 @@ export function TeamGenerator() {
   const presentPlayers = useMemo(() => players.filter((p) => p.present), [players]);
   const possibleTeamsCount = presentPlayers.length >= teamSize ? Math.floor(presentPlayers.length / teamSize) : 0;
   
-  const { presentGuys, presentGals } = useMemo(() => {
+  const { presentGuys, presentGals, overallGuyPercentage } = useMemo(() => {
     const presentGuys = presentPlayers.filter(p => p.gender === 'Guy').length;
     const presentGals = presentPlayers.filter(p => p.gender === 'Gal').length;
-    return { presentGuys, presentGals };
+    const overallGuyPercentage = presentPlayers.length > 0 ? Math.round((presentGuys / presentPlayers.length) * 100) : 0;
+    return { presentGuys, presentGals, overallGuyPercentage };
   }, [presentPlayers]);
 
 
@@ -487,12 +489,8 @@ const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] =
                         </div>
                         <Separator orientation='vertical' className='hidden sm:block h-12' />
                          <div className="text-center">
-                            <p className="text-sm font-medium text-muted-foreground">Gender Ratio</p>
-                            <p className="text-2xl font-bold">
-                                <span className="text-blue-500">{presentGuys}</span>
-                                <span className="mx-2 text-muted-foreground">/</span>
-                                <span className="text-pink-500">{presentGals}</span>
-                            </p>
+                            <p className="text-sm font-medium text-muted-foreground">Guy Percentage</p>
+                            <p className="text-2xl font-bold">{overallGuyPercentage}%</p>
                         </div>
                         <Separator orientation='vertical' className='hidden sm:block h-12' />
                         <div className="text-center">
@@ -535,7 +533,7 @@ const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] =
           </CardHeader>
           <CardContent className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {teams.map((team) => {
-              const { avgSkill, guyCount, galCount } = getTeamAnalysis(team);
+              const { avgSkill, guyPercentage } = getTeamAnalysis(team);
               return (
               <Droppable droppableId={team.name} key={team.name} isCombineEnabled={false}>
                 {(provided, snapshot) => (
@@ -583,7 +581,7 @@ const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] =
                     <CardFooter className="flex-col items-start gap-2 border-t bg-muted/50 p-4 text-sm text-muted-foreground">
                         <div className="flex w-full justify-between">
                             <div className='flex items-center gap-2'>Avg Skill: <span className="font-bold text-foreground">{avgSkill}</span></div>
-                             <div className="flex items-center gap-2">Gender: <span className="font-bold text-foreground">{guyCount}G / {galCount}L</span></div>
+                             <div className="flex items-center gap-2">Guy %: <span className="font-bold text-foreground">{guyPercentage}%</span></div>
                         </div>
                     </CardFooter>
                   </Card>
