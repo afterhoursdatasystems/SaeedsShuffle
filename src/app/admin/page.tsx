@@ -1,8 +1,9 @@
+
 'use client';
 
 import PlayerManagement from '@/components/player-management';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bot, Calendar, Crown, BookOpen, Shuffle, Settings, UserPlus, Trophy, Zap } from 'lucide-react';
+import { Bot, Calendar, Crown, BookOpen, Shuffle, Settings, UserPlus, Trophy, Zap, Send } from 'lucide-react';
 import Link from 'next/link';
 import { usePlayerContext } from '@/contexts/player-context';
 import { Label } from '@/components/ui/label';
@@ -12,7 +13,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
 export default function AdminPage() {
-    const { gameFormat, setGameFormat, gameVariant, setGameVariant, teams, schedule, pointsToWin, setPointsToWin } = usePlayerContext();
+    const { 
+      gameFormat, setGameFormat, 
+      gameVariant, setGameVariant, 
+      teams, schedule, 
+      pointsToWin, setPointsToWin,
+      publishSettings 
+    } = usePlayerContext();
+
     const isKOTC = gameFormat === 'king-of-the-court';
 
   return (
@@ -44,7 +52,7 @@ export default function AdminPage() {
                 </CardHeader>
                 <CardContent>
                     <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between rounded-lg border p-4">
-                        <div className='flex flex-col sm:flex-row gap-4'>
+                        <div className='flex flex-col sm:flex-row gap-4 flex-grow'>
                             <div className='space-y-2'>
                                 <Label>Game Format</Label>
                                 <Select value={gameFormat} onValueChange={(val: GameFormat) => setGameFormat(val)}>
@@ -87,6 +95,10 @@ export default function AdminPage() {
                                 />
                             </div>
                         </div>
+                        <Button onClick={publishSettings} className="mt-4 sm:mt-0">
+                            <Send className="mr-2 h-4 w-4" />
+                            Publish Settings
+                        </Button>
                     </div>
                 </CardContent>
             </Card>

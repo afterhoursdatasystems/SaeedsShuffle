@@ -16,12 +16,8 @@ import { KOTCFlowDiagram } from '@/components/ui/kotc-flow-diagram';
 
 type CombinedGameFormat = GameFormat | GameVariant;
 
-const getFormatDetails = (pointsToWin: number, teamCount: number): Record<CombinedGameFormat, { title: string; description: React.ReactNode; icon: React.ElementType }> => ({
-  'king-of-the-court': {
-    title: 'Continuous King of the Court',
-    icon: Crown,
-    description: (
-       <div>
+const KOTCBaseRules = ({ pointsToWin, teamCount }: { pointsToWin: number; teamCount: number }) => (
+    <>
         <p className="mb-4">A high-energy, continuous-play format designed to maximize playtime and interaction. All games are to {pointsToWin} points.</p>
         <h4 className="font-bold text-lg mb-2">The Concept</h4>
         <p className="mb-4">A dynamic, non-stop format where the goal is to seize control of the “winner’s court” and hold it against a constant stream of new challengers.</p>
@@ -81,25 +77,32 @@ const getFormatDetails = (pointsToWin: number, teamCount: number): Record<Combin
           </Card>
         )}
 
-        {teamCount < 4 && (
+        {teamCount > 0 && teamCount < 4 && (
             <p className="text-muted-foreground">Flow diagrams will appear here once 4 or more teams are published.</p>
         )}
-      </div>
-    ),
+      </>
+);
+
+
+const getFormatDetails = (pointsToWin: number, teamCount: number): Record<CombinedGameFormat, { title: string; description: React.ReactNode; icon: React.ElementType }> => ({
+  'king-of-the-court': {
+    title: 'Continuous King of the Court',
+    icon: Crown,
+    description: <KOTCBaseRules pointsToWin={pointsToWin} teamCount={teamCount} />
   },
    'standard': {
     title: 'King of the Court',
     icon: Crown,
-    description: ( <p>This is the standard King of the Court format. All games are to {pointsToWin} points.</p>)
+    description: ( <KOTCBaseRules pointsToWin={pointsToWin} teamCount={teamCount} />)
   },
   'monarch-of-the-court': {
     title: 'Monarch of the Court',
     icon: Gem,
     description: (
       <div>
-        <p className="mb-4">A classic King of the Court format with a fun, social twist that gives the winning team a small “power” after their win, adding a layer of strategy and interaction. All games are to {pointsToWin} points.</p>
+        <p className="mb-4">A classic King of the Court format with a fun, social twist that gives the winning team a small “power” after their win, adding a layer of strategy and interaction.</p>
         <h4 className="font-bold text-lg mb-2">Variant Rules</h4>
-         <ul className="list-disc pl-5 space-y-2">
+         <ul className="list-disc pl-5 space-y-2 mb-6">
             <li>After winning a game on the King Court, your team is crowned “The Monarchs”.</li>
             <li>Before the next challenger begins their game against you, you must choose one of the following powers:
                 <ul className="list-circle pl-5 mt-2 space-y-1">
@@ -109,6 +112,9 @@ const getFormatDetails = (pointsToWin: number, teamCount: number): Record<Combin
                 </ul>
             </li>
         </ul>
+        <div className='border-t pt-6 mt-6'>
+            <KOTCBaseRules pointsToWin={pointsToWin} teamCount={teamCount} />
+        </div>
       </div>
     ),
   },
@@ -117,12 +123,15 @@ const getFormatDetails = (pointsToWin: number, teamCount: number): Record<Combin
     icon: KeyRound,
     description: (
       <div>
-        <p className="mb-4">A dramatic and strategic KOTC format where team rosters are not safe. It includes a player “steal” mechanic. All games are to {pointsToWin} points.</p>
+        <p className="mb-4">A dramatic and strategic KOTC format where team rosters are not safe. It includes a player “steal” mechanic.</p>
         <h4 className="font-bold text-lg mb-2">Variant Rules</h4>
-         <ul className="list-disc pl-5 space-y-2">
+         <ul className="list-disc pl-5 space-y-2 mb-6">
             <li><strong>The Cosmic Scramble:</strong> In this variant, a special "Cosmic Scramble" rule is in effect, which causes players to be traded between teams after a match.</li>
             <li className="list-none pt-2"><strong>See the active scramble rule displayed on this dashboard to know how the trade will happen!</strong></li>
         </ul>
+         <div className='border-t pt-6 mt-6'>
+            <KOTCBaseRules pointsToWin={pointsToWin} teamCount={teamCount} />
+        </div>
       </div>
     ),
   },
@@ -131,12 +140,15 @@ const getFormatDetails = (pointsToWin: number, teamCount: number): Record<Combin
     icon: Zap,
     description: (
        <div>
-        <p className="mb-4">A fun, arcade-like twist on the classic KOTC format where teams get random advantages. All games are to {pointsToWin} points.</p>
+        <p className="mb-4">A fun, arcade-like twist on the classic KOTC format where teams get random advantages.</p>
         <h4 className="font-bold text-lg mb-2">Variant Rules</h4>
-         <ul className="list-disc pl-5 space-y-2">
+         <ul className="list-disc pl-5 space-y-2 mb-6">
             <li>A special "Power-Up" rule is in effect, granting an advantage to the challenging team for their game on the King's Court. This can be used once per match.</li>
              <li className="list-none pt-2"><strong>See the active power-up rule displayed on this dashboard to know what advantage is in play!</strong></li>
         </ul>
+        <div className='border-t pt-6 mt-6'>
+            <KOTCBaseRules pointsToWin={pointsToWin} teamCount={teamCount} />
+        </div>
       </div>
     ),
   },
@@ -229,7 +241,7 @@ export default function PublicTeamsPage() {
     
     fetchData(true);
     
-    const interval = setInterval(() => fetchData(false), 120000); // Refresh every 2 minutes
+    const interval = setInterval(() => fetchData(false), 2000); // Refresh every 2 seconds
     return () => clearInterval(interval);
 
   }, [teams, schedule, activeRule, gameFormat, pointsToWin]);
@@ -273,7 +285,7 @@ export default function PublicTeamsPage() {
 
   const formatDetails = useMemo(() => getFormatDetails(pointsToWin, teams.length), [pointsToWin, teams.length]);
   const isKOTC = ['king-of-the-court', 'monarch-of-the-court', 'king-s-ransom', 'power-up-round', 'standard'].includes(gameFormat);
-  const currentFormatDetails = isKOTC ? formatDetails[gameFormat] : formatDetails[gameFormat];
+  const currentFormatDetails = isKOTC ? formatDetails[gameFormat] || formatDetails['king-of-the-court'] : formatDetails[gameFormat];
   const CurrentFormatIcon = currentFormatDetails?.icon || ShieldQuestion;
 
   const ruleIsActive = (gameFormat === 'power-up-round' || gameFormat === 'king-s-ransom') && activeRule;
@@ -373,19 +385,6 @@ export default function PublicTeamsPage() {
                 <CardContent className="p-6">
                     <h3 className="font-bold text-xl mb-4">{currentFormatDetails.title}</h3>
                     <div>{currentFormatDetails.description}</div>
-                    {isKOTC && gameFormat !== 'king-of-the-court' && (
-                        <div>
-                          <h4 className="font-bold text-lg mb-2 mt-6 border-t pt-4">Base King of the Court Rules</h4>
-                          <p className="mb-4">This is a dynamic, non-stop format where the goal is to seize control of the “winner’s court” and hold it against a constant stream of new challengers.</p>
-                          <ul className="list-disc pl-5 space-y-2">
-                              <li><strong>Court Setup:</strong> One court is the designated “King/Queen Court” and the other is the “Challenger Court.”</li>
-                              <li><strong>Starting the Game:</strong> The first two teams in line play on the King Court, and the next two teams play on the Challenger Court.</li>
-                              <li><strong>On the King Court:</strong> The winning team stays on the court and earns one point on the main scoreboard. The losing team goes to the back of the challenger line.</li>
-                              <li><strong>On the Challenger Court:</strong> The winning team of this match becomes the next in line to challenge the current King.</li>
-                              <li><strong>Winning the Tournament:</strong> This process repeats continuously. The team with the most points (total wins) at the end of the night is the champion.</li>
-                          </ul>
-                        </div>
-                    )}
                 </CardContent>
               </Card>}
 
@@ -420,5 +419,3 @@ export default function PublicTeamsPage() {
     </div>
   );
 }
-
-    

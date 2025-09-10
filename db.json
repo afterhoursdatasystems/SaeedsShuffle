@@ -166,11 +166,36 @@
       ]
     }
   ],
-  "format": "king-of-the-court",
-  "schedule": [],
+  "format": "power-up-round",
+  "schedule": [
+    {
+      "id": "246c150c-b29c-4faf-92bc-b883418a0c64",
+      "teamA": "Bailey Bruisers",
+      "teamB": "Antiquity Attackers",
+      "resultA": null,
+      "resultB": null,
+      "court": "King Court"
+    },
+    {
+      "id": "9d0a39f4-e244-4775-89c4-7f526cc2dcb7",
+      "teamA": "Jetton Juggernauts",
+      "teamB": "Soda Shop Slammers",
+      "resultA": null,
+      "resultB": null,
+      "court": "Challenger Court"
+    },
+    {
+      "id": "ac1f2988-9aba-45f3-928f-1af4e1c05d36",
+      "teamA": "Langtree Lightning",
+      "teamB": "Waiting #1",
+      "resultA": null,
+      "resultB": null,
+      "court": "Challenger Line"
+    }
+  ],
   "activeRule": {
-    "name": "Gender Bender",
-    "description": "The next point must be scored by a player of the opposite gender of the person who just scored."
+    "name": "Butterfingers",
+    "description": "The opposing team is not allowed to set the ball for the next two rallies (must bump-set)."
   },
   "pointsToWin": 15
 }

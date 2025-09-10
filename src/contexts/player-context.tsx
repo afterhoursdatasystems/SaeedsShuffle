@@ -1,9 +1,10 @@
 
+
 'use client';
 
 import type { Player, Team, Match, GameFormat, GameVariant, PowerUp } from '@/types';
-import React, { createContext, useContext, useState, type ReactNode, useEffect } from 'react';
-import { getPlayers, updatePlayerPresence, getPublishedData, updatePlayer } from '@/app/actions';
+import React, { createContext, useContext, useState, type ReactNode, useEffect, useCallback } from 'react';
+import { getPlayers, updatePlayerPresence, getPublishedData, updatePlayer, publishData } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 
 interface PlayerContextType {
@@ -24,6 +25,7 @@ interface PlayerContextType {
   setActiveRule: React.Dispatch<React.SetStateAction<PowerUp | null>>;
   pointsToWin: number;
   setPointsToWin: React.Dispatch<React.SetStateAction<number>>;
+  publishSettings: () => void;
 }
 
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
@@ -69,7 +71,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
                 if (format === 'monarch-of-the-court' || format === 'king-s-ransom' || format === 'power-up-round' || format === 'standard') {
                     setGameFormat('king-of-the-court');
                     setGameVariant(format);
-                } else {
+                } else if (format) {
                     setGameFormat(format as GameFormat);
                     setGameVariant('standard');
                 }
@@ -156,6 +158,29 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const publishSettings = useCallback(async () => {
+    let finalFormat: GameFormat | GameVariant = gameFormat;
+    if (gameFormat === 'king-of-the-court' && gameVariant !== 'standard') {
+        finalFormat = gameVariant;
+    }
+
+    const result = await publishData(teams, finalFormat, schedule, activeRule, pointsToWin);
+    
+    if (result.success) {
+      toast({
+        title: 'Settings Published!',
+        description: 'The public dashboard has been updated with the latest settings.',
+      });
+    } else {
+      toast({
+        title: 'Publishing Error',
+        description: result.error || 'Could not publish the new settings.',
+        variant: 'destructive',
+      });
+    }
+  }, [gameFormat, gameVariant, teams, schedule, activeRule, pointsToWin, toast]);
+
+
   const value = {
     players,
     setPlayers,
@@ -174,6 +199,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setActiveRule,
     pointsToWin,
     setPointsToWin,
+    publishSettings,
   };
 
   return (
