@@ -73,6 +73,7 @@ export function TeamGenerator() {
   const presentPlayers = useMemo(() => players.filter((p) => p.present), [players]);
   const possibleTeamsCount = presentPlayers.length >= teamSize ? Math.floor(presentPlayers.length / teamSize) : 0;
   
+<<<<<<< HEAD
 const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] => {
   console.clear();
   console.log('=== TEAM GENERATION START ===');
@@ -121,6 +122,79 @@ const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] =
   Object.entries(buckets).forEach(([tier, groups]) => {
     if (groups.guys.length > 0 || groups.gals.length > 0) {
       console.log(`${tier}: ${groups.guys.length} Guys, ${groups.gals.length} Gals`);
+=======
+  const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] => {
+    // 1. Player Valuation
+    const valuedPlayers: PlayerWithAdjustedSkill[] = allPlayers.map(p => ({
+      ...p,
+      adjustedSkill: p.gender === 'Gal' ? p.skill * 0.85 : p.skill,
+    }));
+
+    // Separate players by gender and sort by adjusted skill (descending)
+    let guys = valuedPlayers.filter(p => p.gender === 'Guy').sort((a, b) => b.adjustedSkill - a.adjustedSkill);
+    let gals = valuedPlayers.filter(p => p.gender === 'Gal').sort((a, b) => b.adjustedSkill - a.adjustedSkill);
+    
+    // 2. Determine Team Structure
+    const numTeams = Math.floor(allPlayers.length / formatSize);
+    if (numTeams === 0) return [];
+    
+    // 3. Initialize Teams
+    const shuffledNames = shuffleArray(teamNames);
+    const newTeams: Team[] = Array.from({ length: numTeams }, (_, i) => ({
+      name: shuffledNames[i % shuffledNames.length],
+      players: [],
+    }));
+
+    // 4. Distribute genders as evenly as possible
+    const genderSlots: { [teamName: string]: ('Guy' | 'Gal')[] } = {};
+    newTeams.forEach(team => genderSlots[team.name] = []);
+
+    // Distribute Gals
+    let galTeamIndex = 0;
+    while(gals.length > 0) {
+        genderSlots[newTeams[galTeamIndex % numTeams].name].push('Gal');
+        galTeamIndex++;
+    }
+    // Distribute Guys
+    let guyTeamIndex = 0;
+    while(guys.length > 0) {
+        genderSlots[newTeams[guyTeamIndex % numTeams].name].push('Guy');
+        guyTeamIndex++;
+    }
+
+    // 5. Draft players based on skill into the slots
+    const draftPool = [...valuedPlayers].sort((a, b) => b.adjustedSkill - a.adjustedSkill);
+    
+    let teamIndex = 0;
+    let direction = 1; // 1 for forward, -1 for reverse
+    
+    while(draftPool.length > 0) {
+        const team = newTeams[teamIndex];
+        const teamSlots = genderSlots[team.name];
+        
+        if (team.players.length < teamSlots.length) {
+            const neededGender = teamSlots[team.players.length];
+            
+            // Find the best player of the needed gender
+            const playerIndex = draftPool.findIndex(p => p.gender === neededGender);
+            
+            if (playerIndex !== -1) {
+                const [draftedPlayer] = draftPool.splice(playerIndex, 1);
+                team.players.push(draftedPlayer);
+            } else {
+                 // This should not happen if gender distribution is correct, but as a fallback...
+                 const [draftedPlayer] = draftPool.splice(0, 1);
+                 team.players.push(draftedPlayer);
+            }
+        }
+        
+        // Move to the next team in the snake
+        teamIndex += direction;
+        if (teamIndex < 0 || teamIndex >= numTeams) {
+            direction *= -1; // Reverse direction
+            teamIndex += direction;
+        }
+>>>>>>> b6e2023 (are you looking at the gender ratio of all present players prior to draf)
     }
   });
   
@@ -248,6 +322,7 @@ const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] =
   
   return newTeams;
 };
+
 
   const handleGenerateTeams = () => {
     if (presentPlayers.length < teamSize * 2 && presentPlayers.length > 0) {
