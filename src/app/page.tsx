@@ -150,6 +150,7 @@ const getFormatDetails = (pointsToWin: number, teamCount: number): Record<Combin
         <h4 className="font-bold text-lg mb-2">Variant-Specific Rule</h4>
          <ul className="list-disc pl-5 space-y-2 mb-6">
             <li>A special "Power-Up" rule is in effect, granting an advantage to the <strong>challenging team</strong> for their game on the King's Court.</li>
+            <li><strong>How to Use:</strong> The power-up can be used once per game. The team must call out that they are using their power-up before the serve.</li>
         </ul>
         <div className='border-t pt-6 mt-6'>
             <h3 className="font-bold text-xl mb-4">Base King of the Court Rules</h3>
