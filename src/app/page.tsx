@@ -149,8 +149,7 @@ const getFormatDetails = (pointsToWin: number, teamCount: number): Record<Combin
         <p className="mb-4">A fun, arcade-like twist on the classic KOTC format where teams get random advantages that can turn the tide of a game.</p>
         <h4 className="font-bold text-lg mb-2">Variant-Specific Rule</h4>
          <ul className="list-disc pl-5 space-y-2 mb-6">
-            <li>A special "Power-Up" rule is in effect, granting an advantage to the challenging team for their game on the King's Court. This can be used once per match.</li>
-             <li className="list-none pt-2"><strong>See the active power-up rule displayed on this dashboard to know what advantage is in play!</strong> The commissioner will generate a new rule periodically.</li>
+            <li>A special "Power-Up" rule is in effect, granting an advantage to the <strong>challenging team</strong> for their game on the King's Court.</li>
         </ul>
         <div className='border-t pt-6 mt-6'>
             <h3 className="font-bold text-xl mb-4">Base King of the Court Rules</h3>

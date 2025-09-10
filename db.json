@@ -166,7 +166,7 @@
       ]
     }
   ],
-  "format": "king-s-ransom",
+  "format": "power-up-round",
   "schedule": [
     {
       "id": "246c150c-b29c-4faf-92bc-b883418a0c64",
@@ -194,8 +194,8 @@
     }
   ],
   "activeRule": {
-    "name": "Movie Goer Swap",
-    "description": "The player who last watched a movie in a theater on the losing team swaps places with the player who last did the same on the other team."
+    "name": "Ace In The Hole",
+    "description": "If your team serves an ace, you get 3 points instead of 1."
   },
   "pointsToWin": 15
 }
