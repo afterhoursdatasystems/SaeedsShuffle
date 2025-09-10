@@ -77,18 +77,16 @@ export function TeamGenerator() {
     return { presentGuys, presentGals, overallGuyPercentage };
   }, [presentPlayers]);
 
-
   const createBalancedTeams = (allPlayers: Player[], baseTeamSize: number): Team[] => {
     const numTeams = Math.floor(allPlayers.length / baseTeamSize);
     if (numTeams === 0) {
-      return [];
+        return [];
     }
 
     const shuffledTeamNames = shuffleArray(teamNames);
-
     let newTeams: Team[] = Array.from({ length: numTeams }, (_, i) => ({
-      name: shuffledTeamNames[i % shuffledTeamNames.length],
-      players: [],
+        name: shuffledTeamNames[i],
+        players: [],
     }));
 
     // 1. Create skill buckets and shuffle within them
@@ -96,17 +94,17 @@ export function TeamGenerator() {
         guys: Record<string, Player[]>,
         gals: Record<string, Player[]>
     } = {
-        guys: { '1-3': [], '4-5': [], '6-7': [], '8-10': [] },
-        gals: { '1-3': [], '4-5': [], '6-7': [], '8-10': [] },
+        guys: { '9-10': [], '7-8': [], '5-6': [], '1-4': [] },
+        gals: { '9-10': [], '7-8': [], '5-6': [], '1-4': [] },
     };
 
     for (const player of allPlayers) {
         const genderKey = player.gender === 'Guy' ? 'guys' : 'gals';
         let bucketKey: string;
-        if (player.skill <= 3) bucketKey = '1-3';
-        else if (player.skill <= 5) bucketKey = '4-5';
-        else if (player.skill <= 7) bucketKey = '6-7';
-        else bucketKey = '8-10';
+        if (player.skill >= 9) bucketKey = '9-10';
+        else if (player.skill >= 7) bucketKey = '7-8';
+        else if (player.skill >= 5) bucketKey = '5-6';
+        else bucketKey = '1-4';
         buckets[genderKey][bucketKey].push(player);
     }
     
@@ -117,85 +115,86 @@ export function TeamGenerator() {
         }
     }
 
-    // Create a flat, shuffled draft pool from the buckets, highest to lowest to middle
-    const draftPool = {
-        guys: [
-            ...buckets.guys['8-10'], ...buckets.guys['1-3'],
-            ...buckets.guys['4-5'], ...buckets.guys['6-7']
-        ],
-        gals: [
-            ...buckets.gals['8-10'], ...buckets.gals['1-3'],
-            ...buckets.gals['4-5'], ...buckets.gals['6-7']
-        ],
-    };
-
-    const totalPlayersToAssign = numTeams * baseTeamSize;
-    const totalGuys = draftPool.guys.length;
-    const totalGals = draftPool.gals.length;
-    
-    // Determine ideal gender composition
-    let assignments = Array(numTeams).fill(0).map(() => ({guys: 0, gals: 0}));
-    let guysToAssign = Math.round(totalPlayersToAssign * (totalGuys / allPlayers.length));
-    let galsToAssign = totalPlayersToAssign - guysToAssign;
-    
-    // Fallback if one gender is over-allocated
-    if(guysToAssign > totalGuys) {
-      galsToAssign += guysToAssign - totalGuys;
-      guysToAssign = totalGuys;
-    }
-    if(galsToAssign > totalGals) {
-      guysToAssign += galsToAssign - totalGals;
-      galsToAssign = totalGals;
-    }
-
-    const baseGuys = Math.floor(guysToAssign / numTeams);
-    const baseGals = Math.floor(galsToAssign / numTeams);
-    let extraGuys = guysToAssign % numTeams;
-    let extraGals = galsToAssign % numTeams;
-    
-    assignments.forEach(a => {
-        a.guys = baseGuys;
-        a.gals = baseGals;
-    });
-
-    for(let i = 0; i < extraGuys; i++) assignments[i % numTeams].guys++;
-    for(let i = 0; i < extraGals; i++) assignments[i % numTeams].gals++;
-
-    // Snake draft to fill teams based on assignments
-    let forward = true;
-    const maxOnTeam = Math.max(...assignments.map(a => a.guys + a.gals));
-
-    for (let i = 0; i < maxOnTeam; i++) {
-        const teamIndices = forward ? Array.from(Array(numTeams).keys()) : Array.from(Array(numTeams).keys()).reverse();
-        for (const teamIndex of teamIndices) {
-            // Add a guy if needed
-            if(newTeams[teamIndex].players.filter(p=>p.gender==='Guy').length < assignments[teamIndex].guys) {
-                if(draftPool.guys.length > 0) newTeams[teamIndex].players.push(draftPool.guys.shift()!);
-            } 
-            // Add a gal if needed
-            else if (newTeams[teamIndex].players.filter(p=>p.gender==='Gal').length < assignments[teamIndex].gals) {
-                if(draftPool.gals.length > 0) newTeams[teamIndex].players.push(draftPool.gals.shift()!);
+    const draftPlayer = (gender: 'guys' | 'gals'): Player | undefined => {
+        const order = ['9-10', '7-8', '5-6', '1-4'];
+        for (const bucketKey of order) {
+            if (buckets[gender][bucketKey].length > 0) {
+                return buckets[gender][bucketKey].shift();
             }
         }
-        forward = !forward;
+        return undefined;
+    };
+    
+    const allDraftablePlayers = [
+        ...buckets.guys['9-10'], ...buckets.guys['7-8'], ...buckets.guys['5-6'], ...buckets.guys['1-4'],
+        ...buckets.gals['9-10'], ...buckets.gals['7-8'], ...buckets.gals['5-6'], ...buckets.gals['1-4'],
+    ];
+
+    // Determine target gender counts
+    const totalGuys = allPlayers.filter(p => p.gender === 'Guy').length;
+    const totalGals = allPlayers.length - totalGuys;
+    
+    const playersToAssign = numTeams * baseTeamSize;
+    let guysToAssign = Math.round(playersToAssign * (totalGuys / allPlayers.length));
+    let galsToAssign = playersToAssign - guysToAssign;
+    
+    // Adjust if not enough of one gender
+    if (guysToAssign > totalGuys) {
+        galsToAssign += guysToAssign - totalGuys;
+        guysToAssign = totalGuys;
+    }
+    if (galsToAssign > totalGals) {
+        guysToAssign += galsToAssign - totalGals;
+        galsToAssign = totalGals;
     }
     
-    // Distribute all remaining players (leftovers from floor division)
-    let remainingPlayers = [...draftPool.guys, ...draftPool.gals];
-    // Sort remaining by skill to try and balance the last few adds
-    remainingPlayers.sort((a,b) => b.skill - a.skill);
-
-    let teamIndexForLeftovers = 0;
-    const teamOrderForLeftovers = forward ? Array.from(Array(numTeams).keys()) : Array.from(Array(numTeams).keys()).reverse();
+    let assignedPlayers = 0;
+    let turn = 0;
     
+    // Distribute players ensuring minimum size is met, respecting gender ratios
+    while (assignedPlayers < playersToAssign) {
+        const teamIndex = turn % numTeams;
+        const actualIndex = (Math.floor(turn / numTeams) % 2 === 0) ? teamIndex : numTeams - 1 - teamIndex;
+        
+        const currentGuyCount = newTeams[actualIndex].players.filter(p => p.gender === 'Guy').length;
+        const currentGalCount = newTeams[actualIndex].players.length - currentGuyCount;
+        const assignedGuysTotal = newTeams.flat().reduce((sum, t) => sum + t.players.filter(p => p.gender === 'Guy').length, 0);
+        const assignedGalsTotal = assignedPlayers - assignedGuysTotal;
+        
+        let playerToDraft: Player | undefined;
+
+        if (Math.random() < (guysToAssign - assignedGuysTotal) / (playersToAssign - assignedPlayers)) {
+             playerToDraft = draftPlayer('guys');
+             if (!playerToDraft) playerToDraft = draftPlayer('gals');
+        } else {
+            playerToDraft = draftPlayer('gals');
+            if (!playerToDraft) playerToDraft = draftPlayer('guys');
+        }
+        
+        if (playerToDraft) {
+            newTeams[actualIndex].players.push(playerToDraft);
+            assignedPlayers++;
+        }
+        turn++;
+    }
+
+    // Distribute all remaining players (leftovers)
+    let remainingPlayers = [
+         ...Object.values(buckets.guys).flat(),
+         ...Object.values(buckets.gals).flat()
+    ];
+    
+    // Sort remaining by skill to try and balance the last adds
+    remainingPlayers.sort((a,b) => b.skill - a.skill);
+    
+    let teamIndexForLeftovers = 0;
     while(remainingPlayers.length > 0) {
-        const teamIdx = teamOrderForLeftovers[teamIndexForLeftovers % numTeams];
-        newTeams[teamIdx].players.push(remainingPlayers.shift()!);
+        newTeams[teamIndexForLeftovers % numTeams].players.push(remainingPlayers.shift()!);
         teamIndexForLeftovers++;
     }
 
     return newTeams;
-};
+  };
 
   const handleGenerateTeams = () => {
     if (presentPlayers.length < teamSize) {
