@@ -146,28 +146,42 @@ const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] =
     
     const draftPool = [...valuedPlayers].sort((a, b) => b.adjustedSkill - a.adjustedSkill);
 
-    const shuffledNames = shuffleArray(teamNames);
-    const newTeams: Team[] = Array.from({ length: numTeams }, (_, i) => ({
-      name: shuffledNames[i % shuffledNames.length],
-      players: [],
-    }));
+      const shuffledNames = shuffleArray(teamNames);
+      const newTeams: Team[] = Array.from({ length: numTeams }, (_, i) => ({
+          name: shuffledNames[i % shuffledNames.length],
+          players: [],
+      }));
 
-    // Distribute players one by one in a snake draft
-    let teamIndex = 0;
-    let direction = 1; // 1 for forward, -1 for reverse
-    
-    while(draftPool.length > 0) {
-        const playerToDraft = draftPool.shift()!;
-        newTeams[teamIndex].players.push(playerToDraft);
+      // Distribute players one by one in a snake draft
+      let teamIndex = 0;
+      let direction = 1; // 1 for forward, -1 for reverse
+      
+      while(draftPool.length > 0) {
+          const playerToDraft = draftPool.shift()!;
+          const currentTeam = newTeams[teamIndex];
+          const teamTargetSize = teamIndex < numLargerTeams ? baseTeamSize + 1 : baseTeamSize;
 
-        teamIndex += direction;
-        
-        // Reverse direction at the end of a "round"
-        if (teamIndex < 0 || teamIndex >= numTeams) {
-            direction *= -1;
-            teamIndex += direction;
-        }
-    }
+          // Simple add if not full, could be smarter
+          if(currentTeam.players.length < teamTargetSize) {
+            currentTeam.players.push(playerToDraft);
+          } else {
+             // This part needs to be smarter, for now just find a team that's not full
+             const teamWithSpace = newTeams.find(t => t.players.length < (newTeams.indexOf(t) < numLargerTeams ? baseTeamSize + 1 : baseTeamSize));
+             if (teamWithSpace) {
+                teamWithSpace.players.push(playerToDraft);
+             } else {
+                // This should not happen with the current logic, but as a fallback:
+                currentTeam.players.push(playerToDraft);
+             }
+          }
+
+          teamIndex += direction;
+          
+          if (teamIndex < 0 || teamIndex >= numTeams) {
+              direction *= -1;
+              teamIndex += direction;
+          }
+      }
 
     return newTeams;
 >>>>>>> b6e2023 (are you looking at the gender ratio of all present players prior to draf)
@@ -452,11 +466,6 @@ const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] =
                                     <Label htmlFor="4v4">4 vs 4</Label>
                                 </div>
                             </RadioGroup>
-                        </div>
-                        <Separator orientation='vertical' className='hidden sm:block h-12' />
-                        <div className="text-center">
-                            <p className="text-sm font-medium text-muted-foreground">Present Players</p>
-                            <p className="text-2xl font-bold">{presentPlayers.length}</p>
                         </div>
                         <Separator orientation='vertical' className='hidden sm:block h-12' />
                          <div className="text-center">
