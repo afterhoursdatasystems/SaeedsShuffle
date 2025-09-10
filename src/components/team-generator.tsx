@@ -78,181 +78,136 @@ export function TeamGenerator() {
   }, [presentPlayers]);
 
 
-const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] => {
-  console.clear();
-  console.log('=== TEAM GENERATION START ===');
-  console.log(`Players: ${allPlayers.length} | Format: ${formatSize}v${formatSize}`);
-  
-  // 1. Calculate adjusted skills
-  const adjustedPlayers: PlayerWithAdjustedSkill[] = allPlayers.map(p => ({
-    ...p,
-    adjustedSkill: p.skill * (p.gender === 'Gal' ? 0.85 : 1)
-  }));
-  
-  // Calculate gender ratio for reference
-  const totalGals = adjustedPlayers.filter(p => p.gender === 'Gal').length;
-  const targetGalRatio = totalGals / allPlayers.length;
-  console.log(`Gender Distribution: ${totalGals} Gals, ${allPlayers.length - totalGals} Guys`);
-  console.log(`Target Gal Ratio: ${(targetGalRatio * 100).toFixed(1)}%`);
-  
-  // 2. Create skill buckets (5 tiers, 2 skill levels each)
-  type BucketType = { guys: PlayerWithAdjustedSkill[], gals: PlayerWithAdjustedSkill[] };
-  const buckets: { [key: string]: BucketType } = {
-    'tier1': { guys: [], gals: [] }, // 9-10
-    'tier2': { guys: [], gals: [] }, // 7-8
-    'tier3': { guys: [], gals: [] }, // 5-6
-    'tier4': { guys: [], gals: [] }, // 3-4
-    'tier5': { guys: [], gals: [] }  // 1-2
-  };
-  
-  // 3. Distribute players into buckets by skill AND gender
-  adjustedPlayers.forEach(p => {
-    const genderGroup = p.gender === 'Gal' ? 'gals' : 'guys';
-    if (p.skill >= 9) buckets.tier1[genderGroup].push(p);
-    else if (p.skill >= 7) buckets.tier2[genderGroup].push(p);
-    else if (p.skill >= 5) buckets.tier3[genderGroup].push(p);
-    else if (p.skill >= 3) buckets.tier4[genderGroup].push(p);
-    else buckets.tier5[genderGroup].push(p);
-  });
-  
-  // 4. Shuffle within each bucket/gender group for randomness
-  Object.values(buckets).forEach(tier => {
-    tier.guys = shuffleArray(tier.guys);
-    tier.gals = shuffleArray(tier.gals);
-  });
-  
-  // Log bucket distribution
-  console.log('\n=== SKILL BUCKETS (after shuffle) ===');
-  Object.entries(buckets).forEach(([tier, groups]) => {
-    if (groups.guys.length > 0 || groups.gals.length > 0) {
-      console.log(`${tier}: ${groups.guys.length} Guys, ${groups.gals.length} Gals`);
-    }
-  });
-  
-  // 5. Create draft pool maintaining tier order but alternating gender
-  const draftPool: PlayerWithAdjustedSkill[] = [];
-  ['tier1', 'tier2', 'tier3', 'tier4', 'tier5'].forEach(tier => {
-    const guys = [...buckets[tier].guys];
-    const gals = [...buckets[tier].gals];
+  const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] => {
+    console.clear();
+    console.log('=== TEAM GENERATION START ===');
+    console.log(`Players: ${allPlayers.length} | Format: ${formatSize}v${formatSize}`);
     
-    // Interleave guys and gals within each tier for better distribution
-    while (guys.length > 0 || gals.length > 0) {
-      if (guys.length > 0) draftPool.push(guys.shift()!);
-      if (gals.length > 0) draftPool.push(gals.shift()!);
-    }
-  });
-  
-  // 6. Determine team structure
-  const numTeams = Math.floor(allPlayers.length / formatSize);
-  if (numTeams < 2) {
-    console.log('Not enough players for 2 teams');
-    return [];
-  }
-  
-  const baseTeamSize = Math.floor(allPlayers.length / numTeams);
-  const teamsWithExtra = allPlayers.length % numTeams;
-  
-  console.log(`\n=== TEAM STRUCTURE ===`);
-  console.log(`Teams: ${numTeams} | Base size: ${baseTeamSize} | Teams with extra: ${teamsWithExtra}`);
-  
-  // Initialize teams with random names
-  const shuffledNames = shuffleArray(teamNames);
-  const newTeams: Team[] = Array.from({ length: numTeams }, (_, i) => ({
-    name: shuffledNames[i % shuffledNames.length],
-    players: [],
-  }));
-  
-  // Track gender counts for each team
-  const teamGenderCounts = newTeams.map(() => ({ guys: 0, gals: 0 }));
-  
-  // 7. Snake draft with gender ratio awareness
-  let round = 0;
-  let pickNumber = 0;
-  
-  while (draftPool.length > 0) {
-    round++;
-    const isForwardRound = round % 2 === 1;
-    const teamOrder = isForwardRound 
-      ? newTeams.map((_, i) => i) 
-      : newTeams.map((_, i) => i).reverse();
+    // 1. Calculate adjusted skills
+    const adjustedPlayers: PlayerWithAdjustedSkill[] = allPlayers.map(p => ({
+      ...p,
+      adjustedSkill: p.skill * (p.gender === 'Gal' ? 0.85 : 1)
+    }));
     
-    for (const teamIndex of teamOrder) {
-      if (draftPool.length === 0) break;
+    // Calculate gender ratio for reference
+    const totalGals = adjustedPlayers.filter(p => p.gender === 'Gal').length;
+    const targetGalRatio = totalGals / allPlayers.length;
+    console.log(`Gender Distribution: ${totalGals} Gals, ${allPlayers.length - totalGals} Guys`);
+    console.log(`Target Gal Ratio: ${(targetGalRatio * 100).toFixed(1)}%`);
+    
+    // 2. Create skill buckets (5 tiers, 2 skill levels each)
+    type BucketType = { guys: PlayerWithAdjustedSkill[], gals: PlayerWithAdjustedSkill[] };
+    const buckets: { [key: string]: BucketType } = {
+      'tier1': { guys: [], gals: [] }, // 9-10
+      'tier2': { guys: [], gals: [] }, // 7-8
+      'tier3': { guys: [], gals: [] }, // 5-6
+      'tier4': { guys: [], gals: [] }, // 3-4
+      'tier5': { guys: [], gals: [] }  // 1-2
+    };
+    
+    // 3. Distribute players into buckets by skill AND gender
+    adjustedPlayers.forEach(p => {
+      const genderGroup = p.gender === 'Gal' ? 'gals' : 'guys';
+      if (p.skill >= 9) buckets.tier1[genderGroup].push(p);
+      else if (p.skill >= 7) buckets.tier2[genderGroup].push(p);
+      else if (p.skill >= 5) buckets.tier3[genderGroup].push(p);
+      else if (p.skill >= 3) buckets.tier4[genderGroup].push(p);
+      else buckets.tier5[genderGroup].push(p);
+    });
+    
+    // 4. Shuffle within each bucket/gender group for randomness
+    Object.values(buckets).forEach(tier => {
+      tier.guys = shuffleArray(tier.guys);
+      tier.gals = shuffleArray(tier.gals);
+    });
+    
+    // Log bucket distribution
+    console.log('\n=== SKILL BUCKETS (after shuffle) ===');
+    Object.entries(buckets).forEach(([tier, groups]) => {
+      if (groups.guys.length > 0 || groups.gals.length > 0) {
+        console.log(`${tier}: ${groups.guys.length} Guys, ${groups.gals.length} Gals`);
+      }
+    });
+    
+    // 5. Create draft pool maintaining tier order but alternating gender
+    const draftPool: PlayerWithAdjustedSkill[] = [];
+    ['tier1', 'tier2', 'tier3', 'tier4', 'tier5'].forEach(tier => {
+      const guys = [...buckets[tier].guys];
+      const gals = [...buckets[tier].gals];
       
-      const team = newTeams[teamIndex];
-      const targetSize = teamIndex < teamsWithExtra ? baseTeamSize + 1 : baseTeamSize;
-      
-      if (team.players.length >= targetSize) continue;
-      
-      pickNumber++;
-      
-      // Determine what this team needs
-      const currentGalRatio = team.players.length > 0 
-        ? teamGenderCounts[teamIndex].gals / team.players.length 
-        : 0;
-      const needsGal = currentGalRatio < targetGalRatio;
-      
-      // Find best available player considering gender need
-      let playerIndex = -1;
-      
-      // First, try to find a player of the needed gender in the top candidates
-      const searchDepth = Math.min(5, draftPool.length); // Look at top 5 players
-      
-      for (let i = 0; i < searchDepth; i++) {
-        const candidate = draftPool[i];
-        const isGal = candidate.gender === 'Gal';
-        
-        if (needsGal === isGal) {
-          playerIndex = i;
-          break;
+      // Interleave guys and gals within each tier for better distribution
+      while (guys.length > 0 || gals.length > 0) {
+        if (guys.length > 0) draftPool.push(guys.shift()!);
+        if (gals.length > 0) draftPool.push(gals.shift()!);
+      }
+    });
+    
+    // 6. Determine team structure
+    const numTeams = Math.floor(allPlayers.length / formatSize);
+    if (numTeams < 2) {
+      console.log('Not enough players for 2 teams');
+      return [];
+    }
+    
+    const baseTeamSize = Math.floor(allPlayers.length / numTeams);
+    const teamsWithExtra = allPlayers.length % numTeams;
+    
+    console.log(`\n=== TEAM STRUCTURE ===`);
+    console.log(`Teams: ${numTeams} | Base size: ${baseTeamSize} | Teams with extra: ${teamsWithExtra}`);
+    
+    // Initialize teams with random names
+    const shuffledNames = shuffleArray(teamNames);
+    const newTeams: Team[] = Array.from({ length: numTeams }, (_, i) => ({
+      name: shuffledNames[i % shuffledNames.length],
+      players: [],
+    }));
+    
+    // Track gender counts for each team
+    const teamGenderCounts = newTeams.map(() => ({ guys: 0, gals: 0 }));
+    
+    // 7. Draft players to ensure diversity
+    while (draftPool.length > 0) {
+      for (let i = 0; i < numTeams; i++) {
+        if (newTeams[i].players.length < baseTeamSize + (i < teamsWithExtra ? 1 : 0)) {
+          const player = draftPool.shift()!;
+          newTeams[i].players.push(player);
+          
+          // Update gender counts
+          if (player.gender === 'Gal') {
+            teamGenderCounts[i].gals++;
+          } else {
+            teamGenderCounts[i].guys++;
+          }
         }
       }
-      
-      // If no gender match found in top candidates, take the best available
-      if (playerIndex === -1) {
-        playerIndex = 0;
-      }
-      
-      // Draft the player
-      const [draftedPlayer] = draftPool.splice(playerIndex, 1);
-      team.players.push(draftedPlayer);
-      
-      // Update gender counts
-      if (draftedPlayer.gender === 'Gal') {
-        teamGenderCounts[teamIndex].gals++;
-      } else {
-        teamGenderCounts[teamIndex].guys++;
-      }
-      
-      console.log(
-        `Pick #${pickNumber}: ${team.name} selects ${draftedPlayer.name} ` +
-        `(${draftedPlayer.gender}, Skill: ${draftedPlayer.skill}, Adj: ${draftedPlayer.adjustedSkill.toFixed(1)})`
-      );
     }
-  }
-  
-  // 8. Final team analysis
-  console.log('\n=== FINAL TEAMS ===');
-  newTeams.forEach((team, index) => {
-    const { avgSkill, guyCount, galCount, avgAdjustedSkill } = getTeamAnalysis(team);
-    console.log(`\n${team.name} (${team.players.length} players)`);
-    console.log(`  Avg Raw Skill: ${avgSkill}`);
-    console.log(`  Avg Adjusted Skill: ${avgAdjustedSkill}`);
-    console.log(`  Gender: ${guyCount} Guys, ${galCount} Gals (${(galCount / team.players.length * 100).toFixed(1)}% Gal)`);
-    console.log(`  Roster: ${team.players.map(p => `${p.name}(${p.skill})`).join(', ')}`);
-  });
-  
-  // Calculate and display balance metrics
-  const teamAverages = newTeams.map(team => {
-    const totalAdjusted = team.players.reduce((sum, p: any) => sum + (p.adjustedSkill || p.skill * (p.gender === 'Gal' ? 0.85 : 1)), 0);
-    return totalAdjusted / team.players.length;
-  });
-  const avgRange = Math.max(...teamAverages) - Math.min(...teamAverages);
-  console.log(`\n=== BALANCE METRICS ===`);
-  console.log(`Average Adjusted Skill Range: ${avgRange.toFixed(2)} (lower is better)`);
-  
-  return newTeams;
-};
+    
+    // Shuffle teams to ensure randomness
+    shuffleArray(newTeams);
+    
+    // Final team analysis
+    console.log('\n=== FINAL TEAMS ===');
+    newTeams.forEach((team, index) => {
+      const { avgSkill, guyCount, galCount, avgAdjustedSkill } = getTeamAnalysis(team);
+      console.log(`\n${team.name} (${team.players.length} players)`);
+      console.log(`  Avg Raw Skill: ${avgSkill}`);
+      console.log(`  Avg Adjusted Skill: ${avgAdjustedSkill}`);
+      console.log(`  Gender: ${guyCount} Guys, ${galCount} Gals (${(galCount / team.players.length * 100).toFixed(1)}% Gal)`);
+      console.log(`  Roster: ${team.players.map(p => `${p.name}(${p.skill})`).join(', ')}`);
+    });
+    
+    // Calculate and display diversity metrics
+    const genderDiversity = newTeams.map(team => {
+      const totalGals = teamGenderCounts[team.name].gals;
+      const totalGuys = teamGenderCounts[team.name].guys;
+      return Math.abs(totalGals - (totalPlayers / numTeams)) + Math.abs(totalGuys - (totalPlayers / numTeams));
+    });
+    
+    console.log(`\n=== DIVERSITY METRICS ===`);
+    console.log(`Average Gender Diversity: ${genderDiversity.reduce((sum, diversity) => sum + diversity, 0) / numTeams}`);
+    
+    return newTeams;
+  }; 
 
   const handleGenerateTeams = () => {
     if (presentPlayers.length < teamSize) {

@@ -67,7 +67,7 @@
     "name": "Jonathan Bradley",
     "gender": "Guy",
     "skill": 5,
-    "present": true
+    "present": false
   },
   {
     "id": "11",
@@ -172,7 +172,7 @@
     "name": "Lauren Hopkins",
     "gender": "Gal",
     "skill": 6,
-    "present": true
+    "present": false
   },
   {
     "id": "26",

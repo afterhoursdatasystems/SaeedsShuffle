@@ -82,6 +82,49 @@ export async function getPlayers(): Promise<{ success: boolean; data?: Player[];
     }
 }
 
+export async function addPlayer(player: Omit<Player, 'id' | 'present'>): Promise<{ success: boolean; data?: Player[]; error?: string }> {
+    try {
+        const players = await readPlayersDb();
+        const newPlayer: Player = {
+            ...player,
+            id: new Date().toISOString(), // Simple unique ID
+            present: true,
+        };
+        const updatedPlayers = [...players, newPlayer];
+        await writePlayersDb(updatedPlayers);
+        return { success: true, data: updatedPlayers };
+    } catch (error) {
+        console.error('Add Player Error:', error);
+        return { success: false, error: 'Failed to add player.' };
+    }
+}
+
+export async function updatePlayer(updatedPlayer: Player): Promise<{ success: boolean; data?: Player[]; error?: string }> {
+    try {
+        const players = await readPlayersDb();
+        const updatedPlayers = players.map(p => 
+            p.id === updatedPlayer.id ? updatedPlayer : p
+        );
+        await writePlayersDb(updatedPlayers);
+        return { success: true, data: updatedPlayers };
+    } catch (error) {
+        console.error('Update Player Error:', error);
+        return { success: false, error: 'Failed to update player.' };
+    }
+}
+
+export async function deletePlayer(playerId: string): Promise<{ success: boolean; data?: Player[]; error?: string }> {
+    try {
+        const players = await readPlayersDb();
+        const updatedPlayers = players.filter(p => p.id !== playerId);
+        await writePlayersDb(updatedPlayers);
+        return { success: true, data: updatedPlayers };
+    } catch (error) {
+        console.error('Delete Player Error:', error);
+        return { success: false, error: 'Failed to delete player.' };
+    }
+}
+
 export async function updatePlayerPresence(playerId: string, present: boolean): Promise<{ success: boolean; error?: string }> {
     try {
         const players = await readPlayersDb();
