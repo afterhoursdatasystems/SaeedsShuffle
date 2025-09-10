@@ -79,14 +79,16 @@ export function TeamGenerator() {
 
 
   const createBalancedTeams = (allPlayers: Player[], baseTeamSize: number): Team[] => {
-    if (allPlayers.length < baseTeamSize) {
+    const numTeams = Math.floor(allPlayers.length / baseTeamSize);
+    if (numTeams === 0) {
       return [];
     }
 
-    const numTeams = Math.floor(allPlayers.length / baseTeamSize);
+    const shuffledTeamNames = shuffleArray(teamNames);
+
     let newTeams: Team[] = Array.from({ length: numTeams }, (_, i) => ({
-        name: shuffleArray(teamNames)[i % teamNames.length],
-        players: [],
+      name: shuffledTeamNames[i % shuffledTeamNames.length],
+      players: [],
     }));
 
     // 1. Create skill buckets and shuffle within them
@@ -107,14 +109,15 @@ export function TeamGenerator() {
         else bucketKey = '9-10';
         buckets[genderKey][bucketKey].push(player);
     }
-
-    for (const genderKey of Object.keys(buckets)) {
-        for (const bucketKey of Object.keys(buckets[genderKey as 'guys' | 'gals'])) {
-            buckets[genderKey as 'guys' | 'gals'][bucketKey] = shuffleArray(buckets[genderKey as 'guys' | 'gals'][bucketKey]);
+    
+    // Shuffle inside each bucket
+    for (const gender of Object.keys(buckets)) {
+        for (const skillRange of Object.keys(buckets[gender as 'guys' | 'gals'])) {
+            buckets[gender as 'guys' | 'gals'][skillRange] = shuffleArray(buckets[gender as 'guys' | 'gals'][skillRange]);
         }
     }
 
-    // 2. Draft players from buckets
+    // Create a flat, shuffled draft pool from the buckets, highest to lowest
     const draftPool = {
         guys: [
             ...buckets.guys['9-10'], ...buckets.guys['7-8'],
@@ -126,57 +129,65 @@ export function TeamGenerator() {
         ],
     };
 
+    const totalPlayersToAssign = numTeams * baseTeamSize;
     const totalGuys = draftPool.guys.length;
     const totalGals = draftPool.gals.length;
+    
+    // Determine ideal gender composition
+    let assignments = Array(numTeams).fill(0).map(() => ({guys: 0, gals: 0}));
+    let guysToAssign = Math.round(totalPlayersToAssign * (totalGuys / allPlayers.length));
+    let galsToAssign = totalPlayersToAssign - guysToAssign;
+    
+    // Fallback if one gender is over-allocated
+    if(guysToAssign > totalGuys) {
+      galsToAssign += guysToAssign - totalGuys;
+      guysToAssign = totalGuys;
+    }
+    if(galsToAssign > totalGals) {
+      guysToAssign += galsToAssign - totalGals;
+      galsToAssign = totalGals;
+    }
 
-    const baseGuysPerTeam = Math.floor(totalGuys / numTeams);
-    const baseGalsPerTeam = Math.floor(totalGals / numTeams);
-    let extraGuys = totalGuys % numTeams;
-    let extraGals = totalGals % numTeams;
+    const baseGuys = Math.floor(guysToAssign / numTeams);
+    const baseGals = Math.floor(galsToAssign / numTeams);
+    let extraGuys = guysToAssign % numTeams;
+    let extraGals = galsToAssign % numTeams;
+    
+    assignments.forEach(a => {
+        a.guys = baseGuys;
+        a.gals = baseGals;
+    });
 
-    // Snake draft for base players
+    for(let i = 0; i < extraGuys; i++) assignments[i % numTeams].guys++;
+    for(let i = 0; i < extraGals; i++) assignments[i % numTeams].gals++;
+
+    // Snake draft to fill teams based on assignments
     let forward = true;
-    for (let i = 0; i < baseGuysPerTeam; i++) {
+    const maxOnTeam = Math.max(...assignments.map(a => a.guys + a.gals));
+
+    for (let i = 0; i < maxOnTeam; i++) {
         const teamIndices = forward ? Array.from(Array(numTeams).keys()) : Array.from(Array(numTeams).keys()).reverse();
         for (const teamIndex of teamIndices) {
-            if (draftPool.guys.length > 0) newTeams[teamIndex].players.push(draftPool.guys.shift()!);
+            // Add a guy if needed
+            if(newTeams[teamIndex].players.filter(p=>p.gender==='Guy').length < assignments[teamIndex].guys) {
+                if(draftPool.guys.length > 0) newTeams[teamIndex].players.push(draftPool.guys.shift()!);
+            } 
+            // Add a gal if needed
+            else if (newTeams[teamIndex].players.filter(p=>p.gender==='Gal').length < assignments[teamIndex].gals) {
+                if(draftPool.gals.length > 0) newTeams[teamIndex].players.push(draftPool.gals.shift()!);
+            }
         }
         forward = !forward;
     }
-    for (let i = 0; i < baseGalsPerTeam; i++) {
-        const teamIndices = forward ? Array.from(Array(numTeams).keys()) : Array.from(Array(numTeams).keys()).reverse();
-        for (const teamIndex of teamIndices) {
-            if (draftPool.gals.length > 0) newTeams[teamIndex].players.push(draftPool.gals.shift()!);
-        }
-        forward = !forward;
-    }
-
-    // Distribute extra gender players using the same snake draft logic
-    const teamOrderForExtras = forward ? Array.from(Array(numTeams).keys()) : Array.from(Array(numTeams).keys()).reverse();
-    let extraIndex = 0;
-    while(extraGuys > 0) {
-        if(draftPool.guys.length > 0) {
-            newTeams[teamOrderForExtras[extraIndex % numTeams]].players.push(draftPool.guys.shift()!);
-            extraIndex++;
-        }
-        extraGuys--;
-    }
-    while(extraGals > 0) {
-        if(draftPool.gals.length > 0) {
-            newTeams[teamOrderForExtras[extraIndex % numTeams]].players.push(draftPool.gals.shift()!);
-             extraIndex++;
-        }
-        extraGals--;
-    }
-
-    // 3. Distribute all remaining players (leftovers from floor division)
+    
+    // Distribute all remaining players (leftovers from floor division)
     let remainingPlayers = [...draftPool.guys, ...draftPool.gals];
     // Sort remaining by skill to try and balance the last few adds
     remainingPlayers.sort((a,b) => b.skill - a.skill);
 
     let teamIndexForLeftovers = 0;
     const teamOrderForLeftovers = forward ? Array.from(Array(numTeams).keys()) : Array.from(Array(numTeams).keys()).reverse();
-
+    
     while(remainingPlayers.length > 0) {
         const teamIdx = teamOrderForLeftovers[teamIndexForLeftovers % numTeams];
         newTeams[teamIdx].players.push(remainingPlayers.shift()!);
