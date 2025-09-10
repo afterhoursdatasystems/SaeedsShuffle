@@ -182,6 +182,8 @@ const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] =
         const teamOrder = isSnake ? newTeams.slice().reverse() : newTeams;
 
         for (const team of teamOrder) {
+            if (team.players.length >= formatSize) continue;
+
             const neededGender = genderSlots[newTeams.indexOf(team)][round];
             const playerIndex = draftPool.findIndex(p => p.gender === neededGender);
 
@@ -489,8 +491,13 @@ const createBalancedTeams = (allPlayers: Player[], formatSize: number): Team[] =
                         </div>
                         <Separator orientation='vertical' className='hidden sm:block h-12' />
                          <div className="text-center">
-                            <p className="text-sm font-medium text-muted-foreground">Guy Percentage</p>
-                            <p className="text-2xl font-bold">{overallGuyPercentage}%</p>
+                            <p className="text-sm font-medium text-muted-foreground">Gender Breakdown</p>
+                            <p className="text-2xl font-bold">
+                                <span className="text-blue-500">{presentGuys}</span>
+                                <span className="mx-1 text-muted-foreground">/</span>
+                                <span className="text-pink-500">{presentGals}</span>
+                                <span className="ml-2 text-base font-normal">({overallGuyPercentage}%)</span>
+                            </p>
                         </div>
                         <Separator orientation='vertical' className='hidden sm:block h-12' />
                         <div className="text-center">
