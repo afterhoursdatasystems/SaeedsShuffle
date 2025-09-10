@@ -3,7 +3,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { simulateLeagueStandings, type SimulateLeagueStandingsInput } from '@/ai/flows/simulate-league-standings';
-import type { Team, GameFormat, GameVariant, Match, PowerUp } from '@/types';
+import type { Team, GameFormat, GameVariant, Match, PowerUp, Player } from '@/types';
 
 type PublishedData = {
     teams: Team[];
@@ -11,10 +11,37 @@ type PublishedData = {
     schedule: Match[];
     activeRule: PowerUp | null;
     pointsToWin: number;
+    players?: Player[]; // Players can now be part of the main DB
 };
 
 // Use a JSON file as a simple database for this prototype.
 const dbPath = path.join(process.cwd(), 'db.json');
+const playersDbPath = path.join(process.cwd(), 'players.json');
+
+
+async function readPlayersDb(): Promise<Player[]> {
+    try {
+        const data = await fs.readFile(playersDbPath, 'utf-8');
+        return JSON.parse(data);
+    } catch (error: any) {
+        if (error.code === 'ENOENT') {
+            // If the file doesn't exist, return an empty array
+            return [];
+        }
+        console.error('Error reading from Players DB:', error);
+        throw error;
+    }
+}
+
+async function writePlayersDb(players: Player[]): Promise<void> {
+    try {
+        await fs.writeFile(playersDbPath, JSON.stringify(players, null, 2), 'utf-8');
+    } catch (error) {
+        console.error('Error writing to Players DB:', error);
+        throw error;
+    }
+}
+
 
 async function readDb(): Promise<PublishedData> {
     try {
@@ -41,6 +68,31 @@ async function writeDb(data: PublishedData): Promise<void> {
     } catch (error) {
         console.error('Error writing to DB:', error);
         throw error;
+    }
+}
+
+
+export async function getPlayers(): Promise<{ success: boolean; data?: Player[]; error?: string }> {
+    try {
+        const players = await readPlayersDb();
+        return { success: true, data: players };
+    } catch (error) {
+        console.error('Get Players Error:', error);
+        return { success: false, error: 'Failed to retrieve players.' };
+    }
+}
+
+export async function updatePlayerPresence(playerId: string, present: boolean): Promise<{ success: boolean; error?: string }> {
+    try {
+        const players = await readPlayersDb();
+        const updatedPlayers = players.map(p => 
+            p.id === playerId ? { ...p, present } : p
+        );
+        await writePlayersDb(updatedPlayers);
+        return { success: true };
+    } catch (error) {
+        console.error('Update Player Presence Error:', error);
+        return { success: false, error: 'Failed to update player presence.' };
     }
 }
 

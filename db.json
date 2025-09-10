@@ -1,7 +1,7 @@
 {
   "teams": [
     {
-      "name": "Toast Titans",
+      "name": "Bailey's Bruisers",
       "players": [
         {
           "id": "7",
@@ -12,61 +12,16 @@
           "adjustedSkill": 8
         },
         {
-          "id": "5",
-          "name": "Nicole Malone",
-          "gender": "Gal",
-          "skill": 5,
-          "present": true,
-          "adjustedSkill": 4.25
-        },
-        {
-          "id": "10",
-          "name": "Jonathan Bradley",
+          "id": "15",
+          "name": "Stephen Jaqua",
           "gender": "Guy",
-          "skill": 5,
-          "present": true,
-          "adjustedSkill": 5
-        },
-        {
-          "id": "8",
-          "name": "Abby Gilpin",
-          "gender": "Gal",
-          "skill": 6,
-          "present": true,
-          "adjustedSkill": 5.1
-        },
-        {
-          "id": "28",
-          "name": "Alexandra Broskey",
-          "gender": "Gal",
-          "skill": 6,
-          "present": true,
-          "adjustedSkill": 5.1
-        }
-      ]
-    },
-    {
-      "name": "Summit Strikers",
-      "players": [
-        {
-          "id": "11",
-          "name": "Aditya Singh",
-          "gender": "Guy",
-          "skill": 7,
-          "present": true,
-          "adjustedSkill": 7
-        },
-        {
-          "id": "6",
-          "name": "Heidi Kempert",
-          "gender": "Gal",
           "skill": 4,
           "present": true,
-          "adjustedSkill": 3.4
+          "adjustedSkill": 4
         },
         {
-          "id": "13",
-          "name": "Emily Victoria",
+          "id": "23",
+          "name": "Joy Swasy",
           "gender": "Gal",
           "skill": 6,
           "present": true,
@@ -79,35 +34,6 @@
           "skill": 3,
           "present": true,
           "adjustedSkill": 3
-        }
-      ]
-    },
-    {
-      "name": "Peninsula Powerhouse",
-      "players": [
-        {
-          "id": "17",
-          "name": "Shaylyn Murphy",
-          "gender": "Gal",
-          "skill": 8,
-          "present": true,
-          "adjustedSkill": 6.8
-        },
-        {
-          "id": "21",
-          "name": "Pat Sobotka",
-          "gender": "Guy",
-          "skill": 6,
-          "present": true,
-          "adjustedSkill": 6
-        },
-        {
-          "id": "23",
-          "name": "Joy Swasy",
-          "gender": "Gal",
-          "skill": 6,
-          "present": true,
-          "adjustedSkill": 5.1
         },
         {
           "id": "19",
@@ -123,28 +49,36 @@
       "name": "Cool Fish Commandos",
       "players": [
         {
-          "id": "26",
-          "name": "Matt Taylor",
+          "id": "11",
+          "name": "Aditya Singh",
           "gender": "Guy",
           "skill": 7,
           "present": true,
           "adjustedSkill": 7
         },
         {
-          "id": "20",
-          "name": "Rachel Nystrom",
+          "id": "17",
+          "name": "Shaylyn Murphy",
           "gender": "Gal",
           "skill": 8,
           "present": true,
           "adjustedSkill": 6.8
         },
         {
-          "id": "15",
-          "name": "Stephen Jaqua",
+          "id": "1",
+          "name": "Cole Deaver",
           "gender": "Guy",
-          "skill": 4,
+          "skill": 6,
           "present": true,
-          "adjustedSkill": 4
+          "adjustedSkill": 6
+        },
+        {
+          "id": "8",
+          "name": "Abby Gilpin",
+          "gender": "Gal",
+          "skill": 6,
+          "present": true,
+          "adjustedSkill": 5.1
         },
         {
           "id": "9",
@@ -155,29 +89,104 @@
           "adjustedSkill": 2.55
         }
       ]
+    },
+    {
+      "name": "McGuire Nuclear Knockouts",
+      "players": [
+        {
+          "id": "20",
+          "name": "Rachel Nystrom",
+          "gender": "Gal",
+          "skill": 8,
+          "present": true,
+          "adjustedSkill": 6.8
+        },
+        {
+          "id": "28",
+          "name": "Alexandra Broskey",
+          "gender": "Gal",
+          "skill": 6,
+          "present": true,
+          "adjustedSkill": 5.1
+        },
+        {
+          "id": "14",
+          "name": "Eric Ahrens",
+          "gender": "Guy",
+          "skill": 7,
+          "present": true,
+          "adjustedSkill": 7
+        },
+        {
+          "id": "21",
+          "name": "Pat Sobotka",
+          "gender": "Guy",
+          "skill": 6,
+          "present": true,
+          "adjustedSkill": 6
+        }
+      ]
+    },
+    {
+      "name": "Peninsula Powerhouse",
+      "players": [
+        {
+          "id": "10",
+          "name": "Jonathan Bradley",
+          "gender": "Guy",
+          "skill": 5,
+          "present": true,
+          "adjustedSkill": 5
+        },
+        {
+          "id": "2",
+          "name": "Melissa Roy",
+          "gender": "Gal",
+          "skill": 6,
+          "present": true,
+          "adjustedSkill": 5.1
+        },
+        {
+          "id": "5",
+          "name": "Nicole Malone",
+          "gender": "Gal",
+          "skill": 5,
+          "present": true,
+          "adjustedSkill": 4.25
+        },
+        {
+          "id": "13",
+          "name": "Emily Victoria",
+          "gender": "Gal",
+          "skill": 6,
+          "present": true,
+          "adjustedSkill": 5.1
+        }
+      ]
     }
   ],
   "format": "power-up-round",
   "schedule": [
     {
-      "id": "020ded40-49c8-4456-a182-5dec9c4ae26b",
+      "id": "04df92f6-4645-4243-87a1-155f8a07a95c",
       "teamA": "Peninsula Powerhouse",
-      "teamB": "Cool Fish Commandos",
+      "teamB": "McGuire Nuclear Knockouts",
       "resultA": null,
       "resultB": null,
       "court": "King Court"
     },
     {
-      "id": "f6044650-3cdc-4abc-90e5-8015c5feff62",
-      "teamA": "Toast Titans",
-      "teamB": "Summit Strikers",
+      "id": "a8c5f299-4319-41f4-a50f-207969cd6687",
+      "teamA": "Bailey's Bruisers",
+      "teamB": "Cool Fish Commandos",
       "resultA": null,
       "resultB": null,
       "court": "Challenger Court"
     }
   ],
   "activeRule": {
-    "name": "Double Trouble",
-    "description": "For the next rally, your team is allowed to have two contacts in a row by the same player."
-  }
+    "name": "Gender Bender",
+    "description": "The next point must be scored by a player of the opposite gender of the person who just scored."
+  },
+  "pointsToWin": 15
 }
