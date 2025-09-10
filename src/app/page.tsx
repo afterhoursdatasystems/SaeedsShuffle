@@ -20,13 +20,13 @@ const KOTCBaseRules = ({ pointsToWin, teamCount }: { pointsToWin: number; teamCo
     <>
         <p className="mb-4">A high-energy, continuous-play format designed to maximize playtime and interaction. All games are rally-scoring to {pointsToWin} points (win by 2).</p>
         <h4 className="font-bold text-lg mb-2">The Concept</h4>
-        <p className="mb-4">A dynamic, non-stop format where the goal is to seize control of the “King/Queen Court” (the winner’s court) and hold it against a constant stream of new challengers.</p>
+        <p className="mb-4">The goal is to get to the “King Court” (the winner’s court) and hold it as long as possible against a constant stream of new challengers. It's a non-stop format that keeps everyone playing.</p>
         
         <h4 className="font-bold text-lg mb-2">The Flow of Play</h4>
         <ul className="list-disc pl-5 space-y-2 mb-6">
-            <li><strong>Court Setup:</strong> One court is designated the “King/Queen Court” (top court). All other courts are “Challenger Courts.”</li>
-            <li><strong>Scoring Points:</strong> A team only scores a "tournament point" for each win on the King/Queen Court.</li>
-            <li><strong>Winning the Tournament:</strong> The team with the most tournament points at the end of the night is the champion.</li>
+            <li><strong>Court Setup:</strong> One court is designated the “King Court” (top court). All other courts are “Challenger Courts.”</li>
+            <li><strong>Winning & Losing:</strong> The winner of a game on the King Court stays on that court. The winner of a Challenger Court moves up to the King Court. Losing teams move down or to the waiting line, depending on the number of teams.</li>
+            <li><strong>The Goal:</strong> Have fun and try to stay on the King Court as long as you can!</li>
         </ul>
         
         <h4 className="font-bold text-lg mb-4">Game Flow Based on Number of Teams:</h4>
@@ -35,11 +35,11 @@ const KOTCBaseRules = ({ pointsToWin, teamCount }: { pointsToWin: number; teamCo
           <Card className="bg-muted/30 p-4">
             <CardTitle className="text-xl mb-2">Scenario: 4 Teams</CardTitle>
             <CardContent className="p-0">
-              <p className="mb-4">With 4 teams, it’s a straightforward rotation. Two teams play on each court. Winners move up (or stay), losers move down (or stay).</p>
+              <p className="mb-4">With 4 teams, it’s a straightforward rotation. The winners of the King Court stay, while the winners of the Challenger Court move up to play them. Losers move down to the Challenger Court.</p>
               <KOTCFlowDiagram 
-                kingCourtWinner="Stays on King Court (+1 Point)"
-                kingCourtLoser="Goes to Challenger Court"
-                challengerCourtWinner="Goes to King Court"
+                kingCourtWinner="Stays on King Court"
+                kingCourtLoser="Moves to Challenger Court"
+                challengerCourtWinner="Moves to King Court"
                 challengerCourtLoser="Stays on Challenger Court"
               />
             </CardContent>
@@ -50,13 +50,13 @@ const KOTCBaseRules = ({ pointsToWin, teamCount }: { pointsToWin: number; teamCo
            <Card className="bg-muted/30 p-4">
             <CardTitle className="text-xl mb-2">Scenario: {teamCount} Teams</CardTitle>
             <CardContent className="p-0">
-               <p className="mb-4">With {teamCount} teams, a waiting line forms. The goal is to get to the King Court and stay there, as teams from the line feed into the Challenger Court.</p>
+               <p className="mb-4">With {teamCount} teams, a waiting line forms. Losing on the King Court sends you to the back of the line. Winning on the Challenger Court moves you to the King Court, while losing on the Challenger Court sends you to the front of the line to wait.</p>
               <KOTCFlowDiagram 
-                kingCourtWinner="Stays on King Court (+1 Point)"
+                kingCourtWinner="Stays on King Court"
                 kingCourtLoser="Goes to Back of the Line"
                 challengerCourtWinner="Goes to King Court"
                 challengerCourtLoser="Goes to Front of the Line"
-                waitingLineText={`The waiting team(s) challenge the loser of the Challenger Court. The winner of that match goes to the King Court.`}
+                waitingLineText={`The team at the front of the line comes on to play the loser of the Challenger Court match.`}
               />
             </CardContent>
           </Card>
@@ -66,13 +66,13 @@ const KOTCBaseRules = ({ pointsToWin, teamCount }: { pointsToWin: number; teamCo
            <Card className="bg-muted/30 p-4">
             <CardTitle className="text-xl mb-2">Scenario: {teamCount}+ Teams</CardTitle>
             <CardContent className="p-0">
-              <p className="mb-4">With a large number of teams, the flow ensures constant movement and minimizes sitting time. Losing on any court sends you to the back of the line.</p>
+              <p className="mb-4">With many teams, the flow ensures constant movement. Losing on any court sends you to the back of the waiting line. Winning on a challenger court moves you up to the *front* of the line to wait for your shot at the King Court.</p>
                <KOTCFlowDiagram 
-                kingCourtWinner="Stays on King Court (+1 Point)"
+                kingCourtWinner="Stays on King Court"
                 kingCourtLoser="Goes to Back of the Line"
                 challengerCourtWinner="Goes to Front of the Line"
                 challengerCourtLoser="Goes to Back of the Line"
-                waitingLineText={`The teams in line play each other to determine who moves up to the Challenger court. The winner of the Challenger Court moves to the *front* of the line to wait for the King Court.`}
+                waitingLineText={`Teams in the waiting line play each other to determine who moves up to challenge for a spot on a Challenger Court.`}
               />
             </CardContent>
           </Card>
@@ -423,5 +423,7 @@ export default function PublicTeamsPage() {
     </div>
   );
 }
+
+    
 
     
