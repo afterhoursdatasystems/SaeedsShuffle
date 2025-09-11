@@ -11,10 +11,10 @@
           "present": true
         },
         {
-          "id": "3",
-          "name": "Kristin Drinka",
+          "id": "17",
+          "name": "Shaylyn Murphy",
           "gender": "Gal",
-          "skill": 7,
+          "skill": 8,
           "present": true
         },
         {
@@ -25,10 +25,10 @@
           "present": true
         },
         {
-          "id": "9",
-          "name": "Miranda Griego",
+          "id": "22",
+          "name": "Jasona Jones",
           "gender": "Gal",
-          "skill": 3,
+          "skill": 1,
           "present": true
         },
         {
@@ -41,18 +41,18 @@
       ]
     },
     {
-      "name": "Summit Strikers",
+      "name": "Antiquity Attackers",
       "players": [
         {
-          "id": "26",
-          "name": "Matt Taylor",
+          "id": "14",
+          "name": "Eric Ahrens",
           "gender": "Guy",
           "skill": 7,
           "present": true
         },
         {
-          "id": "16",
-          "name": "Lindsey Victoria",
+          "id": "3",
+          "name": "Kristin Drinka",
           "gender": "Gal",
           "skill": 7,
           "present": true
@@ -70,55 +70,48 @@
           "gender": "Gal",
           "skill": 2,
           "present": true
-        },
-        {
-          "id": "22",
-          "name": "Jasona Jones",
-          "gender": "Gal",
-          "skill": 1,
-          "present": true
         }
       ]
     },
     {
-      "name": "Toast Titans",
+      "name": "Langtree Lightning",
       "players": [
         {
-          "id": "14",
-          "name": "Eric Ahrens",
+          "id": "12",
+          "name": "Giovanni Salvatore",
           "gender": "Guy",
           "skill": 7,
           "present": true
         },
         {
-          "id": "17",
-          "name": "Shaylyn Murphy",
+          "id": "16",
+          "name": "Lindsey Victoria",
           "gender": "Gal",
-          "skill": 8,
+          "skill": 7,
           "present": true
         },
         {
-          "name": "Elicia Smith",
+          "id": "23",
+          "name": "Joy Swasy",
           "gender": "Gal",
           "skill": 6,
-          "id": "2025-09-11T13:26:26.199Z",
           "present": true
         },
         {
-          "id": "27",
-          "name": "Alaina McCoy",
+          "id": "9",
+          "name": "Miranda Griego",
           "gender": "Gal",
-          "skill": 4,
+          "skill": 3,
           "present": true
         }
       ]
     },
     {
-      "name": "Soda Shop Slammers",
+      "name": "Jetton Juggernauts",
       "players": [
         {
-          "id": "12",
-          "name": "Giovanni Salvatore",
+          "id": "26",
+          "name": "Matt Taylor",
           "gender": "Guy",
           "skill": 7,
           "present": true
@@ -131,10 +124,10 @@
           "present": true
         },
         {
-          "id": "23",
-          "name": "Joy Swasy",
+          "name": "Elicia Smith",
           "gender": "Gal",
           "skill": 6,
+          "id": "2025-09-11T13:26:26.199Z",
           "present": true
         },
         {

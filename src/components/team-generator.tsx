@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Send, Shuffle, Info, Trash2, Users } from 'lucide-react';
+import { Send, Shuffle, Info, Trash2, Users, MoreVertical } from 'lucide-react';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import React, { useEffect, useMemo, useState } from 'react';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
@@ -16,8 +16,8 @@ import { Separator } from './ui/separator';
 import { cn } from '@/lib/utils';
 import { publishData } from '@/app/actions';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { DragDropContext, Droppable, Draggable, type DropResult } from 'react-beautiful-dnd';
 import { usePlayerContext } from '@/contexts/player-context';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
 
 
 const teamNames = [
@@ -61,11 +61,6 @@ export function TeamGenerator() {
   const { toast } = useToast();
   const [teamSize, setTeamSize] = useState<number>(4);
   const [isPublishing, setIsPublishing] = useState(false);
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   const presentPlayers = useMemo(() => players.filter((p) => p.present), [players]);
   const possibleTeamsCount = presentPlayers.length > 0 ? Math.floor(presentPlayers.length / teamSize) : 0;
@@ -225,57 +220,34 @@ export function TeamGenerator() {
     });
   };
 
-  const onDragEnd = (result: DropResult) => {
-    const { source, destination, draggableId } = result;
+  const handlePlayerMove = (playerToMove: Player, currentTeamName: string | null, newTeamName: string | null) => {
+    if (currentTeamName === newTeamName) return;
 
-    if (!destination) return;
+    let newTeamsState: Team[] = JSON.parse(JSON.stringify(teams));
 
-    const sourceId = source.droppableId;
-    const destId = destination.droppableId;
-
-    if (sourceId === destId && source.index === destination.index) return;
-    
-    let playerToMove: Player | undefined;
-    let fromUnassigned = sourceId === 'unassigned';
-
-    // Find the player being moved
-    if (fromUnassigned) {
-        playerToMove = unassignedPlayers.find(p => p.id === draggableId);
-    } else {
-        const sourceTeam = teams.find(t => t.name === sourceId);
-        playerToMove = sourceTeam?.players.find(p => p.id === draggableId);
+    // Remove player from old team
+    if (currentTeamName) {
+      const oldTeamIndex = newTeamsState.findIndex(t => t.name === currentTeamName);
+      if (oldTeamIndex > -1) {
+        newTeamsState[oldTeamIndex].players = newTeamsState[oldTeamIndex].players.filter(p => p.id !== playerToMove.id);
+      }
     }
 
-    if (!playerToMove) return;
-
-    // Create a new state for teams
-    let newTeams = JSON.parse(JSON.stringify(teams));
-
-    // Remove player from source
-    if (sourceId !== 'unassigned') {
-        const sourceTeamIndex = newTeams.findIndex(t => t.name === sourceId);
-        if (sourceTeamIndex > -1) {
-            newTeams[sourceTeamIndex].players = newTeams[sourceTeamIndex].players.filter(p => p.id !== draggableId);
-        }
+    // Add player to new team
+    if (newTeamName) {
+      const newTeamIndex = newTeamsState.findIndex(t => t.name === newTeamName);
+      if (newTeamIndex > -1) {
+        newTeamsState[newTeamIndex].players.push(playerToMove);
+      }
     }
     
-    // Add player to destination
-    if (destId !== 'unassigned') {
-        const destTeamIndex = newTeams.findIndex(t => t.name === destId);
-        if (destTeamIndex > -1) {
-            const newPlayers = Array.from(newTeams[destTeamIndex].players);
-            newPlayers.splice(destination.index, 0, playerToMove);
-            newTeams[destTeamIndex].players = newPlayers;
-        }
-    }
-    
-    setTeams(newTeams);
-    
+    setTeams(newTeamsState);
+
     toast({
         title: "Player Moved",
-        description: `${playerToMove.name} has been moved.`,
+        description: `${playerToMove.name} moved to ${newTeamName || 'Unassigned'}.`,
     });
-};
+  };
   
   const isBlindDraw = gameFormat === 'blind-draw';
 
@@ -351,146 +323,125 @@ export function TeamGenerator() {
         )}
       </Card>
       
-      {isClient && teams.length > 0 && !isBlindDraw && (
-        <DragDropContext onDragEnd={onDragEnd}>
-            <div className='grid grid-cols-1 lg:grid-cols-4 gap-6'>
-                <div className="lg:col-span-3">
-                    <Card>
-                        <CardHeader>
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                                <div>
-                                <CardTitle>Tonight's Teams</CardTitle>
-                                <CardDescription>Drag and drop players between teams to swap or move them.</CardDescription>
-                                </div>
-                                <Button onClick={handlePublish} disabled={isPublishing}>
-                                    <Send className="mr-2 h-4 w-4" />
-                                    {isPublishing ? 'Publishing...' : 'Publish to Dashboard'}
-                                </Button>
+      {teams.length > 0 && !isBlindDraw && (
+        <div className='grid grid-cols-1 lg:grid-cols-4 gap-6'>
+            <div className="lg:col-span-3">
+                <Card>
+                    <CardHeader>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                            <CardTitle>Tonight's Teams</CardTitle>
+                            <CardDescription>Use the dropdown on each player to move them to a different team.</CardDescription>
                             </div>
-                        </CardHeader>
-                        <CardContent className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                            {teams.map((team) => {
-                            const { avgSkill, guyCount, galCount, guyPercentage } = getTeamAnalysis(team);
-                            return (
-                            <Droppable droppableId={team.name} key={team.name} isDropDisabled={false} isCombineEnabled={false} ignoreContainerClipping={false}>
-                                {(provided, snapshot) => (
-                                <Card 
-                                    ref={provided.innerRef}
-                                    {...provided.droppableProps}
-                                    className={cn(
-                                    "flex flex-col",
-                                    snapshot.isDraggingOver && "bg-primary/10"
-                                    )}
-                                >
-                                    <CardHeader className="p-4">
-                                    <CardTitle className="text-lg">{team.name}</CardTitle>
-                                    </CardHeader>
-                                    <CardContent className="flex-grow p-4 pt-0">
-                                    <div className="space-y-3 min-h-[100px]">
-                                        {[...team.players]
-                                        .sort((a, b) => b.skill - a.skill)
-                                        .map((player, index) => (
-                                            <Draggable key={player.id} draggableId={player.id} index={index}>
-                                                {(provided, snapshot) => (
-                                                    <div
-                                                        ref={provided.innerRef}
-                                                        {...provided.draggableProps}
-                                                        {...provided.dragHandleProps}
-                                                        className={cn(
-                                                            "flex items-center gap-3 p-2 rounded-md cursor-grab",
-                                                            snapshot.isDragging ? 'bg-primary/20 shadow-lg' : 'bg-transparent'
-                                                        )}
-                                                    >
-                                                        <Avatar className="h-8 w-8 border-2 border-white">
-                                                            <AvatarFallback className="bg-primary/20 text-primary font-bold">
-                                                                {player.name.charAt(0)}
-                                                            </AvatarFallback>
-                                                        </Avatar>
-                                                        <span className="font-medium">{player.name}</span>
-                                                        <Badge variant="outline" className="ml-auto">{player.skill}</Badge>
-                                                    </div>
-                                                )}
-                                            </Draggable>
-                                        ))}
-                                        {provided.placeholder}
-                                    </div>
-                                    </CardContent>
-                                    <CardFooter className="flex-col items-start gap-2 border-t bg-muted/50 p-4 text-sm text-muted-foreground">
-                                        <div className="flex w-full justify-between">
-                                        <div className='flex items-center gap-2'>Avg Skill: <span className="font-bold text-foreground">{avgSkill}</span></div>
-                                        <div className="flex items-center gap-2">Guy %: <span className="font-bold text-foreground">{guyPercentage}%</span></div>
-                                        </div>
-                                        <div className="flex w-full justify-between">
-                                            <div className='flex items-center gap-2'>Gender: 
-                                                <span className="font-bold text-blue-500">{guyCount}G</span>
-                                                <span className="text-muted-foreground">/</span>
-                                                <span className="font-bold text-pink-500">{galCount}L</span>
-                                            </div>
-                                        </div>
-                                    </CardFooter>
-                                </Card>
-                                )}
-                            </Droppable>
-                            )})}
-                        </CardContent>
-                    </Card>
-                </div>
-                <div className="lg:col-span-1">
-                     <Droppable droppableId="unassigned" isDropDisabled={false} isCombineEnabled={false} ignoreContainerClipping={false}>
-                        {(provided, snapshot) => (
-                            <Card
-                                ref={provided.innerRef}
-                                {...provided.droppableProps}
-                                className={cn(
-                                    "flex flex-col h-full",
-                                    snapshot.isDraggingOver ? "bg-amber-50" : ""
-                                )}
-                            >
+                            <Button onClick={handlePublish} disabled={isPublishing}>
+                                <Send className="mr-2 h-4 w-4" />
+                                {isPublishing ? 'Publishing...' : 'Publish to Dashboard'}
+                            </Button>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                        {teams.map((team) => {
+                        const { avgSkill, guyCount, galCount, guyPercentage } = getTeamAnalysis(team);
+                        return (
+                            <Card key={team.name} className="flex flex-col">
                                 <CardHeader className="p-4">
-                                    <CardTitle className="text-lg flex items-center gap-2"><Users className="h-5 w-5" />Unassigned Players</CardTitle>
+                                <CardTitle className="text-lg">{team.name}</CardTitle>
                                 </CardHeader>
                                 <CardContent className="flex-grow p-4 pt-0">
-                                    <div className="space-y-3 min-h-[100px]">
-                                        {unassignedPlayers.length > 0 ? (
-                                            unassignedPlayers.map((player, index) => (
-                                            <Draggable key={player.id} draggableId={player.id} index={index}>
-                                                {(provided, snapshot) => (
-                                                <div
-                                                    ref={provided.innerRef}
-                                                    {...provided.draggableProps}
-                                                    {...provided.dragHandleProps}
-                                                    className={cn(
-                                                    "flex items-center gap-3 p-2 rounded-md cursor-grab",
-                                                    snapshot.isDragging ? "bg-amber-100 shadow-lg" : "bg-transparent"
-                                                    )}
-                                                >
-                                                    <Avatar className="h-8 w-8 border-2 border-white">
-                                                    <AvatarFallback className="bg-amber-200 text-amber-800 font-bold">
-                                                        {player.name.charAt(0)}
-                                                    </AvatarFallback>
-                                                    </Avatar>
-                                                    <span className="font-medium">{player.name}</span>
-                                                    <Badge variant="outline" className="ml-auto">
-                                                    {player.skill}
-                                                    </Badge>
-                                                </div>
-                                                )}
-                                            </Draggable>
-                                            ))
-                                        ) : (
-                                            <div className="text-center text-muted-foreground pt-10">
-                                                <p>All present players are on a team.</p>
-                                            </div>
-                                        )}
-                                        {provided.placeholder}
-                                    </div>
+                                <div className="space-y-3 min-h-[100px]">
+                                    {[...team.players]
+                                    .sort((a, b) => b.skill - a.skill)
+                                    .map((player) => (
+                                        <div key={player.id} className="flex items-center gap-3 p-2 rounded-md hover:bg-muted/50">
+                                            <Avatar className="h-8 w-8 border-2 border-white">
+                                                <AvatarFallback className="bg-primary/20 text-primary font-bold">
+                                                    {player.name.charAt(0)}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                            <span className="font-medium flex-grow">{player.name}</span>
+                                            <Badge variant="outline">{player.skill}</Badge>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="icon" className='h-8 w-8'>
+                                                        <MoreVertical className="h-4 w-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent>
+                                                    <DropdownMenuItem onSelect={() => handlePlayerMove(player, team.name, null)}>
+                                                        Move to Unassigned
+                                                    </DropdownMenuItem>
+                                                    {teams.filter(t => t.name !== team.name).map(otherTeam => (
+                                                        <DropdownMenuItem key={otherTeam.name} onSelect={() => handlePlayerMove(player, team.name, otherTeam.name)}>
+                                                            Move to {otherTeam.name}
+                                                        </DropdownMenuItem>
+                                                    ))}
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </div>
+                                    ))}
+                                </div>
                                 </CardContent>
+                                <CardFooter className="flex-col items-start gap-2 border-t bg-muted/50 p-4 text-sm text-muted-foreground">
+                                    <div className="flex w-full justify-between">
+                                    <div className='flex items-center gap-2'>Avg Skill: <span className="font-bold text-foreground">{avgSkill}</span></div>
+                                    <div className="flex items-center gap-2">Guy %: <span className="font-bold text-foreground">{guyPercentage}%</span></div>
+                                    </div>
+                                    <div className="flex w-full justify-between">
+                                        <div className='flex items-center gap-2'>Gender: 
+                                            <span className="font-bold text-blue-500">{guyCount}G</span>
+                                            <span className="text-muted-foreground">/</span>
+                                            <span className="font-bold text-pink-500">{galCount}L</span>
+                                        </div>
+                                    </div>
+                                </CardFooter>
                             </Card>
-                        )}
-                    </Droppable>
-                </div>
+                        )})}
+                    </CardContent>
+                </Card>
             </div>
-        </DragDropContext>
+            <div className="lg:col-span-1">
+                <Card className="flex flex-col h-full">
+                    <CardHeader className="p-4">
+                        <CardTitle className="text-lg flex items-center gap-2"><Users className="h-5 w-5" />Unassigned Players</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex-grow p-4 pt-0">
+                        <div className="space-y-3 min-h-[100px]">
+                            {unassignedPlayers.length > 0 ? (
+                                unassignedPlayers.map((player) => (
+                                    <div key={player.id} className="flex items-center gap-3 p-2 rounded-md hover:bg-muted/50">
+                                        <Avatar className="h-8 w-8 border-2 border-white">
+                                            <AvatarFallback className="bg-amber-200 text-amber-800 font-bold">
+                                                {player.name.charAt(0)}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                        <span className="font-medium flex-grow">{player.name}</span>
+                                        <Badge variant="outline">{player.skill}</Badge>
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" size="icon" className='h-8 w-8'>
+                                                    <MoreVertical className="h-4 w-4" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent>
+                                                {teams.map(team => (
+                                                    <DropdownMenuItem key={team.name} onSelect={() => handlePlayerMove(player, null, team.name)}>
+                                                        Move to {team.name}
+                                                    </DropdownMenuItem>
+                                                ))}
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="text-center text-muted-foreground pt-10">
+                                    <p>All present players are on a team.</p>
+                                </div>
+                            )}
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+        </div>
       )}
     </div>
   );
