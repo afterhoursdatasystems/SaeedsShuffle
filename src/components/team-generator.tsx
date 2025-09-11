@@ -235,42 +235,48 @@ export function TeamGenerator() {
 
     if (sourceId === destId && source.index === destination.index) return;
     
-    setTeams(prevTeams => {
-        const newTeams = JSON.parse(JSON.stringify(prevTeams)) as Team[];
-        let movedPlayer: Player | undefined;
-        
-        if (sourceId === 'unassigned') {
-            const playerIndex = unassignedPlayers.findIndex(p => p.id === draggableId);
-            if (playerIndex > -1) {
-                [movedPlayer] = unassignedPlayers.splice(playerIndex, 1);
-            }
-        } else {
-            const sourceTeamIndex = newTeams.findIndex(t => `${t.name}-${prevTeams.indexOf(t)}` === sourceId);
-            if (sourceTeamIndex > -1) {
-                const playerIndex = newTeams[sourceTeamIndex].players.findIndex(p => p.id === draggableId);
-                if (playerIndex > -1) {
-                    [movedPlayer] = newTeams[sourceTeamIndex].players.splice(playerIndex, 1);
-                }
-            }
+    let playerToMove: Player | undefined;
+
+    // Find the player being moved
+    if (sourceId === 'unassigned') {
+        playerToMove = unassignedPlayers.find(p => p.id === draggableId);
+    } else {
+        const sourceTeam = teams.find(t => t.name === sourceId);
+        playerToMove = sourceTeam?.players.find(p => p.id === draggableId);
+    }
+
+    if (!playerToMove) return;
+
+    // Create a new state for teams
+    let newTeams = [...teams];
+
+    // Remove player from source
+    if (sourceId !== 'unassigned') {
+        const sourceTeamIndex = newTeams.findIndex(t => t.name === sourceId);
+        if (sourceTeamIndex > -1) {
+            newTeams[sourceTeamIndex] = {
+                ...newTeams[sourceTeamIndex],
+                players: newTeams[sourceTeamIndex].players.filter(p => p.id !== draggableId)
+            };
         }
-
-        if (!movedPlayer) return prevTeams;
-        
-        if (destId === 'unassigned') {
-           // This case is not handled as we don't drop into unassigned, but included for completeness
-        } else {
-            const destTeamIndex = newTeams.findIndex(t => `${t.name}-${prevTeams.indexOf(t)}` === destId);
-            if (destTeamIndex > -1) {
-                newTeams[destTeamIndex].players.splice(destination.index, 0, movedPlayer);
-            }
-        }
-
-        toast({
-            title: "Player Moved",
-            description: `${movedPlayer.name} has been moved.`,
-        });
-
-        return newTeams;
+    }
+    
+    // Add player to destination
+    const destTeamIndex = newTeams.findIndex(t => t.name === destId);
+    if (destTeamIndex > -1) {
+        const newPlayers = Array.from(newTeams[destTeamIndex].players);
+        newPlayers.splice(destination.index, 0, playerToMove);
+        newTeams[destTeamIndex] = {
+            ...newTeams[destTeamIndex],
+            players: newPlayers
+        };
+    }
+    
+    setTeams(newTeams);
+    
+    toast({
+        title: "Player Moved",
+        description: `${playerToMove.name} has been moved.`,
     });
 };
   
@@ -366,11 +372,10 @@ export function TeamGenerator() {
                             </div>
                         </CardHeader>
                         <CardContent className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                            {teams.map((team, index) => {
+                            {teams.map((team) => {
                             const { avgSkill, guyCount, galCount, guyPercentage } = getTeamAnalysis(team);
-                            const droppableId = `${team.name}-${index}`;
                             return (
-                            <Droppable droppableId={droppableId} key={droppableId}>
+                            <Droppable droppableId={team.name} key={team.name}>
                                 {(provided, snapshot) => (
                                 <Card 
                                     ref={provided.innerRef}

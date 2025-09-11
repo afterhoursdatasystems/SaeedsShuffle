@@ -130,14 +130,14 @@
     "name": "Colleen Palman",
     "gender": "Gal",
     "skill": 2,
-    "present": false
+    "present": true
   },
   {
     "id": "20",
     "name": "Rachel Nystrom",
     "gender": "Gal",
     "skill": 8,
-    "present": true
+    "present": false
   },
   {
     "id": "21",
