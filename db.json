@@ -1,112 +1,13 @@
 {
   "teams": [
     {
-      "name": "Soda Shop Slammers",
+      "name": "Cool Fish Commandos",
       "players": [
         {
-          "id": "12",
-          "name": "Giovanni Salvatore",
+          "name": "Ryan Elmalem",
           "gender": "Guy",
-          "skill": 7,
-          "present": true
-        },
-        {
-          "id": "16",
-          "name": "Lindsey Victoria",
-          "gender": "Gal",
-          "skill": 7,
-          "present": true
-        },
-        {
-          "id": "23",
-          "name": "Joy Swasy",
-          "gender": "Gal",
-          "skill": 6,
-          "present": true
-        },
-        {
-          "id": "18",
-          "name": "William Van Meter",
-          "gender": "Guy",
-          "skill": 3,
-          "present": true
-        }
-      ]
-    },
-    {
-      "name": "Jetton Juggernauts",
-      "players": [
-        {
-          "id": "26",
-          "name": "Matt Taylor",
-          "gender": "Guy",
-          "skill": 7,
-          "present": true
-        },
-        {
-          "id": "20",
-          "name": "Rachel Nystrom",
-          "gender": "Gal",
-          "skill": 8,
-          "present": true
-        },
-        {
-          "id": "28",
-          "name": "Alexandra Broskey",
-          "gender": "Gal",
-          "skill": 6,
-          "present": true
-        },
-        {
-          "id": "24",
-          "name": "Jesica Bullrich",
-          "gender": "Gal",
-          "skill": 2,
-          "present": true
-        }
-      ]
-    },
-    {
-      "name": "Antiquity Attackers",
-      "players": [
-        {
-          "id": "14",
-          "name": "Eric Ahrens",
-          "gender": "Guy",
-          "skill": 7,
-          "present": true
-        },
-        {
-          "id": "17",
-          "name": "Shaylyn Murphy",
-          "gender": "Gal",
-          "skill": 8,
-          "present": true
-        },
-        {
-          "id": "8",
-          "name": "Abby Gilpin",
-          "gender": "Gal",
-          "skill": 6,
-          "present": true
-        },
-        {
-          "id": "22",
-          "name": "Jasona Jones",
-          "gender": "Gal",
-          "skill": 1,
-          "present": true
-        }
-      ]
-    },
-    {
-      "name": "Langtree Lightning",
-      "players": [
-        {
-          "id": "1",
-          "name": "Cole Deaver",
-          "gender": "Guy",
-          "skill": 6,
+          "skill": 9,
+          "id": "2025-09-11T13:23:53.084Z",
           "present": true
         },
         {
@@ -124,75 +25,130 @@
           "present": true
         },
         {
-          "id": "19",
-          "name": "Colleen Palman",
+          "id": "9",
+          "name": "Miranda Griego",
           "gender": "Gal",
-          "skill": 2,
+          "skill": 3,
+          "present": true
+        },
+        {
+          "id": "18",
+          "name": "William Van Meter",
+          "gender": "Guy",
+          "skill": 3,
           "present": true
         }
       ]
     },
     {
-      "name": "Bailey Bruisers",
+      "name": "Summit Strikers",
       "players": [
         {
-          "id": "15",
-          "name": "Stephen Jaqua",
+          "id": "26",
+          "name": "Matt Taylor",
           "gender": "Guy",
+          "skill": 7,
+          "present": true
+        },
+        {
+          "id": "16",
+          "name": "Lindsey Victoria",
+          "gender": "Gal",
+          "skill": 7,
+          "present": true
+        },
+        {
+          "name": "Steve Nystrom",
+          "gender": "Gal",
+          "skill": 6,
+          "id": "2025-09-11T13:26:17.364Z",
+          "present": true
+        },
+        {
+          "id": "19",
+          "name": "Colleen Palman",
+          "gender": "Gal",
+          "skill": 2,
+          "present": true
+        },
+        {
+          "id": "22",
+          "name": "Jasona Jones",
+          "gender": "Gal",
+          "skill": 1,
+          "present": true
+        }
+      ]
+    },
+    {
+      "name": "Toast Titans",
+      "players": [
+        {
+          "id": "14",
+          "name": "Eric Ahrens",
+          "gender": "Guy",
+          "skill": 7,
+          "present": true
+        },
+        {
+          "id": "17",
+          "name": "Shaylyn Murphy",
+          "gender": "Gal",
+          "skill": 8,
+          "present": true
+        },
+        {
+          "name": "Elicia Smith",
+          "gender": "Gal",
+          "skill": 6,
+          "id": "2025-09-11T13:26:26.199Z",
+          "present": true
+        },
+        {
+          "id": "27",
+          "name": "Alaina McCoy",
+          "gender": "Gal",
           "skill": 4,
+          "present": true
+        }
+      ]
+    },
+    {
+      "name": "Soda Shop Slammers",
+      "players": [
+        {
+          "id": "12",
+          "name": "Giovanni Salvatore",
+          "gender": "Guy",
+          "skill": 7,
           "present": true
         },
         {
           "id": "4",
           "name": "Kyle Novak",
           "gender": "Gal",
-          "skill": 9,
+          "skill": 10,
           "present": true
         },
         {
-          "id": "6",
-          "name": "Heidi Kempert",
+          "id": "23",
+          "name": "Joy Swasy",
           "gender": "Gal",
-          "skill": 4,
+          "skill": 6,
           "present": true
         },
         {
-          "id": "9",
-          "name": "Miranda Griego",
+          "id": "8",
+          "name": "Abby Gilpin",
           "gender": "Gal",
-          "skill": 3,
+          "skill": 6,
           "present": true
         }
       ]
     }
   ],
-  "format": "king-s-ransom",
-  "schedule": [
-    {
-      "id": "246c150c-b29c-4faf-92bc-b883418a0c64",
-      "teamA": "Bailey Bruisers",
-      "teamB": "Antiquity Attackers",
-      "resultA": null,
-      "resultB": null,
-      "court": "King Court"
-    },
-    {
-      "id": "9d0a39f4-e244-4775-89c4-7f526cc2dcb7",
-      "teamA": "Jetton Juggernauts",
-      "teamB": "Soda Shop Slammers",
-      "resultA": null,
-      "resultB": null,
-      "court": "Challenger Court"
-    },
-    {
-      "id": "ac1f2988-9aba-45f3-928f-1af4e1c05d36",
-      "teamA": "Langtree Lightning",
-      "teamB": "Waiting #1",
-      "resultA": null,
-      "resultB": null,
-      "court": "Challenger Line"
-    }
-  ],
+  "format": "king-of-the-court",
+  "schedule": [],
   "activeRule": {
     "name": "Pet Swap",
     "description": "The two players (one from each team) with the most unique or unusual pet must swap."

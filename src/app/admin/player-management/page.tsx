@@ -90,6 +90,9 @@ export default function PlayerManagementPage() {
       const newTeamIndex = newTeamsState.findIndex(t => t.name === newTeamName);
       if (newTeamIndex > -1) {
         newTeamsState[newTeamIndex].players.push(playerToMove);
+      } else if(newTeamName === 'Unassigned') {
+        // This case handles moving to unassigned, which is removing from any team.
+        // The removal logic above already handles this.
       }
     }
     
@@ -116,8 +119,8 @@ export default function PlayerManagementPage() {
             valB = b.present;
             break;
         default:
-          valA = a[sortKey];
-          valB = b[sortKey];
+          valA = a[sortKey as keyof Omit<Player, 'id' | 'skill' | 'present'>];
+          valB = b[sortKey as keyof Omit<Player, 'id' | 'skill' | 'present'>];
       }
       
       if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
@@ -244,7 +247,7 @@ export default function PlayerManagementPage() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
-                              <DropdownMenuItem onSelect={() => handleTeamChange(player, null)}>
+                              <DropdownMenuItem onSelect={() => handleTeamChange(player, 'Unassigned')}>
                                 Unassigned
                               </DropdownMenuItem>
                               {teams.map(team => (

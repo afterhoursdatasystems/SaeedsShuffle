@@ -18,14 +18,14 @@
     "name": "Kristin Drinka",
     "gender": "Gal",
     "skill": 7,
-    "present": true
+    "present": false
   },
   {
     "id": "4",
     "name": "Kyle Novak",
     "gender": "Gal",
     "skill": 10,
-    "present": true
+    "present": false
   },
   {
     "id": "5",
@@ -53,14 +53,14 @@
     "name": "Abby Gilpin",
     "gender": "Gal",
     "skill": 6,
-    "present": true
+    "present": false
   },
   {
     "id": "9",
     "name": "Miranda Griego",
     "gender": "Gal",
     "skill": 3,
-    "present": true
+    "present": false
   },
   {
     "id": "10",
@@ -123,14 +123,14 @@
     "name": "William Van Meter",
     "gender": "Guy",
     "skill": 3,
-    "present": true
+    "present": false
   },
   {
     "id": "19",
     "name": "Colleen Palman",
     "gender": "Gal",
     "skill": 2,
-    "present": true
+    "present": false
   },
   {
     "id": "20",
@@ -151,14 +151,14 @@
     "name": "Jasona Jones",
     "gender": "Gal",
     "skill": 1,
-    "present": true
+    "present": false
   },
   {
     "id": "23",
     "name": "Joy Swasy",
     "gender": "Gal",
     "skill": 6,
-    "present": true
+    "present": false
   },
   {
     "id": "24",
@@ -179,14 +179,14 @@
     "name": "Matt Taylor",
     "gender": "Guy",
     "skill": 7,
-    "present": true
+    "present": false
   },
   {
     "id": "27",
     "name": "Alaina McCoy",
     "gender": "Gal",
     "skill": 4,
-    "present": true
+    "present": false
   },
   {
     "id": "28",
