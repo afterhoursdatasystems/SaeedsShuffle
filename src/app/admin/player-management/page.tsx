@@ -16,10 +16,16 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { UserPlus, Edit, Trash2, ArrowUpDown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useMemo, useState } from 'react';
-import type { Player } from '@/types';
+import type { Player, Team } from '@/types';
 import { EditPlayerDialog } from '@/components/edit-player-dialog';
 import { AddPlayerDialog } from '@/components/add-player-dialog';
 
@@ -40,7 +46,7 @@ const getSkillColor = (skill: number) => {
 
 
 export default function PlayerManagementPage() {
-  const { players, teams, togglePlayerPresence, isLoading, deletePlayer } = usePlayerContext();
+  const { players, teams, setTeams, togglePlayerPresence, isLoading, deletePlayer } = usePlayerContext();
   const [sortKey, setSortKey] = useState<SortKey>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
@@ -63,6 +69,33 @@ export default function PlayerManagementPage() {
     });
     return map;
   }, [teams]);
+  
+  const handleTeamChange = (playerToMove: Player, newTeamName: string | null) => {
+    const oldTeamName = playerTeamMap.get(playerToMove.id);
+
+    if (oldTeamName === newTeamName) return;
+
+    let newTeamsState: Team[] = JSON.parse(JSON.stringify(teams));
+
+    // Remove player from old team
+    if (oldTeamName) {
+      const oldTeamIndex = newTeamsState.findIndex(t => t.name === oldTeamName);
+      if (oldTeamIndex > -1) {
+        newTeamsState[oldTeamIndex].players = newTeamsState[oldTeamIndex].players.filter(p => p.id !== playerToMove.id);
+      }
+    }
+
+    // Add player to new team
+    if (newTeamName) {
+      const newTeamIndex = newTeamsState.findIndex(t => t.name === newTeamName);
+      if (newTeamIndex > -1) {
+        newTeamsState[newTeamIndex].players.push(playerToMove);
+      }
+    }
+    
+    setTeams(newTeamsState);
+  };
+
 
   const sortedPlayers = useMemo(() => {
     return [...players].sort((a, b) => {
@@ -187,10 +220,9 @@ export default function PlayerManagementPage() {
                   return (
                       <TableRow 
                           key={player.id} 
-                          className="cursor-pointer"
                       >
-                        <TableCell className="font-medium" onClick={() => togglePlayerPresence(player.id)}>{player.name}</TableCell>
-                        <TableCell onClick={() => togglePlayerPresence(player.id)}>
+                        <TableCell className="font-medium cursor-pointer" onClick={() => togglePlayerPresence(player.id)}>{player.name}</TableCell>
+                        <TableCell className="cursor-pointer" onClick={() => togglePlayerPresence(player.id)}>
                           <Badge
                             style={{
                               backgroundColor: player.present ? '#D4EDDA' : '#F8D7DA',
@@ -202,12 +234,28 @@ export default function PlayerManagementPage() {
                             {player.present ? 'Present' : 'Away'}
                           </Badge>
                         </TableCell>
-                        <TableCell onClick={() => togglePlayerPresence(player.id)}>
-                            <Badge style={{ backgroundColor: teamColor, color: '#333' }} className='border-gray-300 border'>
-                              {teamName}
-                            </Badge>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="p-1 h-auto">
+                                <Badge style={{ backgroundColor: teamColor, color: '#333' }} className='border-gray-300 border hover:opacity-80 cursor-pointer'>
+                                  {teamName}
+                                </Badge>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                              <DropdownMenuItem onSelect={() => handleTeamChange(player, null)}>
+                                Unassigned
+                              </DropdownMenuItem>
+                              {teams.map(team => (
+                                <DropdownMenuItem key={team.name} onSelect={() => handleTeamChange(player, team.name)}>
+                                  {team.name}
+                                </DropdownMenuItem>
+                              ))}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </TableCell>
-                        <TableCell onClick={() => togglePlayerPresence(player.id)}>
+                        <TableCell className="cursor-pointer" onClick={() => togglePlayerPresence(player.id)}>
                           <Badge
                             style={{
                               backgroundColor: player.gender === 'Guy' ? '#A2D2FF' : '#FFC4D6',
@@ -218,7 +266,7 @@ export default function PlayerManagementPage() {
                             {player.gender}
                           </Badge>
                         </TableCell>
-                        <TableCell onClick={() => togglePlayerPresence(player.id)}>
+                        <TableCell className="cursor-pointer" onClick={() => togglePlayerPresence(player.id)}>
                           <Badge
                             style={{
                               backgroundColor: getSkillColor(player.skill),

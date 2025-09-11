@@ -236,9 +236,10 @@ export function TeamGenerator() {
     if (sourceId === destId && source.index === destination.index) return;
     
     let playerToMove: Player | undefined;
+    let fromUnassigned = sourceId === 'unassigned';
 
     // Find the player being moved
-    if (sourceId === 'unassigned') {
+    if (fromUnassigned) {
         playerToMove = unassignedPlayers.find(p => p.id === draggableId);
     } else {
         const sourceTeam = teams.find(t => t.name === sourceId);
@@ -248,28 +249,24 @@ export function TeamGenerator() {
     if (!playerToMove) return;
 
     // Create a new state for teams
-    let newTeams = [...teams];
+    let newTeams = JSON.parse(JSON.stringify(teams));
 
     // Remove player from source
     if (sourceId !== 'unassigned') {
         const sourceTeamIndex = newTeams.findIndex(t => t.name === sourceId);
         if (sourceTeamIndex > -1) {
-            newTeams[sourceTeamIndex] = {
-                ...newTeams[sourceTeamIndex],
-                players: newTeams[sourceTeamIndex].players.filter(p => p.id !== draggableId)
-            };
+            newTeams[sourceTeamIndex].players = newTeams[sourceTeamIndex].players.filter(p => p.id !== draggableId);
         }
     }
     
     // Add player to destination
-    const destTeamIndex = newTeams.findIndex(t => t.name === destId);
-    if (destTeamIndex > -1) {
-        const newPlayers = Array.from(newTeams[destTeamIndex].players);
-        newPlayers.splice(destination.index, 0, playerToMove);
-        newTeams[destTeamIndex] = {
-            ...newTeams[destTeamIndex],
-            players: newPlayers
-        };
+    if (destId !== 'unassigned') {
+        const destTeamIndex = newTeams.findIndex(t => t.name === destId);
+        if (destTeamIndex > -1) {
+            const newPlayers = Array.from(newTeams[destTeamIndex].players);
+            newPlayers.splice(destination.index, 0, playerToMove);
+            newTeams[destTeamIndex].players = newPlayers;
+        }
     }
     
     setTeams(newTeams);
