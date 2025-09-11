@@ -375,7 +375,7 @@ export function TeamGenerator() {
                             {teams.map((team) => {
                             const { avgSkill, guyCount, galCount, guyPercentage } = getTeamAnalysis(team);
                             return (
-                            <Droppable droppableId={team.name} key={team.name}>
+                            <Droppable droppableId={team.name} key={team.name} isDropDisabled={false}>
                                 {(provided, snapshot) => (
                                 <Card 
                                     ref={provided.innerRef}
@@ -439,7 +439,7 @@ export function TeamGenerator() {
                     </Card>
                 </div>
                 <div className="lg:col-span-1">
-                     <Droppable droppableId="unassigned">
+                     <Droppable droppableId="unassigned" isDropDisabled={false}>
                         {(provided, snapshot) => (
                             <Card
                                 ref={provided.innerRef}
