@@ -74,7 +74,7 @@ export function TeamGenerator() {
     const presentPlayers = players.filter(p => p.present);
     const assignedPlayerIds = new Set(teams.flatMap(t => t.players.map(p => p.id)));
     const unassignedPlayers = presentPlayers.filter(p => !assignedPlayerIds.has(p.id));
-    const presentGuys = presentPlayers.length;
+    const presentGuys = presentPlayers.filter(p => p.gender === 'Guy').length;
     const presentGals = presentPlayers.filter(p => p.gender === 'Gal').length;
     const overallGuyPercentage = presentPlayers.length > 0 ? Math.round((presentGuys / presentPlayers.length) * 100) : 0;
     return { presentGuys, presentGals, overallGuyPercentage, unassignedPlayers };

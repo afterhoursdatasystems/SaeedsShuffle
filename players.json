@@ -4,7 +4,7 @@
     "name": "Cole Deaver",
     "gender": "Guy",
     "skill": 6,
-    "present": true
+    "present": false
   },
   {
     "id": "2",
@@ -39,7 +39,7 @@
     "name": "Heidi Kempert",
     "gender": "Gal",
     "skill": 4,
-    "present": true
+    "present": false
   },
   {
     "id": "7",
@@ -102,7 +102,7 @@
     "name": "Stephen Jaqua",
     "gender": "Guy",
     "skill": 4,
-    "present": true
+    "present": false
   },
   {
     "id": "16",
@@ -130,7 +130,7 @@
     "name": "Colleen Palman",
     "gender": "Gal",
     "skill": 2,
-    "present": true
+    "present": false
   },
   {
     "id": "20",
@@ -165,7 +165,7 @@
     "name": "Jesica Bullrich",
     "gender": "Gal",
     "skill": 2,
-    "present": true
+    "present": false
   },
   {
     "id": "25",
@@ -193,6 +193,13 @@
     "name": "Alexandra Broskey",
     "gender": "Gal",
     "skill": 6,
+    "present": false
+  },
+  {
+    "name": "Ryan Elmalem",
+    "gender": "Guy",
+    "skill": 9,
+    "id": "2025-09-11T13:23:53.084Z",
     "present": true
   }
 ]
