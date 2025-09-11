@@ -4,7 +4,7 @@
 
 import type { Player, Team, Match, GameFormat, GameVariant, PowerUp } from '@/types';
 import React, { createContext, useContext, useState, type ReactNode, useEffect, useCallback } from 'react';
-import { getPlayers, updatePlayerPresence, getPublishedData, updatePlayer, publishData } from '@/app/actions';
+import { getPlayers, updatePlayerPresence, getPublishedData, updatePlayer, addPlayer, deletePlayer, publishData } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 
 const allPowerUps: PowerUp[] = [
@@ -57,6 +57,8 @@ interface PlayerContextType {
   setPlayers: React.Dispatch<React.SetStateAction<Player[]>>;
   togglePlayerPresence: (playerId: string) => void;
   updatePlayer: (player: Player) => Promise<boolean>;
+  addPlayer: (player: Omit<Player, 'id' | 'present'>) => Promise<boolean>;
+  deletePlayer: (playerId: string) => Promise<boolean>;
   isLoading: boolean;
   teams: Team[];
   setTeams: React.Dispatch<React.SetStateAction<Team[]>>;
@@ -206,6 +208,55 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const handleAddPlayer = async (playerToAdd: Omit<Player, 'id' | 'present'>) => {
+    const tempId = `temp-${Date.now()}`;
+    const newPlayer: Player = { ...playerToAdd, id: tempId, present: true };
+
+    setPlayers(current => [...current, newPlayer]);
+    
+    const result = await addPlayer(playerToAdd);
+
+    if (result.success && result.data) {
+        setPlayers(result.data);
+        toast({
+            title: "Player Added",
+            description: `${playerToAdd.name} has been added to the roster.`
+        });
+        return true;
+    } else {
+        setPlayers(current => current.filter(p => p.id !== tempId));
+        toast({
+            title: "Failed to Add Player",
+            description: result.error || "Could not save the new player.",
+            variant: "destructive"
+        });
+        return false;
+    }
+  };
+
+  const handleDeletePlayer = async (playerId: string) => {
+    const originalPlayers = players;
+    setPlayers(current => current.filter(p => p.id !== playerId));
+
+    const result = await deletePlayer(playerId);
+
+    if (result.success) {
+        toast({
+            title: "Player Deleted",
+            description: "The player has been removed from the roster."
+        });
+        return true;
+    } else {
+        setPlayers(originalPlayers);
+        toast({
+            title: "Failed to Delete Player",
+            description: result.error || "Could not delete the player.",
+            variant: "destructive"
+        });
+        return false;
+    }
+  };
+
   const publishSettings = useCallback(async () => {
     let finalFormat: GameFormat | GameVariant = gameFormat;
     if (gameFormat === 'king-of-the-court' && gameVariant !== 'standard') {
@@ -264,6 +315,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setPlayers,
     togglePlayerPresence,
     updatePlayer: handleUpdatePlayer,
+    addPlayer: handleAddPlayer,
+    deletePlayer: handleDeletePlayer,
     isLoading,
     teams,
     setTeams,

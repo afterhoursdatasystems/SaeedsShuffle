@@ -21,6 +21,7 @@ import { Badge } from '@/components/ui/badge';
 import { useMemo, useState } from 'react';
 import type { Player } from '@/types';
 import { EditPlayerDialog } from '@/components/edit-player-dialog';
+import { AddPlayerDialog } from '@/components/add-player-dialog';
 
 type SortKey = 'name' | 'team' | 'gender' | 'skill' | 'present';
 
@@ -39,10 +40,11 @@ const getSkillColor = (skill: number) => {
 
 
 export default function PlayerManagementPage() {
-  const { players, teams, togglePlayerPresence, isLoading } = usePlayerContext();
+  const { players, teams, togglePlayerPresence, isLoading, deletePlayer } = usePlayerContext();
   const [sortKey, setSortKey] = useState<SortKey>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
+  const [isAddPlayerOpen, setIsAddPlayerOpen] = useState(false);
 
   const playerTeamMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -107,6 +109,13 @@ export default function PlayerManagementPage() {
     return sortDirection === 'asc' ? '▲' : '▼';
   };
 
+  const handleDelete = async (playerId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (window.confirm('Are you sure you want to delete this player?')) {
+        await deletePlayer(playerId);
+    }
+  };
+
 
   if (isLoading) {
     return (
@@ -126,7 +135,7 @@ export default function PlayerManagementPage() {
               Manage your league's players here. Click a player to toggle their presence.
             </p>
           </div>
-          <Button>
+          <Button onClick={() => setIsAddPlayerOpen(true)}>
             <UserPlus className="mr-2 h-4 w-4" />
             Add Player
           </Button>
@@ -228,7 +237,7 @@ export default function PlayerManagementPage() {
                             <Edit className="h-4 w-4" />
                             <span className="sr-only">Edit Player</span>
                           </Button>
-                          <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                          <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={(e) => handleDelete(player.id, e)}>
                             <Trash2 className="h-4 w-4" />
                             <span className="sr-only">Delete Player</span>
                           </Button>
@@ -249,6 +258,10 @@ export default function PlayerManagementPage() {
           onClose={() => setEditingPlayer(null)}
         />
       )}
+      <AddPlayerDialog 
+        isOpen={isAddPlayerOpen}
+        onClose={() => setIsAddPlayerOpen(false)}
+      />
     </>
   );
 }
