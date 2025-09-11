@@ -186,7 +186,7 @@
     "name": "Alaina McCoy",
     "gender": "Gal",
     "skill": 4,
-    "present": false
+    "present": true
   },
   {
     "id": "28",
@@ -200,6 +200,20 @@
     "gender": "Guy",
     "skill": 9,
     "id": "2025-09-11T13:23:53.084Z",
+    "present": true
+  },
+  {
+    "name": "Steve Nystrom",
+    "gender": "Gal",
+    "skill": 6,
+    "id": "2025-09-11T13:26:17.364Z",
+    "present": true
+  },
+  {
+    "name": "Elicia Smith",
+    "gender": "Gal",
+    "skill": 6,
+    "id": "2025-09-11T13:26:26.199Z",
     "present": true
   }
 ]

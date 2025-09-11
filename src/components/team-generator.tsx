@@ -70,14 +70,16 @@ export function TeamGenerator() {
   const presentPlayers = useMemo(() => players.filter((p) => p.present), [players]);
   const possibleTeamsCount = presentPlayers.length > 0 ? Math.floor(presentPlayers.length / teamSize) : 0;
   
-  const { presentGuys, presentGals, overallGuyPercentage, unassignedPlayers } = useMemo(() => {
+  const { presentPlayersCount, totalPlayersCount, presentGuys, presentGals, overallGuyPercentage, unassignedPlayers } = useMemo(() => {
     const presentPlayers = players.filter(p => p.present);
     const assignedPlayerIds = new Set(teams.flatMap(t => t.players.map(p => p.id)));
     const unassignedPlayers = presentPlayers.filter(p => !assignedPlayerIds.has(p.id));
+    const presentPlayersCount = presentPlayers.length;
+    const totalPlayersCount = players.length;
     const presentGuys = presentPlayers.filter(p => p.gender === 'Guy').length;
     const presentGals = presentPlayers.filter(p => p.gender === 'Gal').length;
     const overallGuyPercentage = presentPlayers.length > 0 ? Math.round((presentGuys / presentPlayers.length) * 100) : 0;
-    return { presentGuys, presentGals, overallGuyPercentage, unassignedPlayers };
+    return { presentPlayersCount, totalPlayersCount, presentGuys, presentGals, overallGuyPercentage, unassignedPlayers };
   }, [players, teams]);
 
  const createBalancedTeams = (allPlayers: Player[], baseTeamSize: number): Team[] => {
@@ -305,6 +307,11 @@ export function TeamGenerator() {
                                     <Label htmlFor="4v4">4 vs 4</Label>
                                 </div>
                             </RadioGroup>
+                        </div>
+                        <Separator orientation='vertical' className='hidden sm:block h-12' />
+                        <div className="text-center">
+                            <p className="text-sm font-medium text-muted-foreground">Attendance</p>
+                            <p className="text-2xl font-bold">{presentPlayersCount} / {totalPlayersCount} Present</p>
                         </div>
                         <Separator orientation='vertical' className='hidden sm:block h-12' />
                          <div className="text-center">
