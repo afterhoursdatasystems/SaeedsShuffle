@@ -28,6 +28,9 @@ import { useMemo, useState } from 'react';
 import type { Player, Team } from '@/types';
 import { EditPlayerDialog } from '@/components/edit-player-dialog';
 import { AddPlayerDialog } from '@/components/add-player-dialog';
+import { useToast } from '@/hooks/use-toast';
+import { publishData } from '@/app/actions';
+
 
 type SortKey = 'name' | 'team' | 'gender' | 'skill' | 'present';
 
@@ -46,7 +49,8 @@ const getSkillColor = (skill: number) => {
 
 
 export default function PlayerManagementPage() {
-  const { players, teams, setTeams, togglePlayerPresence, isLoading, deletePlayer } = usePlayerContext();
+  const { players, teams, setTeams, togglePlayerPresence, isLoading, deletePlayer, gameFormat, schedule, activeRule, pointsToWin } = usePlayerContext();
+  const { toast } = useToast();
   const [sortKey, setSortKey] = useState<SortKey>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
@@ -70,7 +74,7 @@ export default function PlayerManagementPage() {
     return map;
   }, [teams]);
   
-  const handleTeamChange = (playerToMove: Player, newTeamName: string | null) => {
+  const handleTeamChange = async (playerToMove: Player, newTeamName: string | null) => {
     const oldTeamName = playerTeamMap.get(playerToMove.id);
 
     if (oldTeamName === newTeamName) return;
@@ -96,7 +100,27 @@ export default function PlayerManagementPage() {
       }
     }
     
+    // Optimistically update the UI
     setTeams(newTeamsState);
+
+    // Persist the change to the server
+    const result = await publishData(newTeamsState, gameFormat, schedule, activeRule, pointsToWin);
+    
+    if (result.success) {
+      toast({
+        title: "Player Moved",
+        description: `${playerToMove.name} moved to ${newTeamName || 'Unassigned'}.`,
+      });
+    } else {
+      toast({
+        title: 'Error Saving Change',
+        description: result.error || 'Could not save the new team assignment.',
+        variant: 'destructive',
+      });
+      // If saving fails, we might want to revert the state,
+      // but for now we'll leave the optimistic update.
+      // A more robust solution could re-fetch data.
+    }
   };
 
 

@@ -55,6 +55,7 @@ export function TeamGenerator() {
     schedule,
     setSchedule,
     gameFormat,
+    gameVariant,
     activeRule,
     pointsToWin
   } = usePlayerContext();
@@ -187,7 +188,8 @@ export function TeamGenerator() {
     }
 
     setIsPublishing(true);
-    const result = await publishData(teams, gameFormat, schedule, activeRule, pointsToWin);
+    const finalFormat = gameFormat === 'king-of-the-court' && gameVariant !== 'standard' ? gameVariant : gameFormat;
+    const result = await publishData(teams, finalFormat, schedule, activeRule, pointsToWin);
     setIsPublishing(false);
 
     if (result.success) {
@@ -220,7 +222,7 @@ export function TeamGenerator() {
     });
   };
 
-  const handlePlayerMove = (playerToMove: Player, currentTeamName: string | null, newTeamName: string | null) => {
+  const handlePlayerMove = async (playerToMove: Player, currentTeamName: string | null, newTeamName: string | null) => {
     if (currentTeamName === newTeamName) return;
 
     let newTeamsState: Team[] = JSON.parse(JSON.stringify(teams));
@@ -241,12 +243,26 @@ export function TeamGenerator() {
       }
     }
     
+    // Optimistically update the UI
     setTeams(newTeamsState);
 
-    toast({
-        title: "Player Moved",
-        description: `${playerToMove.name} moved to ${newTeamName || 'Unassigned'}.`,
-    });
+    // Persist the change to the server
+    const finalFormat = gameFormat === 'king-of-the-court' && gameVariant !== 'standard' ? gameVariant : gameFormat;
+    const result = await publishData(newTeamsState, finalFormat, schedule, activeRule, pointsToWin);
+
+    if (result.success) {
+        toast({
+            title: "Player Moved",
+            description: `${playerToMove.name} moved to ${newTeamName || 'Unassigned'}.`,
+        });
+    } else {
+        toast({
+            title: 'Error Saving Change',
+            description: result.error || 'Could not save the new team assignment.',
+            variant: 'destructive',
+        });
+        // Consider reverting state here if persistence fails
+    }
   };
   
   const isBlindDraw = gameFormat === 'blind-draw';

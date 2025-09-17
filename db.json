@@ -25,13 +25,6 @@
           "present": true
         },
         {
-          "id": "22",
-          "name": "Jasona Jones",
-          "gender": "Gal",
-          "skill": 1,
-          "present": true
-        },
-        {
           "id": "18",
           "name": "William Van Meter",
           "gender": "Guy",
@@ -102,6 +95,13 @@
           "name": "Miranda Griego",
           "gender": "Gal",
           "skill": 3,
+          "present": true
+        },
+        {
+          "id": "22",
+          "name": "Jasona Jones",
+          "gender": "Gal",
+          "skill": 1,
           "present": true
         }
       ]
