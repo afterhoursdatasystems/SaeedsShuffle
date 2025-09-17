@@ -236,18 +236,26 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   const handleDeletePlayer = async (playerId: string) => {
     const originalPlayers = players;
+    const originalTeams = teams;
     setPlayers(current => current.filter(p => p.id !== playerId));
+    setTeams(current => current.map(team => ({
+        ...team,
+        players: team.players.filter(p => p.id !== playerId)
+    })));
+
 
     const result = await deletePlayer(playerId);
 
-    if (result.success) {
+    if (result.success && result.data) {
+        setPlayers(result.data);
         toast({
             title: "Player Deleted",
-            description: "The player has been removed from the roster."
+            description: "The player has been removed from all records."
         });
         return true;
     } else {
         setPlayers(originalPlayers);
+        setTeams(originalTeams);
         toast({
             title: "Failed to Delete Player",
             description: result.error || "Could not delete the player.",

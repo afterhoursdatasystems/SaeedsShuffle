@@ -116,10 +116,20 @@ export async function updatePlayer(updatedPlayer: Player): Promise<{ success: bo
 
 export async function deletePlayer(playerId: string): Promise<{ success: boolean; data?: Player[]; error?: string }> {
     try {
-        const players = await readPlayersDb();
-        const updatedPlayers = players.filter(p => p.id !== playerId);
-        await writePlayersDb(updatedPlayers);
-        return { success: true, data: updatedPlayers };
+        let players = await readPlayersDb();
+        players = players.filter(p => p.id !== playerId);
+        await writePlayersDb(players);
+        
+        // Also remove player from any teams they were on in db.json
+        const dbData = await readDb();
+        const updatedTeams = dbData.teams.map(team => ({
+            ...team,
+            players: team.players.filter(p => p.id !== playerId)
+        }));
+        await writeDb({ ...dbData, teams: updatedTeams });
+
+
+        return { success: true, data: players };
     } catch (error) {
         console.error('Delete Player Error:', error);
         return { success: false, error: 'Failed to delete player.' };
@@ -153,7 +163,18 @@ export async function getSimulatedStandings(input: SimulateLeagueStandingsInput)
 export async function publishData(teams: Team[], format: GameFormat | GameVariant, schedule: Match[], activeRule: PowerUp | null, pointsToWin: number) {
     try {
         console.log('Publishing data:', { teams, format, schedule, activeRule, pointsToWin });
-        const dataToPublish: PublishedData = { teams, format, schedule, activeRule, pointsToWin };
+        // Read the existing data first to avoid overwriting unrelated fields
+        const currentData = await readDb();
+        
+        const dataToPublish: PublishedData = {
+            ...currentData, // Preserve existing data
+            teams,
+            format,
+            schedule,
+            activeRule,
+            pointsToWin,
+        };
+
         await writeDb(dataToPublish);
         return { success: true, message: 'Teams, format, and schedule published successfully!' };
     } catch (error) {
