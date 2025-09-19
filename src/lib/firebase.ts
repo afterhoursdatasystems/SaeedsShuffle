@@ -4,7 +4,7 @@
 import admin from 'firebase-admin';
 
 // Since the service account key is a JSON file, we can import it directly.
-import serviceAccount from '../saeeds-shuffle-firebase-adminsdk-fbsvc-117c222707.json';
+import serviceAccount from './saeeds-shuffle-firebase-adminsdk-fbsvc-117c222707.json';
 
 // Ensure the service account JSON is properly typed.
 const serviceAccountParams = {
