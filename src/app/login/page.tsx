@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Volleyball } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import Link from 'next/link';
 
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 48 48" {...props}>
@@ -68,7 +69,7 @@ export default function LoginPage() {
 
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-background p-4">
+    <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background p-4">
       <Card className="w-full max-w-sm shadow-2xl">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
@@ -77,7 +78,7 @@ export default function LoginPage() {
           <CardTitle className="text-3xl font-bold">Saeed's Shuffle</CardTitle>
           <CardDescription>Commissioner Login</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
             <Button 
                 onClick={handleLogin} 
                 className="w-full"
@@ -92,6 +93,11 @@ export default function LoginPage() {
                     </>
                 )}
             </Button>
+            <div className="text-center">
+              <Link href="/" className="text-sm text-muted-foreground hover:underline">
+                View Public Dashboard
+              </Link>
+            </div>
         </CardContent>
       </Card>
     </div>
