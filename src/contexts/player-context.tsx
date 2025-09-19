@@ -1,6 +1,7 @@
 
 
 
+
 'use client';
 
 import type { Player, Team, Match, GameFormat, GameVariant, PowerUp } from '@/types';
@@ -242,7 +243,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     const originalPlayers = [...players];
     const originalTeams = JSON.parse(JSON.stringify(teams)); // Deep copy
 
-    // Optimistically remove the player from the UI
+    // Optimistically remove from UI
     setPlayers(current => current.filter(p => p.id !== playerId));
     setTeams(current => current.map(team => ({
         ...team,
@@ -252,9 +253,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     const result = await deletePlayer(playerId);
 
     if (result.success && result.data) {
+        // Data is now successfully deleted on the server, resync local state
         setPlayers(result.data);
-        // The server action now returns the updated teams as well
-         const publishedData = await getPublishedData();
+        const publishedData = await getPublishedData();
         if (publishedData.success && publishedData.data) {
             setTeams(publishedData.data.teams || []);
         }

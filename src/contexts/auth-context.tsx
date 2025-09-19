@@ -9,7 +9,7 @@ import {
   type ReactNode,
 } from 'react';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, type User } from 'firebase/auth';
-import { getClientApp } from '@/lib/firebase';
+import { getClientApp } from '@/lib/firebase-client';
 import { useToast } from '@/hooks/use-toast';
 
 const ALLOWED_USER_EMAIL = 'matt@afterhoursds.com';

@@ -1,7 +1,7 @@
 
 'use server';
 
-import { db } from '@/lib/firebase';
+import { db } from '@/lib/firebase-admin';
 import { simulateLeagueStandings, type SimulateLeagueStandingsInput } from '@/ai/flows/simulate-league-standings';
 import type { Team, GameFormat, GameVariant, Match, PowerUp, Player } from '@/types';
 import Papa from 'papaparse';
@@ -126,33 +126,35 @@ export async function updatePlayer(updatedPlayer: Player): Promise<{ success: bo
 
 export async function deletePlayer(playerId: string): Promise<{ success: boolean; data?: Player[]; error?: string }> {
     try {
+        // Get all data first
         const publishedDataResult = await getPublishedData();
         if (!publishedDataResult.success || !publishedDataResult.data) {
-            return { success: false, error: 'Could not retrieve team data to update.' };
+            throw new Error('Could not retrieve existing data to perform delete.');
         }
-        
-        const { teams, format, schedule, activeRule, pointsToWin } = publishedDataResult.data;
+        let { teams, format, schedule, activeRule, pointsToWin } = publishedDataResult.data;
 
+        // Remove the player from the top-level players list
         await db.ref(`players/${playerId}`).remove();
-        
-        let updatedTeams = teams || [];
-        if (updatedTeams.length > 0) {
-            updatedTeams = updatedTeams.map(team => ({
+
+        // If there are teams, filter the deleted player out of them
+        if (teams && teams.length > 0) {
+            teams = teams.map(team => ({
                 ...team,
                 players: team.players.filter(p => p.id !== playerId)
-            })).filter(team => team.players.length > 0);
+            })).filter(team => team.players.length > 0); // Optional: remove empty teams
 
-            await publishData(updatedTeams, format, schedule, activeRule, pointsToWin);
+            // Write the cleaned-up teams array back to the database
+            await publishData(teams, format, schedule, activeRule, pointsToWin);
         }
-
+        
         const allPlayers = await getPlayers();
         return { success: true, data: allPlayers.data };
-
-    } catch (error) {
-        console.error('[SERVER ACTION] Delete Player Error:', error);
-        return { success: false, error: 'Failed to delete player from the database.' };
+    } catch (error: any) {
+        console.error('[SERVER] deletePlayer error:', error);
+        return { success: false, error: error.message || 'Failed to delete player from the database.' };
     }
 }
+
 
 export async function updatePlayerPresence(playerId: string, present: boolean): Promise<{ success: boolean; error?: string }> {
     try {
