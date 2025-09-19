@@ -195,26 +195,5 @@
     "gender": "Gal",
     "skill": 6,
     "present": false
-  },
-  {
-    "name": "Ryan Elmalem",
-    "gender": "Guy",
-    "skill": 9,
-    "id": "2025-09-11T13:23:53.084Z",
-    "present": false
-  },
-  {
-    "name": "Steve Nystrom",
-    "gender": "Gal",
-    "skill": 6,
-    "id": "2025-09-11T13:26:17.364Z",
-    "present": false
-  },
-  {
-    "name": "Elicia Smith",
-    "gender": "Gal",
-    "skill": 6,
-    "id": "2025-09-11T13:26:26.199Z",
-    "present": false
   }
 ]
