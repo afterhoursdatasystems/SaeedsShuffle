@@ -5,3 +5,7 @@ runConfig:
   # Increase this value if you'd like to automatically spin up
   # more instances in response to increased traffic.
   maxInstances: 1
+  # Defines secrets that will be stored in Secret Manager and exposed as
+  # environment variables.
+  secrets:
+    - secret: FIREBASE_SERVICE_ACCOUNT_JSON
