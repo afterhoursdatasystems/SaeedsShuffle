@@ -8,7 +8,7 @@ function initializeAdminDb() {
     console.log('Initializing Firebase Admin SDK...');
 
     // When deployed, these will be set as secrets in the App Hosting environment.
-    // For local dev, they'll be read from the .env file.
+    // For local dev, they'll be read from the .env.local file by Next.js.
     const serviceAccount: admin.ServiceAccount = {
       clientEmail: process.env.FIREBASE_CLIENT_EMAIL!,
       privateKey: process.env.FIREBASE_PRIVATE_KEY!.replace(/\\n/g, '\n'),
