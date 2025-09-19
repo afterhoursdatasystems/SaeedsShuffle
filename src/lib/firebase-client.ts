@@ -18,6 +18,11 @@ export const firebaseConfig: FirebaseOptions = {
 
 // Client-side app initialization
 function initializeClientApp() {
+    if (!firebaseConfig.apiKey) {
+        console.error("Firebase API key is missing. Please check your environment variables.");
+        // You might want to return a dummy app or throw an error,
+        // but for now, we'll log the error and let it fail on initializeApp.
+    }
     return !getApps().length ? initializeApp(firebaseConfig) : getApp();
 }
 
