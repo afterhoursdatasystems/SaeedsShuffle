@@ -73,9 +73,6 @@ export default function LoginPage() {
                     </>
                 )}
             </Button>
-            <p className="text-xs text-center text-muted-foreground mt-4">
-                You will be prompted to sign in with matt@afterhoursds.com
-            </p>
         </CardContent>
       </Card>
     </div>
