@@ -51,12 +51,12 @@ export default function AdminPage() {
                     <CardDescription>Select the game format and any specific variants for tonight's event.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between rounded-lg border p-4">
-                        <div className='flex flex-col sm:flex-row gap-4 flex-grow'>
+                    <div className="flex flex-col gap-6 rounded-lg border p-4">
+                        <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4'>
                             <div className='space-y-2'>
                                 <Label>Game Format</Label>
                                 <Select value={gameFormat} onValueChange={(val: GameFormat) => setGameFormat(val)}>
-                                  <SelectTrigger className="w-full sm:w-[240px]">
+                                  <SelectTrigger>
                                     <SelectValue placeholder="Select a format" />
                                   </SelectTrigger>
                                   <SelectContent>
@@ -71,7 +71,7 @@ export default function AdminPage() {
                                 <div className='space-y-2'>
                                     <Label>Game Variant</Label>
                                     <Select value={gameVariant} onValueChange={(val: GameVariant) => handleSetGameVariant(val)}>
-                                      <SelectTrigger className="w-full sm:w-[240px]">
+                                      <SelectTrigger>
                                         <SelectValue placeholder="Select a variant" />
                                       </SelectTrigger>
                                       <SelectContent>
@@ -90,12 +90,12 @@ export default function AdminPage() {
                                     type="number" 
                                     value={pointsToWin}
                                     onChange={(e) => setPointsToWin(Number(e.target.value))}
-                                    className="w-full sm:w-[120px]"
+                                    className="w-full"
                                     min="1"
                                 />
                             </div>
                         </div>
-                        <Button onClick={publishSettings} className="mt-4 sm:mt-0">
+                         <Button onClick={publishSettings} className="mt-4 w-full sm:w-auto">
                             <Send className="mr-2 h-4 w-4" />
                             Publish Settings
                         </Button>
