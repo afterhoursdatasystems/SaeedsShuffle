@@ -169,10 +169,7 @@ export default function PlayerManagementPage() {
   };
 
   const handleDelete = async (playerId: string) => {
-    console.log(`[CLIENT] handleDelete called for playerId: ${playerId}`);
-    if (window.confirm('Are you sure you want to delete this player? This action cannot be undone.')) {
-      await deletePlayer(playerId);
-    }
+    await deletePlayer(playerId);
   };
 
 

@@ -68,12 +68,10 @@ export async function updatePlayer(updatedPlayer: Player): Promise<{ success: bo
 }
 
 export async function deletePlayer(playerId: string): Promise<{ success: boolean; data?: Player[]; error?: string }> {
-    console.log(`[SERVER ACTION] deletePlayer called for playerId: ${playerId}`);
     try {
         // First, get the current published data to get the teams
         const publishedDataResult = await getPublishedData();
         if (!publishedDataResult.success || !publishedDataResult.data) {
-            console.error('[SERVER ACTION] Failed to get published data before deleting player.');
             return { success: false, error: 'Could not retrieve team data to update.' };
         }
         
@@ -81,7 +79,6 @@ export async function deletePlayer(playerId: string): Promise<{ success: boolean
 
         // Now, remove the player from the /players node
         await db.ref(`players/${playerId}`).remove();
-        console.log(`[SERVER ACTION] Player ${playerId} removed from /players node.`);
         
         let updatedTeams = teams || [];
         if (updatedTeams.length > 0) {
@@ -93,12 +90,10 @@ export async function deletePlayer(playerId: string): Promise<{ success: boolean
 
             // Publish the updated data back to the database
             await publishData(updatedTeams, format, schedule, activeRule, pointsToWin);
-            console.log('[SERVER ACTION] Published data updated after player deletion.');
         }
 
         // Finally, get the fresh list of all players
         const allPlayers = await getPlayers();
-        console.log('[SERVER ACTION] deletePlayer finished successfully.');
         return { success: true, data: allPlayers.data };
 
     } catch (error) {

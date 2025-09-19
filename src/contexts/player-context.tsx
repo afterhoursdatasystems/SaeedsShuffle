@@ -235,7 +235,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   };
 
   const handleDeletePlayer = async (playerId: string) => {
-    console.log(`[CONTEXT] handleDeletePlayer called for playerId: ${playerId}`);
     const originalPlayers = players;
     const originalTeams = teams;
     
@@ -247,7 +246,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     })));
 
     const result = await deletePlayer(playerId);
-    console.log('[CONTEXT] deletePlayer server action result:', result);
 
     if (result.success && result.data) {
         // The server action returns the new full list of players
