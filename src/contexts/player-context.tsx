@@ -235,25 +235,35 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   };
 
   const handleDeletePlayer = async (playerId: string) => {
+    console.log(`[CONTEXT] handleDeletePlayer called for playerId: ${playerId}`);
     const originalPlayers = players;
     const originalTeams = teams;
+    
+    // Optimistically remove the player from the UI
     setPlayers(current => current.filter(p => p.id !== playerId));
     setTeams(current => current.map(team => ({
         ...team,
         players: team.players.filter(p => p.id !== playerId)
     })));
 
-
     const result = await deletePlayer(playerId);
+    console.log('[CONTEXT] deletePlayer server action result:', result);
 
     if (result.success && result.data) {
+        // The server action returns the new full list of players
         setPlayers(result.data);
+        // We need to re-sync teams, so we'll refetch published data
+        const publishedData = await getPublishedData();
+        if (publishedData.success && publishedData.data) {
+            setTeams(publishedData.data.teams || []);
+        }
         toast({
             title: "Player Deleted",
             description: "The player has been removed from all records."
         });
         return true;
     } else {
+        // Revert UI on failure
         setPlayers(originalPlayers);
         setTeams(originalTeams);
         toast({

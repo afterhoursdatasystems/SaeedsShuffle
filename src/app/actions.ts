@@ -68,31 +68,41 @@ export async function updatePlayer(updatedPlayer: Player): Promise<{ success: bo
 }
 
 export async function deletePlayer(playerId: string): Promise<{ success: boolean; data?: Player[]; error?: string }> {
+    console.log(`[SERVER ACTION] deletePlayer called for playerId: ${playerId}`);
     try {
-        // First, remove the player from the /players node
-        await db.ref(`players/${playerId}`).remove();
-        
-        // Then, update the teams in the /publishedData node
+        // First, get the current published data to get the teams
         const publishedDataResult = await getPublishedData();
-        if (publishedDataResult.success && publishedDataResult.data) {
-            const { teams, format, schedule, activeRule, pointsToWin } = publishedDataResult.data;
-            if (teams && teams.length > 0) {
-                // Filter the deleted player out of all teams
-                const updatedTeams = teams.map(team => ({
-                    ...team,
-                    players: team.players.filter(p => p.id !== playerId)
-                }));
-                // Publish the updated data back to the database
-                await publishData(updatedTeams, format, schedule, activeRule, pointsToWin);
-            }
+        if (!publishedDataResult.success || !publishedDataResult.data) {
+            console.error('[SERVER ACTION] Failed to get published data before deleting player.');
+            return { success: false, error: 'Could not retrieve team data to update.' };
+        }
+        
+        const { teams, format, schedule, activeRule, pointsToWin } = publishedDataResult.data;
+
+        // Now, remove the player from the /players node
+        await db.ref(`players/${playerId}`).remove();
+        console.log(`[SERVER ACTION] Player ${playerId} removed from /players node.`);
+        
+        let updatedTeams = teams || [];
+        if (updatedTeams.length > 0) {
+            // Filter the deleted player out of all teams
+            updatedTeams = updatedTeams.map(team => ({
+                ...team,
+                players: team.players.filter(p => p.id !== playerId)
+            })).filter(team => team.players.length > 0); // Optional: remove empty teams
+
+            // Publish the updated data back to the database
+            await publishData(updatedTeams, format, schedule, activeRule, pointsToWin);
+            console.log('[SERVER ACTION] Published data updated after player deletion.');
         }
 
         // Finally, get the fresh list of all players
         const allPlayers = await getPlayers();
+        console.log('[SERVER ACTION] deletePlayer finished successfully.');
         return { success: true, data: allPlayers.data };
 
     } catch (error) {
-        console.error('Delete Player Error:', error);
+        console.error('[SERVER ACTION] Delete Player Error:', error);
         return { success: false, error: 'Failed to delete player from the database.' };
     }
 }
