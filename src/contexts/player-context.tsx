@@ -4,7 +4,7 @@
 
 import type { Player, Team, Match, GameFormat, GameVariant, PowerUp } from '@/types';
 import React, { createContext, useContext, useState, type ReactNode, useEffect, useCallback } from 'react';
-import { getPlayers, updatePlayerPresence, getPublishedData, updatePlayer, addPlayer, deletePlayer, publishData } from '@/app/actions';
+import { getPlayers, updatePlayerPresence, getPublishedData, updatePlayer, addPlayer, deletePlayer, publishData, resetAllPlayerPresence } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 
 const allPowerUps: PowerUp[] = [
@@ -76,6 +76,7 @@ interface PlayerContextType {
   publishSettings: () => void;
   allPowerUps: PowerUp[];
   cosmicScrambleRules: PowerUp[];
+  resetAllPlayerPresence: () => Promise<void>;
 }
 
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
@@ -235,23 +236,22 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   };
 
   const handleDeletePlayer = async (playerId: string) => {
-    const originalPlayers = players;
-    const originalTeams = teams;
-    
+    const originalPlayers = [...players];
+    const originalTeams = JSON.parse(JSON.stringify(teams)); // Deep copy
+
     // Optimistically remove the player from the UI
     setPlayers(current => current.filter(p => p.id !== playerId));
     setTeams(current => current.map(team => ({
         ...team,
         players: team.players.filter(p => p.id !== playerId)
-    })));
+    })).filter(team => team.players.length > 0));
 
     const result = await deletePlayer(playerId);
 
     if (result.success && result.data) {
-        // The server action returns the new full list of players
         setPlayers(result.data);
-        // We need to re-sync teams, so we'll refetch published data
-        const publishedData = await getPublishedData();
+        // The server action now returns the updated teams as well
+         const publishedData = await getPublishedData();
         if (publishedData.success && publishedData.data) {
             setTeams(publishedData.data.teams || []);
         }
@@ -325,6 +325,29 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const handleResetAllPlayerPresence = async () => {
+    const originalPlayers = [...players];
+    // Optimistic UI update
+    setPlayers(current => current.map(p => ({ ...p, present: false })));
+
+    const result = await resetAllPlayerPresence();
+
+    if (result.success) {
+        toast({
+            title: "Presence Reset",
+            description: "All players have been set to 'Away'.",
+        });
+    } else {
+        // Revert on failure
+        setPlayers(originalPlayers);
+        toast({
+            title: "Reset Failed",
+            description: result.error || "Could not reset player presence.",
+            variant: "destructive",
+        });
+    }
+  };
+
 
   const value = {
     players,
@@ -350,6 +373,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     publishSettings,
     allPowerUps,
     cosmicScrambleRules,
+    resetAllPlayerPresence: handleResetAllPlayerPresence,
   };
 
   return (

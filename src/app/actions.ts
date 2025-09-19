@@ -69,7 +69,6 @@ export async function updatePlayer(updatedPlayer: Player): Promise<{ success: bo
 
 export async function deletePlayer(playerId: string): Promise<{ success: boolean; data?: Player[]; error?: string }> {
     try {
-        // First, get the current published data to get the teams
         const publishedDataResult = await getPublishedData();
         if (!publishedDataResult.success || !publishedDataResult.data) {
             return { success: false, error: 'Could not retrieve team data to update.' };
@@ -77,22 +76,18 @@ export async function deletePlayer(playerId: string): Promise<{ success: boolean
         
         const { teams, format, schedule, activeRule, pointsToWin } = publishedDataResult.data;
 
-        // Now, remove the player from the /players node
         await db.ref(`players/${playerId}`).remove();
         
         let updatedTeams = teams || [];
         if (updatedTeams.length > 0) {
-            // Filter the deleted player out of all teams
             updatedTeams = updatedTeams.map(team => ({
                 ...team,
                 players: team.players.filter(p => p.id !== playerId)
-            })).filter(team => team.players.length > 0); // Optional: remove empty teams
+            })).filter(team => team.players.length > 0);
 
-            // Publish the updated data back to the database
             await publishData(updatedTeams, format, schedule, activeRule, pointsToWin);
         }
 
-        // Finally, get the fresh list of all players
         const allPlayers = await getPlayers();
         return { success: true, data: allPlayers.data };
 
@@ -109,6 +104,29 @@ export async function updatePlayerPresence(playerId: string, present: boolean): 
     } catch (error) {
         console.error('Update Player Presence Error:', error);
         return { success: false, error: 'Failed to update player presence in the database.' };
+    }
+}
+
+export async function resetAllPlayerPresence(): Promise<{ success: boolean; error?: string }> {
+    try {
+        const playersSnapshot = await db.ref('players').once('value');
+        const players = playersSnapshot.val();
+
+        if (!players) {
+            return { success: true }; // No players to update
+        }
+
+        const updates: { [key: string]: boolean } = {};
+        Object.keys(players).forEach(playerId => {
+            updates[`/players/${playerId}/present`] = false;
+        });
+
+        await db.ref().update(updates);
+
+        return { success: true };
+    } catch (error) {
+        console.error('Reset All Player Presence Error:', error);
+        return { success: false, error: 'Failed to reset player presence in the database.' };
     }
 }
 

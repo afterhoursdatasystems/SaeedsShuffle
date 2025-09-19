@@ -21,7 +21,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { UserPlus, Edit, Trash2, ArrowUpDown } from 'lucide-react';
+import { UserPlus, Edit, Trash2, ArrowUpDown, RefreshCw } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useMemo, useState } from 'react';
 import type { Player, Team } from '@/types';
@@ -48,7 +48,7 @@ const getSkillColor = (skill: number) => {
 
 
 export default function PlayerManagementPage() {
-  const { players, teams, setTeams, togglePlayerPresence, isLoading, deletePlayer, gameFormat, schedule, activeRule, pointsToWin } = usePlayerContext();
+  const { players, teams, setTeams, togglePlayerPresence, isLoading, deletePlayer, gameFormat, schedule, activeRule, pointsToWin, resetAllPlayerPresence } = usePlayerContext();
   const { toast } = useToast();
   const [sortKey, setSortKey] = useState<SortKey>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
@@ -168,8 +168,8 @@ export default function PlayerManagementPage() {
     return sortDirection === 'asc' ? '▲' : '▼';
   };
 
-  const handleDelete = async (playerId: string) => {
-    await deletePlayer(playerId);
+  const handleDelete = (playerId: string) => {
+    deletePlayer(playerId);
   };
 
 
@@ -191,10 +191,16 @@ export default function PlayerManagementPage() {
               Manage your league's players here. Click a player to toggle their presence.
             </p>
           </div>
-          <Button onClick={() => setIsAddPlayerOpen(true)}>
-            <UserPlus className="mr-2 h-4 w-4" />
-            Add Player
-          </Button>
+          <div className='flex gap-2'>
+            <Button onClick={() => resetAllPlayerPresence()} variant="outline">
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Reset All to Away
+            </Button>
+            <Button onClick={() => setIsAddPlayerOpen(true)}>
+              <UserPlus className="mr-2 h-4 w-4" />
+              Add Player
+            </Button>
+          </div>
         </div>
 
         <Card>
