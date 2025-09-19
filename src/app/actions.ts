@@ -76,13 +76,15 @@ export async function deletePlayer(playerId: string): Promise<{ success: boolean
         const publishedDataResult = await getPublishedData();
         if (publishedDataResult.success && publishedDataResult.data) {
             const { teams, format, schedule, activeRule, pointsToWin } = publishedDataResult.data;
-            // Filter the deleted player out of all teams
-            const updatedTeams = teams.map(team => ({
-                ...team,
-                players: team.players.filter(p => p.id !== playerId)
-            }));
-            // Publish the updated data back to the database
-            await publishData(updatedTeams, format, schedule, activeRule, pointsToWin);
+            if (teams && teams.length > 0) {
+                // Filter the deleted player out of all teams
+                const updatedTeams = teams.map(team => ({
+                    ...team,
+                    players: team.players.filter(p => p.id !== playerId)
+                }));
+                // Publish the updated data back to the database
+                await publishData(updatedTeams, format, schedule, activeRule, pointsToWin);
+            }
         }
 
         // Finally, get the fresh list of all players
