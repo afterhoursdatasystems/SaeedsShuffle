@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -8,7 +9,7 @@ import {
   type ReactNode,
 } from 'react';
 
-const ALLOWED_USER = 'matt@saeedsvolleyball.com';
+const ALLOWED_USER = 'matt@afterhoursds.com';
 const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_LEAGUE_COMMISSIONER_PASSWORD;
 
 interface AuthContextType {
@@ -45,17 +46,10 @@ export function AuthProvider({children}: {children: ReactNode}) {
   }, []);
 
   const login = (email: string, pass: string) => {
+    // With a "Sign in with Google" flow, we only need to check the email.
+    // A real implementation would involve a Firebase popup and token verification.
     if (email.toLowerCase() !== ALLOWED_USER) {
-      throw new Error(`Only ${ALLOWED_USER} can log in.`);
-    }
-
-    if (!ADMIN_PASSWORD) {
-        console.error("Admin password environment variable is not set.");
-        throw new Error("Login system is not configured correctly. Please contact support.");
-    }
-
-    if (pass !== ADMIN_PASSWORD) {
-        throw new Error("The password you entered is incorrect.");
+      throw new Error(`Access is restricted to ${ALLOWED_USER}.`);
     }
     
     setIsAuthenticated(true);
