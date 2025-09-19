@@ -9,4 +9,3 @@ runConfig:
   # environment variables.
   secrets:
     - secret: FIREBASE_SERVICE_ACCOUNT_JSON
-
