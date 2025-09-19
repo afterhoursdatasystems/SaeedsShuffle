@@ -325,12 +325,12 @@ export function TeamGenerator() {
         </CardContent>
         {!isBlindDraw && (
             <CardFooter className="border-t px-6 py-4">
-                <div className="flex gap-2">
-                    <Button onClick={handleGenerateTeams}>
+                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                    <Button onClick={handleGenerateTeams} className="w-full sm:w-auto">
                         <Shuffle className="mr-2 h-4 w-4" />
                         Generate New Teams
                     </Button>
-                    <Button onClick={handleClearTeams} variant="outline">
+                    <Button onClick={handleClearTeams} variant="outline" className="w-full sm:w-auto">
                         <Trash2 className="mr-2 h-4 w-4" />
                         Clear Teams
                     </Button>
@@ -344,12 +344,12 @@ export function TeamGenerator() {
             <div className="lg:col-span-3">
                 <Card>
                     <CardHeader>
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                             <div>
                             <CardTitle>Tonight's Teams</CardTitle>
                             <CardDescription>Use the dropdown on each player to move them to a different team.</CardDescription>
                             </div>
-                            <Button onClick={handlePublish} disabled={isPublishing}>
+                            <Button onClick={handlePublish} disabled={isPublishing} className="w-full sm:w-auto">
                                 <Send className="mr-2 h-4 w-4" />
                                 {isPublishing ? 'Publishing...' : 'Publish to Dashboard'}
                             </Button>
