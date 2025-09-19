@@ -20,10 +20,11 @@ export async function getPlayers(): Promise<{ success: boolean; data?: Player[];
         const snapshot = await db.ref('players').once('value');
         const playersObject = snapshot.val();
         if (playersObject) {
-            // Convert the object of players into an array
+            // Convert the object of players into an array and add the id
             const playersArray = Object.keys(playersObject).map(key => ({
                 id: key,
-                ...playersObject[key]
+                ...playersObject[key],
+                present: playersObject[key].present ?? false // ensure presence has a default
             }));
             return { success: true, data: playersArray };
         }
@@ -37,12 +38,12 @@ export async function getPlayers(): Promise<{ success: boolean; data?: Player[];
 export async function addPlayer(player: Omit<Player, 'id' | 'present'>): Promise<{ success: boolean; data?: Player[]; error?: string }> {
     try {
         const newPlayerRef = db.ref('players').push();
-        const newPlayer = {
+        // Create the player object to be saved, ensuring `present` defaults to true
+        const newPlayerData = {
             ...player,
-            id: newPlayerRef.key,
             present: true,
         };
-        await newPlayerRef.set(player); // Don't store id and present in the object itself
+        await newPlayerRef.set(newPlayerData);
         
         const allPlayers = await getPlayers();
         return { success: true, data: allPlayers.data };
@@ -68,20 +69,26 @@ export async function updatePlayer(updatedPlayer: Player): Promise<{ success: bo
 
 export async function deletePlayer(playerId: string): Promise<{ success: boolean; data?: Player[]; error?: string }> {
     try {
+        // First, remove the player from the /players node
         await db.ref(`players/${playerId}`).remove();
         
-        // Also remove player from any teams they were on
-        const publishedData = await getPublishedData();
-        if (publishedData.success && publishedData.data) {
-            const updatedTeams = publishedData.data.teams.map(team => ({
+        // Then, update the teams in the /publishedData node
+        const publishedDataResult = await getPublishedData();
+        if (publishedDataResult.success && publishedDataResult.data) {
+            const { teams, format, schedule, activeRule, pointsToWin } = publishedDataResult.data;
+            // Filter the deleted player out of all teams
+            const updatedTeams = teams.map(team => ({
                 ...team,
                 players: team.players.filter(p => p.id !== playerId)
             }));
-            await publishData(updatedTeams, publishedData.data.format, publishedData.data.schedule, publishedData.data.activeRule, publishedData.data.pointsToWin);
+            // Publish the updated data back to the database
+            await publishData(updatedTeams, format, schedule, activeRule, pointsToWin);
         }
 
+        // Finally, get the fresh list of all players
         const allPlayers = await getPlayers();
         return { success: true, data: allPlayers.data };
+
     } catch (error) {
         console.error('Delete Player Error:', error);
         return { success: false, error: 'Failed to delete player from the database.' };
@@ -122,28 +129,17 @@ export async function getPublishedData(): Promise<{ success: boolean; data?: Pub
     try {
         const snapshot = await db.ref('publishedData').once('value');
         const data = snapshot.val();
-        if (data) {
-             // Provide defaults for fields that might be missing from the DB
-            const saneData: PublishedData = {
-                teams: data.teams || [],
-                format: data.format || 'king-of-the-court',
-                schedule: data.schedule || [],
-                activeRule: data.activeRule || null,
-                pointsToWin: data.pointsToWin || 15,
-            };
-            return { success: true, data: saneData };
-        }
-        // If no data, return a default structure
-        return { 
-            success: true, 
-            data: { 
-                teams: [], 
-                format: 'king-of-the-court', 
-                schedule: [], 
-                activeRule: null, 
-                pointsToWin: 15 
-            } 
+        
+        // Provide defaults for a completely empty database
+        const saneData: PublishedData = {
+            teams: data?.teams || [],
+            format: data?.format || 'king-of-the-court',
+            schedule: data?.schedule || [],
+            activeRule: data?.activeRule || null,
+            pointsToWin: data?.pointsToWin || 15,
         };
+        return { success: true, data: saneData };
+       
     } catch (error) {
         console.error('Get Published Data Error:', error);
         return { success: false, error: 'Failed to retrieve data from the database.' };
