@@ -1,33 +1,35 @@
 import admin from 'firebase-admin';
-import fs from 'fs';
-import path from 'path';
 
-// Singleton pattern to ensure we only initialize the app once.
+// This is a singleton to ensure we only initialize the app once.
 let db: admin.database.Database;
 
 function initializeAdminDb() {
-  if (!admin.apps.length) {
-    console.log('Initializing Firebase Admin SDK for Realtime Database...');
-    
-    try {
-        const keyPath = path.join(process.cwd(), 'saeeds-shuffle-firebase-adminsdk-fbsvc-117c222707.json');
-        const serviceAccount = JSON.parse(fs.readFileSync(keyPath, 'utf8'));
+  if (admin.apps.length === 0) {
+    console.log('Initializing Firebase Admin SDK...');
 
-        admin.initializeApp({
-          credential: admin.credential.cert(serviceAccount),
-          databaseURL: "https://saeeds-shuffle-default-rtdb.firebaseio.com"
-        });
+    const serviceAccount: admin.ServiceAccount = {
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+    };
+
+    try {
+      admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+        databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
+      });
+      db = admin.database();
     } catch (error) {
-        console.error("Failed to initialize Firebase Admin SDK:", error);
-        // In a production environment, you might want to handle this more gracefully.
-        // For now, we'll log the error. The app might not function correctly without the admin SDK.
-        return;
+      console.error('Firebase Admin SDK initialization error:', error);
+      // In a production app, you might want to throw an error or handle this differently.
+      // For this context, we will log the error and `db` will remain uninitialized.
     }
+  } else if (!db) {
+    db = admin.database();
   }
-  db = admin.database();
 }
 
-// Initialize the database connection when this module is loaded.
+// Initialize on module load.
 initializeAdminDb();
 
 export { db };
