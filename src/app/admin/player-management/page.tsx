@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { usePlayerContext } from '@/contexts/player-context';
@@ -169,10 +168,9 @@ export default function PlayerManagementPage() {
     return sortDirection === 'asc' ? '▲' : '▼';
   };
 
-  const handleDelete = async (playerId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (window.confirm('Are you sure you want to delete this player?')) {
-        await deletePlayer(playerId);
+  const handleDelete = async (playerId: string) => {
+    if (window.confirm('Are you sure you want to delete this player? This action cannot be undone.')) {
+      await deletePlayer(playerId);
     }
   };
 
@@ -312,7 +310,7 @@ export default function PlayerManagementPage() {
                             <Edit className="h-4 w-4" />
                             <span className="sr-only">Edit Player</span>
                           </Button>
-                          <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={(e) => handleDelete(player.id, e)}>
+                          <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDelete(player.id)}>
                             <Trash2 className="h-4 w-4" />
                             <span className="sr-only">Delete Player</span>
                           </Button>
@@ -340,3 +338,5 @@ export default function PlayerManagementPage() {
     </>
   );
 }
+
+    
