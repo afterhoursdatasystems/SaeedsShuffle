@@ -1,8 +1,7 @@
 
 'use server';
 
-import { promises as fs } from 'fs';
-import path from 'path';
+import { db } from '@/lib/firebase';
 import { simulateLeagueStandings, type SimulateLeagueStandingsInput } from '@/ai/flows/simulate-league-standings';
 import type { Team, GameFormat, GameVariant, Match, PowerUp, Player } from '@/types';
 
@@ -12,143 +11,146 @@ type PublishedData = {
     schedule: Match[];
     activeRule: PowerUp | null;
     pointsToWin: number;
-    players?: Player[]; // Players can now be part of the main DB
 };
 
-// Use a JSON file as a simple database for this prototype.
-const dbPath = path.join(process.cwd(), 'db.json');
-const playersDbPath = path.join(process.cwd(), 'players.json');
-
-
-async function readPlayersDb(): Promise<Player[]> {
-    try {
-        const data = await fs.readFile(playersDbPath, 'utf-8');
-        return JSON.parse(data);
-    } catch (error: any) {
-        if (error.code === 'ENOENT') {
-            // If the file doesn't exist, return an empty array
-            return [];
-        }
-        console.error('Error reading from Players DB:', error);
-        throw error;
-    }
-}
-
-async function writePlayersDb(players: Player[]): Promise<void> {
-    try {
-        await fs.writeFile(playersDbPath, JSON.stringify(players, null, 2), 'utf-8');
-    } catch (error) {
-        console.error('Error writing to Players DB:', error);
-        throw error;
-    }
-}
-
-
-async function readDb(): Promise<PublishedData> {
-    try {
-        const data = await fs.readFile(dbPath, 'utf-8');
-        const parsedData = JSON.parse(data);
-        // Provide default for pointsToWin if not present
-        if (!('pointsToWin' in parsedData)) {
-            parsedData.pointsToWin = 15;
-        }
-        return parsedData;
-    } catch (error: any) {
-        if (error.code === 'ENOENT') {
-            // If the file doesn't exist, return a default structure
-            return { teams: [], format: 'king-of-the-court', schedule: [], activeRule: null, pointsToWin: 15 };
-        }
-        console.error('Error reading from DB:', error);
-        throw error;
-    }
-}
-
-async function writeDb(data: PublishedData): Promise<void> {
-    try {
-        await fs.writeFile(dbPath, JSON.stringify(data, null, 2), 'utf-8');
-    } catch (error) {
-        console.error('Error writing to DB:', error);
-        throw error;
-    }
-}
-
+// --- Player Data Actions ---
 
 export async function getPlayers(): Promise<{ success: boolean; data?: Player[]; error?: string }> {
     try {
-        const players = await readPlayersDb();
-        return { success: true, data: players };
+        const snapshot = await db.ref('players').once('value');
+        const playersObject = snapshot.val();
+        if (playersObject) {
+            // Convert the object of players into an array
+            const playersArray = Object.keys(playersObject).map(key => ({
+                id: key,
+                ...playersObject[key]
+            }));
+            return { success: true, data: playersArray };
+        }
+        return { success: true, data: [] }; // Return empty array if no players exist
     } catch (error) {
         console.error('Get Players Error:', error);
-        return { success: false, error: 'Failed to retrieve players.' };
+        return { success: false, error: 'Failed to retrieve players from the database.' };
     }
 }
 
 export async function addPlayer(player: Omit<Player, 'id' | 'present'>): Promise<{ success: boolean; data?: Player[]; error?: string }> {
     try {
-        const players = await readPlayersDb();
-        const newPlayer: Player = {
+        const newPlayerRef = db.ref('players').push();
+        const newPlayer = {
             ...player,
-            id: new Date().toISOString(), // Simple unique ID
+            id: newPlayerRef.key,
             present: true,
         };
-        const updatedPlayers = [...players, newPlayer];
-        await writePlayersDb(updatedPlayers);
-        return { success: true, data: updatedPlayers };
+        await newPlayerRef.set(player); // Don't store id and present in the object itself
+        
+        const allPlayers = await getPlayers();
+        return { success: true, data: allPlayers.data };
+
     } catch (error) {
         console.error('Add Player Error:', error);
-        return { success: false, error: 'Failed to add player.' };
+        return { success: false, error: 'Failed to add player to the database.' };
     }
 }
 
 export async function updatePlayer(updatedPlayer: Player): Promise<{ success: boolean; data?: Player[]; error?: string }> {
     try {
-        const players = await readPlayersDb();
-        const updatedPlayers = players.map(p => 
-            p.id === updatedPlayer.id ? updatedPlayer : p
-        );
-        await writePlayersDb(updatedPlayers);
-        return { success: true, data: updatedPlayers };
+        const { id, ...playerData } = updatedPlayer;
+        await db.ref(`players/${id}`).update(playerData);
+        
+        const allPlayers = await getPlayers();
+        return { success: true, data: allPlayers.data };
     } catch (error) {
         console.error('Update Player Error:', error);
-        return { success: false, error: 'Failed to update player.' };
+        return { success: false, error: 'Failed to update player in the database.' };
     }
 }
 
 export async function deletePlayer(playerId: string): Promise<{ success: boolean; data?: Player[]; error?: string }> {
     try {
-        let players = await readPlayersDb();
-        players = players.filter(p => p.id !== playerId);
-        await writePlayersDb(players);
+        await db.ref(`players/${playerId}`).remove();
         
-        // Also remove player from any teams they were on in db.json
-        const dbData = await readDb();
-        const updatedTeams = dbData.teams.map(team => ({
-            ...team,
-            players: team.players.filter(p => p.id !== playerId)
-        }));
-        await writeDb({ ...dbData, teams: updatedTeams });
+        // Also remove player from any teams they were on
+        const publishedData = await getPublishedData();
+        if (publishedData.success && publishedData.data) {
+            const updatedTeams = publishedData.data.teams.map(team => ({
+                ...team,
+                players: team.players.filter(p => p.id !== playerId)
+            }));
+            await publishData(updatedTeams, publishedData.data.format, publishedData.data.schedule, publishedData.data.activeRule, publishedData.data.pointsToWin);
+        }
 
-
-        return { success: true, data: players };
+        const allPlayers = await getPlayers();
+        return { success: true, data: allPlayers.data };
     } catch (error) {
         console.error('Delete Player Error:', error);
-        return { success: false, error: 'Failed to delete player.' };
+        return { success: false, error: 'Failed to delete player from the database.' };
     }
 }
 
 export async function updatePlayerPresence(playerId: string, present: boolean): Promise<{ success: boolean; error?: string }> {
     try {
-        const players = await readPlayersDb();
-        const updatedPlayers = players.map(p => 
-            p.id === playerId ? { ...p, present } : p
-        );
-        await writePlayersDb(updatedPlayers);
+        await db.ref(`players/${playerId}/present`).set(present);
         return { success: true };
     } catch (error) {
         console.error('Update Player Presence Error:', error);
-        return { success: false, error: 'Failed to update player presence.' };
+        return { success: false, error: 'Failed to update player presence in the database.' };
     }
 }
+
+
+// --- Published Tournament Data Actions ---
+
+export async function publishData(teams: Team[], format: GameFormat | GameVariant, schedule: Match[], activeRule: PowerUp | null, pointsToWin: number) {
+    try {
+        const dataToPublish: PublishedData = {
+            teams: teams || [],
+            format: format || 'king-of-the-court',
+            schedule: schedule || [],
+            activeRule: activeRule || null,
+            pointsToWin: pointsToWin || 15,
+        };
+        await db.ref('publishedData').set(dataToPublish);
+        return { success: true, message: 'Teams, format, and schedule published successfully!' };
+    } catch (error) {
+        console.error('Publish Data Error:', error);
+        return { success: false, error: 'Failed to publish data to the database.' };
+    }
+}
+
+export async function getPublishedData(): Promise<{ success: boolean; data?: PublishedData; error?: string }> {
+    try {
+        const snapshot = await db.ref('publishedData').once('value');
+        const data = snapshot.val();
+        if (data) {
+             // Provide defaults for fields that might be missing from the DB
+            const saneData: PublishedData = {
+                teams: data.teams || [],
+                format: data.format || 'king-of-the-court',
+                schedule: data.schedule || [],
+                activeRule: data.activeRule || null,
+                pointsToWin: data.pointsToWin || 15,
+            };
+            return { success: true, data: saneData };
+        }
+        // If no data, return a default structure
+        return { 
+            success: true, 
+            data: { 
+                teams: [], 
+                format: 'king-of-the-court', 
+                schedule: [], 
+                activeRule: null, 
+                pointsToWin: 15 
+            } 
+        };
+    } catch (error) {
+        console.error('Get Published Data Error:', error);
+        return { success: false, error: 'Failed to retrieve data from the database.' };
+    }
+}
+
+// --- AI Flow Actions ---
 
 export async function getSimulatedStandings(input: SimulateLeagueStandingsInput) {
     try {
@@ -157,38 +159,5 @@ export async function getSimulatedStandings(input: SimulateLeagueStandingsInput)
     } catch (error) {
         console.error('AI Simulation Error:', error);
         return { success: false, error: 'Failed to simulate standings due to an internal error.' };
-    }
-}
-
-export async function publishData(teams: Team[], format: GameFormat | GameVariant, schedule: Match[], activeRule: PowerUp | null, pointsToWin: number) {
-    try {
-        console.log('Publishing data:', { teams, format, schedule, activeRule, pointsToWin });
-        // Read the existing data first to avoid overwriting unrelated fields
-        const currentData = await readDb();
-        
-        const dataToPublish: PublishedData = {
-            ...currentData, // Preserve existing data
-            teams,
-            format,
-            schedule,
-            activeRule,
-            pointsToWin,
-        };
-
-        await writeDb(dataToPublish);
-        return { success: true, message: 'Teams, format, and schedule published successfully!' };
-    } catch (error) {
-        console.error('Publish Data Error:', error);
-        return { success: false, error: 'Failed to publish data.' };
-    }
-}
-
-export async function getPublishedData() {
-    try {
-        const data = await readDb();
-        return { success: true, data };
-    } catch (error) {
-        console.error('Get Published Data Error:', error);
-        return { success: false, error: 'Failed to retrieve data.' };
     }
 }
