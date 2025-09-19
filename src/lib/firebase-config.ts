@@ -5,7 +5,7 @@ import type { FirebaseOptions } from 'firebase/app';
 // This configuration is auto-generated and is safe to be exposed on the client-side.
 // Firebase security rules and App Check are used to protect your backend resources.
 export const firebaseConfig: FirebaseOptions = {
-  apiKey: "YOUR_API_KEY",
+  apiKey: "PLACEHOLDER_API_KEY",
   authDomain: "saeeds-shuffle.firebaseapp.com",
   projectId: "saeeds-shuffle",
   storageBucket: "saeeds-shuffle.appspot.com",
