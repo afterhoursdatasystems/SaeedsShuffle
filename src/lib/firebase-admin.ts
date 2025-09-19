@@ -18,7 +18,13 @@ function initializeAdminDb() {
     }
 
     try {
-      const serviceAccount = JSON.parse(serviceAccountJson);
+      // In production (App Hosting), the secret might be pre-parsed.
+      // In local dev, it's a string from the .env file that needs parsing.
+      // This handles both cases.
+      const serviceAccount = typeof serviceAccountJson === 'object' 
+        ? serviceAccountJson 
+        : JSON.parse(serviceAccountJson);
+
       console.log(`[DEBUG] Parsed service account for project: ${serviceAccount.project_id} and client email: ${serviceAccount.client_email}`);
 
       admin.initializeApp({
