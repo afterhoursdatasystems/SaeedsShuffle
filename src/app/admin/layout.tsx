@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { PlayerProvider } from '@/contexts/player-context';
-import { SidebarProvider, Sidebar, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarTrigger } from '@/components/ui/sidebar';
+import { SidebarProvider, Sidebar, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from '@/components/ui/sidebar';
 import { LayoutDashboard, UserCheck, Users, Calendar, Wand2, Bot, Volleyball, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 import AppHeader from '@/components/app-header';
