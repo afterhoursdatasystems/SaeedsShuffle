@@ -7,7 +7,7 @@ function initializeAdminDb() {
   if (admin.apps.length === 0) {
     console.log('Initializing Firebase Admin SDK...');
 
-    // When deployed, these will be set in the environment.
+    // When deployed, these will be set as secrets in the App Hosting environment.
     // For local dev, they'll be read from the .env file.
     const serviceAccount: admin.ServiceAccount = {
       clientEmail: process.env.FIREBASE_CLIENT_EMAIL!,
