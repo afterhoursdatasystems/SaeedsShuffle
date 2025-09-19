@@ -6,8 +6,8 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { LogOut, Volleyball, LayoutDashboard, PanelLeft, UserCheck, Users, Calendar, Wand2, Bot, UserPlus } from 'lucide-react';
 import Link from 'next/link';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from './ui/sheet';
-import React from 'react';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
+import React, { useState } from 'react';
 import { SidebarTrigger } from './ui/sidebar';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem } from './ui/dropdown-menu';
 import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar';
@@ -43,7 +43,41 @@ export default function AppHeader() {
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:px-6">
-        <SidebarTrigger className="md:hidden" />
+        <SidebarTrigger className="hidden md:flex" />
+        <div className="md:hidden">
+            <Sheet>
+                <SheetTrigger asChild>
+                    <Button size="icon" variant="outline">
+                        <PanelLeft className="h-5 w-5" />
+                        <span className="sr-only">Toggle Menu</span>
+                    </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="sm:max-w-xs">
+                     <SheetHeader>
+                        <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+                    </SheetHeader>
+                    <nav className="grid gap-6 text-lg font-medium">
+                        <Link
+                            href="/admin"
+                            className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:text-base"
+                        >
+                            <Volleyball className="h-5 w-5 transition-all group-hover:scale-110" />
+                            <span className="sr-only">Saeed's Shuffle</span>
+                        </Link>
+                        {navItems.map(item => (
+                             <Link
+                                key={item.href}
+                                href={item.href}
+                                className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
+                            >
+                                <item.icon className="h-5 w-5" />
+                                {item.label}
+                            </Link>
+                        ))}
+                    </nav>
+                </SheetContent>
+            </Sheet>
+        </div>
       <div className="flex items-center gap-4 ml-auto">
         <Button asChild variant="outline" size="sm">
             <Link href="/" target="_blank">
