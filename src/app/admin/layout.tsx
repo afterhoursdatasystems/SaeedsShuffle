@@ -5,8 +5,8 @@ import { useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { PlayerProvider } from '@/contexts/player-context';
-import { SidebarProvider, Sidebar, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from '@/components/ui/sidebar';
-import { LayoutDashboard, UserCheck, Users, Calendar, Wand2, Bot, Volleyball, UserPlus } from 'lucide-react';
+import { SidebarProvider, Sidebar, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarTrigger } from '@/components/ui/sidebar';
+import { LayoutDashboard, UserCheck, Users, Calendar, Wand2, Bot, Volleyball, UserPlus, PanelLeft } from 'lucide-react';
 import Link from 'next/link';
 import AppHeader from '@/components/app-header';
 
@@ -49,7 +49,7 @@ export default function AdminLayout({
             <div className="flex min-h-screen w-full flex-col bg-muted/40">
                 <div className="flex">
                     <Sidebar>
-                        <div className="flex h-14 items-center border-b px-6">
+                        <div className="flex h-14 items-center border-b pl-4 pr-6">
                             <Link href="/admin" className="flex items-center gap-2 font-semibold">
                                 <Volleyball className="h-6 w-6 text-primary" />
                                 <span className="group-data-[collapsible=icon]:hidden">Saeed's Shuffle</span>
