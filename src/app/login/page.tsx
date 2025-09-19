@@ -26,25 +26,44 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (isAuthenticated) {
-      router.push('/admin');
-    }
+    // We introduce a slight delay to allow the `isAuthenticated` state to be confirmed
+    // after a login attempt before redirecting.
+    const timer = setTimeout(() => {
+        if (isAuthenticated) {
+            router.push('/admin');
+        }
+    }, 100); // 100ms delay
+
+    return () => clearTimeout(timer);
   }, [isAuthenticated, router]);
   
   const handleLogin = () => {
     setIsLoading(true);
-    try {
-      // The email is now hardcoded in the context, so we don't need to pass it.
-      // In a real Google Sign-In, a popup would open. We're simulating the success case.
-      login('matt@afterhoursds.com', ''); 
-    } catch (err: any) {
-        toast({
-            title: 'Login Failed',
-            description: err.message,
-            variant: 'destructive',
-        });
+    // The email is hardcoded in the context.
+    login('matt@afterhoursds.com', ''); 
+
+    // We need to give the context a moment to update the isAuthenticated state
+    setTimeout(() => {
+        // We re-check the sessionStorage directly because the context state might not be updated yet
+        const storedAuth = sessionStorage.getItem('saeeds-shuffle-auth');
+        let isNowAuthenticated = false;
+        if (storedAuth) {
+            try {
+                isNowAuthenticated = JSON.parse(storedAuth).isAuthenticated;
+            } catch (e) {
+                isNowAuthenticated = false;
+            }
+        }
+
+        if (!isNowAuthenticated) {
+            toast({
+                title: 'Login Failed',
+                description: 'You are not authorized to access this page.',
+                variant: 'destructive',
+            });
+        }
         setIsLoading(false);
-    }
+    }, 500); // A 500ms delay gives ample time for the login process to attempt to complete.
   };
 
 

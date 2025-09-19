@@ -49,7 +49,9 @@ export function AuthProvider({children}: {children: ReactNode}) {
     // With a "Sign in with Google" flow, we only need to check the email.
     // A real implementation would involve a Firebase popup and token verification.
     if (email.toLowerCase() !== ALLOWED_USER) {
-      throw new Error(`Access is restricted to ${ALLOWED_USER}.`);
+      console.error(`Login attempt failed: Access is restricted to ${ALLOWED_USER}.`);
+      // Do not throw an error, just don't authenticate
+      return;
     }
     
     setIsAuthenticated(true);
