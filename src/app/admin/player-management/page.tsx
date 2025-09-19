@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
+  CardHeader,
+  CardTitle,
 } from '@/components/ui/card';
 import {
   Table,
@@ -21,7 +23,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { UserPlus, Edit, Trash2, ArrowUpDown, RefreshCw } from 'lucide-react';
+import { UserPlus, Edit, Trash2, ArrowUpDown, RefreshCw, MoreVertical } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useMemo, useState } from 'react';
 import type { Player, Team } from '@/types';
@@ -205,7 +207,105 @@ export default function PlayerManagementPage() {
           </div>
         </div>
 
-        <Card>
+        {/* Mobile View - Cards */}
+        <div className="grid gap-4 md:hidden">
+          {sortedPlayers.map(player => {
+            const teamName = playerTeamMap.get(player.id) || 'Unassigned';
+            const teamColor = teamName === 'Unassigned' ? '#EAEAEA' : teamColorMap.get(teamName);
+
+            return (
+              <Card key={player.id} className="w-full">
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle className="cursor-pointer" onClick={() => togglePlayerPresence(player.id)}>{player.name}</CardTitle>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem onSelect={() => setEditingPlayer(player)}>
+                          <Edit className="mr-2 h-4 w-4" /> Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => handleDelete(player.id)} className="text-destructive">
+                          <Trash2 className="mr-2 h-4 w-4" /> Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-between items-center cursor-pointer" onClick={() => togglePlayerPresence(player.id)}>
+                    <span className="text-muted-foreground">Presence</span>
+                    <Badge
+                      style={{
+                        backgroundColor: player.present ? '#D4EDDA' : '#F8D7DA',
+                        color: player.present ? '#155724' : '#721C24',
+                        borderColor: player.present ? '#C3E6CB' : '#F5C6CB'
+                      }}
+                      className="border"
+                    >
+                      {player.present ? 'Present' : 'Away'}
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Team</span>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="p-1 h-auto -mr-2">
+                          <Badge style={{ backgroundColor: teamColor, color: '#333' }} className='border-gray-300 border hover:opacity-80 cursor-pointer'>
+                            {teamName}
+                          </Badge>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem onSelect={() => handleTeamChange(player, 'Unassigned')}>
+                          Unassigned
+                        </DropdownMenuItem>
+                        {teams.map(team => (
+                          <DropdownMenuItem key={team.name} onSelect={() => handleTeamChange(player, team.name)}>
+                            {team.name}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                  <div className="flex justify-between items-center cursor-pointer" onClick={() => togglePlayerPresence(player.id)}>
+                    <span className="text-muted-foreground">Gender</span>
+                    <Badge
+                      style={{
+                        backgroundColor: player.gender === 'Guy' ? '#A2D2FF' : '#FFC4D6',
+                        color: '#333',
+                      }}
+                      className="border-gray-300 border"
+                    >
+                      {player.gender}
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between items-center cursor-pointer" onClick={() => togglePlayerPresence(player.id)}>
+                    <span className="text-muted-foreground">Skill</span>
+                    <Badge
+                      style={{
+                        backgroundColor: getSkillColor(player.skill),
+                        color: '#333',
+                        minWidth: '30px',
+                        textAlign: 'center',
+                        display: 'inline-block'
+                      }}
+                      className="border-gray-300 border"
+                    >
+                      {player.skill}
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            )
+          })}
+        </div>
+
+        {/* Desktop View - Table */}
+        <Card className="hidden md:block">
           <CardContent className="p-0">
             <Table>
               <TableHeader>
