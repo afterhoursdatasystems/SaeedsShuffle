@@ -32,15 +32,19 @@ function initializeAdminDb() {
         databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
       });
 
-      db = admin.database();
-      console.log('[DEBUG] Firebase Admin SDK initialized successfully. Database instance created.');
+      console.log('[DEBUG] Firebase Admin SDK initialized successfully.');
 
     } catch (error) {
       console.error('[DEBUG] Firebase Admin SDK initialization error:', error);
     }
-  } else if (!db) {
-    console.log('[DEBUG] Admin SDK already initialized, getting database instance.');
+  }
+  
+  // Get the database instance only if an app is initialized.
+  if (admin.apps.length > 0) {
     db = admin.database();
+    console.log('[DEBUG] Database instance created.');
+  } else {
+    console.error('[DEBUG] FATAL: No Firebase app initialized, cannot create database instance.');
   }
 }
 
