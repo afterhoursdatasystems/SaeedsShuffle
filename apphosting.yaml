@@ -9,3 +9,21 @@ runConfig:
   # environment variables.
   secrets:
     - secret: FIREBASE_SERVICE_ACCOUNT_JSON
+  # Defines environment variables that will be exposed to the build and run of your application.
+  # These are public variables. Do not add secrets here.
+  environment:
+    - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+      value: "AIzaSyA0j0G-AMN-GqPNFH0toSVpX9jDoHcqUXA"
+    - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+      value: "saeeds-shuffle.firebaseapp.com"
+    - variable: NEXT_PUBLIC_FIREBASE_DATABASE_URL
+      value: "https://saeeds-shuffle-default-rtdb.firebaseio.com"
+    - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+      value: "saeeds-shuffle"
+    - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+      value: "saeeds-shuffle.appspot.com"
+    - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+      value: "125373944681"
+    - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+      value: "1:125373944681:web:84b71ef6ec5af3e78263f8"
+
