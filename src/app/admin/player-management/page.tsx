@@ -29,6 +29,7 @@ import { EditPlayerDialog } from '@/components/edit-player-dialog';
 import { AddPlayerDialog } from '@/components/add-player-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { publishData } from '@/app/actions';
+import { PlayerCSVImportExport } from '@/components/player-csv-import-export';
 
 
 type SortKey = 'name' | 'team' | 'gender' | 'skill' | 'present';
@@ -184,14 +185,15 @@ export default function PlayerManagementPage() {
   return (
     <>
       <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-start justify-between mb-8 flex-wrap gap-4">
           <div>
             <h1 className="text-3xl font-bold">Player Management</h1>
             <p className="text-muted-foreground">
               Manage your league's players here. Click a player to toggle their presence.
             </p>
           </div>
-          <div className='flex gap-2'>
+          <div className='flex gap-2 flex-wrap'>
+            <PlayerCSVImportExport />
             <Button onClick={() => resetAllPlayerPresence()} variant="outline">
               <RefreshCw className="mr-2 h-4 w-4" />
               Reset All to Away
@@ -344,3 +346,4 @@ export default function PlayerManagementPage() {
 }
 
     
+

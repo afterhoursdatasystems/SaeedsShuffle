@@ -4,6 +4,7 @@
 import { db } from '@/lib/firebase';
 import { simulateLeagueStandings, type SimulateLeagueStandingsInput } from '@/ai/flows/simulate-league-standings';
 import type { Team, GameFormat, GameVariant, Match, PowerUp, Player } from '@/types';
+import Papa from 'papaparse';
 
 type PublishedData = {
     teams: Team[];
@@ -13,6 +14,54 @@ type PublishedData = {
     pointsToWin: number;
 };
 
+
+// --- Player Data Seeding ---
+const seedPlayersData: Omit<Player, 'id' | 'present'>[] = [
+    { name: "Matt", gender: "Guy", skill: 10 },
+    { name: "Saeed", gender: "Guy", skill: 9 },
+    { name: "Caitlin", gender: "Gal", skill: 9 },
+    { name: "Lauren", gender: "Gal", skill: 8 },
+    { name: "Tj", gender: "Guy", skill: 8 },
+    { name: "Charlie", gender: "Guy", skill: 8 },
+    { name: "Christina", gender: "Gal", skill: 7 },
+    { name: "Katie", gender: "Gal", skill: 7 },
+    { name: "Andrew", gender: "Guy", skill: 7 },
+    { name: "David", gender: "Guy", skill: 6 },
+    { name: "Maddie", gender: "Gal", skill: 6 },
+    { name: "Megan", gender: "Gal", skill: 6 },
+    { name: "Emma", gender: "Gal", skill: 5 },
+    { name: "Will", gender: "Guy", skill: 5 },
+    { name: "Ashley", gender: "Gal", skill: 5 },
+    { name: "Josh", gender: "Guy", skill: 5 },
+    { name: "Jason", gender: "Guy", skill: 4 },
+    { name: "Alex", gender: "Guy", skill: 4 },
+    { name: "Grace", gender: "Gal", skill: 4 },
+    { name: "Courtney", gender: "Gal", skill: 4 },
+    { name: "Brandon", gender: "Guy", skill: 3 },
+    { name: "Olivia", gender: "Gal", skill: 3 },
+    { name: "Nick", gender: "Guy", skill: 3 },
+    { name: "Hannah", gender: "Gal", skill: 3 },
+    { name: "Justin", gender: "Guy", skill: 2 },
+    { name: "Rachel", gender: "Gal", skill: 2 },
+    { name: "Kevin", gender: "Guy", skill: 2 },
+    { name: "Sarah", gender: "Gal", skill: 1 }
+];
+
+async function seedDatabase() {
+    console.log('Seeding database with initial players...');
+    const updates: { [key: string]: Omit<Player, 'id'> } = {};
+    seedPlayersData.forEach(player => {
+        const newPlayerRef = db.ref('players').push();
+        const newPlayerId = newPlayerRef.key;
+        if (newPlayerId) {
+            updates[`/players/${newPlayerId}`] = { ...player, present: false };
+        }
+    });
+    await db.ref().update(updates);
+    console.log('Database seeded successfully.');
+}
+
+
 // --- Player Data Actions ---
 
 export async function getPlayers(): Promise<{ success: boolean; data?: Player[]; error?: string }> {
@@ -20,15 +69,24 @@ export async function getPlayers(): Promise<{ success: boolean; data?: Player[];
         const snapshot = await db.ref('players').once('value');
         const playersObject = snapshot.val();
         if (playersObject) {
-            // Convert the object of players into an array and add the id
             const playersArray = Object.keys(playersObject).map(key => ({
                 id: key,
                 ...playersObject[key],
-                present: playersObject[key].present ?? false // ensure presence has a default
+                present: playersObject[key].present ?? false 
             }));
             return { success: true, data: playersArray };
+        } else {
+             // If no players, seed the database
+            await seedDatabase();
+            const seededSnapshot = await db.ref('players').once('value');
+            const seededPlayersObject = seededSnapshot.val();
+            const seededPlayersArray = Object.keys(seededPlayersObject).map(key => ({
+                id: key,
+                ...seededPlayersObject[key],
+                present: seededPlayersObject[key].present ?? false
+            }));
+            return { success: true, data: seededPlayersArray };
         }
-        return { success: true, data: [] }; // Return empty array if no players exist
     } catch (error) {
         console.error('Get Players Error:', error);
         return { success: false, error: 'Failed to retrieve players from the database.' };
@@ -38,7 +96,6 @@ export async function getPlayers(): Promise<{ success: boolean; data?: Player[];
 export async function addPlayer(player: Omit<Player, 'id' | 'present'>): Promise<{ success: boolean; data?: Player[]; error?: string }> {
     try {
         const newPlayerRef = db.ref('players').push();
-        // Create the player object to be saved, ensuring `present` defaults to true
         const newPlayerData = {
             ...player,
             present: true,
@@ -155,7 +212,6 @@ export async function getPublishedData(): Promise<{ success: boolean; data?: Pub
         const snapshot = await db.ref('publishedData').once('value');
         const data = snapshot.val();
         
-        // Provide defaults for a completely empty database
         const saneData: PublishedData = {
             teams: data?.teams || [],
             format: data?.format || 'king-of-the-court',
@@ -180,5 +236,74 @@ export async function getSimulatedStandings(input: SimulateLeagueStandingsInput)
     } catch (error) {
         console.error('AI Simulation Error:', error);
         return { success: false, error: 'Failed to simulate standings due to an internal error.' };
+    }
+}
+
+
+// --- CSV Actions ---
+export async function exportPlayersToCSV(): Promise<{ success: boolean; csv?: string; error?: string }> {
+    try {
+        const playersResult = await getPlayers();
+        if (!playersResult.success || !playersResult.data) {
+            return { success: false, error: 'Could not fetch players for export.' };
+        }
+        
+        const dataForCSV = playersResult.data.map(({ name, gender, skill }) => ({ name, gender, skill }));
+
+        const csv = Papa.unparse(dataForCSV);
+        return { success: true, csv };
+
+    } catch (error) {
+        console.error('Export Players Error:', error);
+        return { success: false, error: 'Failed to export players.' };
+    }
+}
+
+export async function importPlayersFromCSV(csvData: string): Promise<{ success: boolean; data?: Player[]; error?: string; importCount?: number }> {
+    try {
+        const parseResult = Papa.parse<Omit<Player, 'id' | 'present'>>(csvData, {
+            header: true,
+            skipEmptyLines: true,
+            transform: (value, header) => {
+                if (header === 'skill') {
+                    return parseInt(value, 10);
+                }
+                return value;
+            },
+        });
+
+        if (parseResult.errors.length > 0) {
+            console.error('CSV Parsing Errors:', parseResult.errors);
+            return { success: false, error: `CSV parsing error on row ${parseResult.errors[0].row}: ${parseResult.errors[0].message}`};
+        }
+
+        const newPlayers = parseResult.data;
+        
+        if (newPlayers.length === 0) {
+            return { success: false, error: "No players found in the CSV file." };
+        }
+
+        const updates: { [key: string]: Omit<Player, 'id'> } = {};
+        newPlayers.forEach(player => {
+            // Basic validation
+            if (player.name && (player.gender === 'Guy' || player.gender === 'Gal') && player.skill >= 1 && player.skill <= 10) {
+                const newPlayerRef = db.ref('players').push();
+                const newPlayerId = newPlayerRef.key;
+                if (newPlayerId) {
+                    updates[`/players/${newPlayerId}`] = { ...player, present: false };
+                }
+            } else {
+                console.warn('Skipping invalid player row:', player);
+            }
+        });
+        
+        await db.ref().update(updates);
+        
+        const allPlayers = await getPlayers();
+
+        return { success: true, data: allPlayers.data, importCount: Object.keys(updates).length };
+    } catch (error) {
+        console.error('Import Players Error:', error);
+        return { success: false, error: 'Failed to import players.' };
     }
 }

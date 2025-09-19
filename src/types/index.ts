@@ -1,4 +1,5 @@
 
+
 export type Player = {
   id: string;
   name: string;
@@ -37,4 +38,10 @@ export type GameVariant =
 export type PowerUp = {
   name: string;
   description: string;
+};
+
+export type CSVRow = {
+  name: string;
+  gender: 'Guy' | 'Gal';
+  skill: string;
 };

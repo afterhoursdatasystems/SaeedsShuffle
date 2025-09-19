@@ -1,10 +1,11 @@
 
 
+
 'use client';
 
 import type { Player, Team, Match, GameFormat, GameVariant, PowerUp } from '@/types';
 import React, { createContext, useContext, useState, type ReactNode, useEffect, useCallback } from 'react';
-import { getPlayers, updatePlayerPresence, getPublishedData, updatePlayer, addPlayer, deletePlayer, publishData, resetAllPlayerPresence } from '@/app/actions';
+import { getPlayers, updatePlayerPresence, getPublishedData, updatePlayer, addPlayer, deletePlayer, publishData, resetAllPlayerPresence, importPlayersFromCSV } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 
 const allPowerUps: PowerUp[] = [
@@ -77,6 +78,7 @@ interface PlayerContextType {
   allPowerUps: PowerUp[];
   cosmicScrambleRules: PowerUp[];
   resetAllPlayerPresence: () => Promise<void>;
+  importPlayers: (csvData: string) => Promise<void>;
 }
 
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
@@ -191,7 +193,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
     const result = await updatePlayer(playerToUpdate);
 
-    if (result.success) {
+    if (result.success && result.data) {
+      setPlayers(result.data);
       toast({
         title: "Player Updated",
         description: `${playerToUpdate.name}'s information has been saved.`
@@ -348,6 +351,23 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const handleImportPlayers = async (csvData: string) => {
+      const result = await importPlayersFromCSV(csvData);
+      if (result.success && result.data) {
+          setPlayers(result.data);
+          toast({
+              title: "Import Successful",
+              description: `${result.importCount} players have been added to the roster.`
+          });
+      } else {
+          toast({
+              title: "Import Failed",
+              description: result.error || "Could not import players from the CSV file.",
+              variant: "destructive"
+          });
+      }
+  };
+
 
   const value = {
     players,
@@ -374,6 +394,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     allPowerUps,
     cosmicScrambleRules,
     resetAllPlayerPresence: handleResetAllPlayerPresence,
+    importPlayers: handleImportPlayers,
   };
 
   return (
