@@ -8,77 +8,109 @@ import {
   useEffect,
   type ReactNode,
 } from 'react';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, type User } from 'firebase/auth';
+import { getClientApp } from '@/lib/firebase';
+import { useToast } from '@/hooks/use-toast';
 
-const ALLOWED_USER = 'matt@afterhoursds.com';
-const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_LEAGUE_COMMISSIONER_PASSWORD;
+const ALLOWED_USER_EMAIL = 'matt@afterhoursds.com';
+
+interface UserProfile {
+    uid: string;
+    email: string | null;
+    displayName: string | null;
+    photoURL: string | null;
+}
 
 interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, pass: string) => void;
-  logout: () => void;
+  user: UserProfile | null;
+  login: () => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// A key for storing the auth state in sessionStorage
 const AUTH_STORAGE_KEY = 'saeeds-shuffle-auth';
 
 export function AuthProvider({children}: {children: ReactNode}) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
+  
+  const app = getClientApp();
+  const auth = getAuth(app);
 
   useEffect(() => {
-    // Check sessionStorage for persisted login state on mount
-    try {
-      const storedAuth = sessionStorage.getItem(AUTH_STORAGE_KEY);
-      if (storedAuth) {
-        const authData = JSON.parse(storedAuth);
-        // A simple check to re-validate. In a real app, you might check a token's expiry.
-        if (authData.isAuthenticated && authData.email === ALLOWED_USER) {
-          setIsAuthenticated(true);
+    const unsubscribe = auth.onAuthStateChanged(firebaseUser => {
+        setIsLoading(true);
+        if (firebaseUser) {
+             if (firebaseUser.email?.toLowerCase() === ALLOWED_USER_EMAIL) {
+                const userProfile: UserProfile = {
+                    uid: firebaseUser.uid,
+                    email: firebaseUser.email,
+                    displayName: firebaseUser.displayName,
+                    photoURL: firebaseUser.photoURL,
+                };
+                setUser(userProfile);
+                sessionStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(userProfile));
+             } else {
+                // User is signed in to Google, but not the allowed user.
+                // Force sign them out of our app state.
+                setUser(null);
+                sessionStorage.removeItem(AUTH_STORAGE_KEY);
+                signOut(auth); // Also sign them out of Firebase for this session
+                toast({
+                  title: 'Authorization Failed',
+                  description: 'This account is not authorized to access the admin area.',
+                  variant: 'destructive',
+                });
+             }
+        } else {
+            setUser(null);
+            sessionStorage.removeItem(AUTH_STORAGE_KEY);
         }
-      }
-    } catch (error) {
-        console.error("Could not parse auth state from storage", error);
-    }
-    setIsLoading(false);
-  }, []);
+        setIsLoading(false);
+    });
 
-  const login = (email: string, pass: string) => {
-    // With a "Sign in with Google" flow, we only need to check the email.
-    // A real implementation would involve a Firebase popup and token verification.
-    if (email.toLowerCase() !== ALLOWED_USER) {
-      console.error(`Login attempt failed: Access is restricted to ${ALLOWED_USER}.`);
-      // Do not throw an error, just don't authenticate
-      return;
-    }
-    
-    setIsAuthenticated(true);
-    // Persist login state to sessionStorage
+    return () => unsubscribe();
+  }, [auth, toast]);
+
+  const login = async () => {
+    const provider = new GoogleAuthProvider();
     try {
-        const authData = { isAuthenticated: true, email };
-        sessionStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authData));
-    } catch (error) {
-        console.error("Could not save auth state to storage", error);
+        await signInWithPopup(auth, provider);
+        // The onAuthStateChanged listener will handle the rest.
+    } catch (error: any) {
+        console.error('Google Sign-In Error:', error);
+        toast({
+            title: 'Login Error',
+            description: error.message || 'An error occurred during sign-in.',
+            variant: 'destructive',
+        });
     }
   };
 
-  const logout = () => {
-    setIsAuthenticated(false);
-    // Clear persisted login state
+  const logout = async () => {
     try {
-        sessionStorage.removeItem(AUTH_STORAGE_KEY);
-    } catch (error) {
-        console.error("Could not remove auth state from storage", error);
+        await signOut(auth);
+        // The onAuthStateChanged listener will handle setting user to null.
+    } catch (error: any) {
+        console.error('Sign-Out Error:', error);
+         toast({
+            title: 'Logout Error',
+            description: error.message || 'An error occurred during sign-out.',
+            variant: 'destructive',
+        });
     }
   };
 
   return (
     <AuthContext.Provider
       value={{
-        isAuthenticated: !isLoading && isAuthenticated,
+        isAuthenticated: !isLoading && !!user,
         isLoading,
+        user,
         login,
         logout,
       }}

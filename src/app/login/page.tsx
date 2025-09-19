@@ -7,7 +7,6 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Volleyball } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -21,52 +20,33 @@ const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 
 export default function LoginPage() {
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const router = useRouter();
-  const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSigningIn, setIsSigningIn] = useState(false);
 
   useEffect(() => {
-    // We introduce a slight delay to allow the `isAuthenticated` state to be confirmed
-    // after a login attempt before redirecting.
-    const timer = setTimeout(() => {
-        if (isAuthenticated) {
-            router.push('/admin');
-        }
-    }, 100); // 100ms delay
-
-    return () => clearTimeout(timer);
-  }, [isAuthenticated, router]);
+    if (!isAuthLoading && isAuthenticated) {
+        router.push('/admin');
+    }
+  }, [isAuthenticated, isAuthLoading, router]);
   
-  const handleLogin = () => {
-    setIsLoading(true);
-    // The email is hardcoded in the context.
-    login('matt@afterhoursds.com', ''); 
-
-    // We need to give the context a moment to update the isAuthenticated state
-    setTimeout(() => {
-        // We re-check the sessionStorage directly because the context state might not be updated yet
-        const storedAuth = sessionStorage.getItem('saeeds-shuffle-auth');
-        let isNowAuthenticated = false;
-        if (storedAuth) {
-            try {
-                isNowAuthenticated = JSON.parse(storedAuth).isAuthenticated;
-            } catch (e) {
-                isNowAuthenticated = false;
-            }
-        }
-
-        if (!isNowAuthenticated) {
-            toast({
-                title: 'Login Failed',
-                description: 'You are not authorized to access this page.',
-                variant: 'destructive',
-            });
-        }
-        setIsLoading(false);
-    }, 500); // A 500ms delay gives ample time for the login process to attempt to complete.
+  const handleLogin = async () => {
+    setIsSigningIn(true);
+    await login();
+    // The auth context's onAuthStateChanged listener will handle redirection
+    // or showing an error toast. We can set signing in to false after a delay
+    // in case of errors that don't redirect.
+    setTimeout(() => setIsSigningIn(false), 2000);
   };
 
+
+  if (isAuthLoading || isAuthenticated) {
+     return (
+      <div className="flex h-screen w-full items-center justify-center bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background p-4">
@@ -82,9 +62,9 @@ export default function LoginPage() {
             <Button 
                 onClick={handleLogin} 
                 className="w-full"
-                disabled={isLoading}
+                disabled={isSigningIn}
             >
-                {isLoading ? (
+                {isSigningIn ? (
                     'Signing in...'
                 ) : (
                     <>
