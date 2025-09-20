@@ -7,7 +7,7 @@ let db: admin.database.Database | null = null;
 function initializeAdminApp(): admin.database.Database {
     console.log('[VERBOSE DEBUG] initializeAdminApp: Function called.');
 
-    // Check if the app is already initialized
+    // Check if the app is already initialized to prevent re-initialization
     if (admin.apps.length > 0) {
         console.log('[VERBOSE DEBUG] initializeAdminApp: Firebase Admin SDK already initialized. Reusing existing instance.');
         return admin.database();
@@ -27,7 +27,11 @@ function initializeAdminApp(): admin.database.Database {
     
     let serviceAccount;
     try {
-        serviceAccount = JSON.parse(serviceAccountJson);
+        // App Hosting injects the secret as a pre-parsed object in some cases or a string.
+        // The .env file provides it as a string. This handles both.
+        serviceAccount = typeof serviceAccountJson === 'string'
+            ? JSON.parse(serviceAccountJson)
+            : serviceAccountJson;
         console.log('[VERBOSE DEBUG] initializeAdminApp: Successfully parsed service account JSON.');
     } catch (e: any) {
         console.error('[CRITICAL DEBUG] initializeAdminApp: Failed to parse service account JSON.', e.message);
