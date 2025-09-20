@@ -1,62 +1,59 @@
-
 import admin from 'firebase-admin';
-import { SecretManagerServiceClient } from '@google-cloud/secret-manager';
 
 // This is a singleton pattern. We'll store the initialized DB instance here.
 let db: admin.database.Database | null = null;
 
-// Helper function to fetch the service account from Secret Manager.
-async function getServiceAccount() {
-    console.log('[DB] Accessing secret from Secret Manager...');
-    const client = new SecretManagerServiceClient();
-    const secretName = 'projects/saeeds-shuffle/secrets/FIREBASE_SERVICE_ACCOUNT_JSON/versions/latest';
-    
-    try {
-        const [version] = await client.accessSecretVersion({ name: secretName });
-        const payload = version.payload?.data?.toString();
-        
-        if (!payload) {
-            throw new Error('Secret payload is empty.');
-        }
-        
-        console.log('[DB] Secret fetched successfully.');
-        return JSON.parse(payload);
+function initializeAdminApp(): admin.database.Database {
+    console.log('[DEBUG] initializeAdminApp: Function called.');
 
-    } catch (error) {
-        console.error('[DB] Failed to fetch secret from Secret Manager:', error);
-        throw new Error('Could not fetch database credentials from Secret Manager. Ensure you have run "gcloud auth application-default login" for local development.');
+    if (admin.apps.length > 0) {
+        console.log('[DEBUG] initializeAdminApp: Firebase Admin SDK already initialized.');
+        return admin.database();
     }
+
+    console.log('[DEBUG] initializeAdminApp: Starting new Firebase Admin SDK initialization.');
+    
+    const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
+
+    if (!serviceAccountJson) {
+        console.error('[CRITICAL] initializeAdminApp: FIREBASE_SERVICE_ACCOUNT_JSON environment variable is NOT SET.');
+        throw new Error('FIREBASE_SERVICE_ACCOUNT_JSON environment variable is not set. In local dev, check your .env file. In production, check your App Hosting secrets.');
+    }
+    
+    console.log('[DEBUG] initializeAdminApp: FIREBASE_SERVICE_ACCOUNT_JSON is present. Length:', serviceAccountJson.length);
+    
+    let serviceAccount;
+    try {
+        serviceAccount = JSON.parse(serviceAccountJson);
+        console.log('[DEBUG] initializeAdminApp: Successfully parsed service account JSON.');
+        console.log('[DEBUG] initializeAdminApp: Service account project_id:', serviceAccount.project_id);
+    } catch (e: any) {
+        console.error('[CRITICAL] initializeAdminApp: Failed to parse service account JSON.', e.message);
+        console.error('[DEBUG] initializeAdminApp: Raw service account string (first 50 chars):', serviceAccountJson.substring(0, 50));
+        throw new Error('Failed to parse FIREBASE_SERVICE_ACCOUNT_JSON. Ensure it is a valid JSON string.');
+    }
+
+    try {
+        console.log('[DEBUG] initializeAdminApp: Calling admin.initializeApp...');
+        admin.initializeApp({
+            credential: admin.credential.cert(serviceAccount),
+            databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
+        });
+        console.log('[SUCCESS] initializeAdminApp: Firebase Admin SDK initialized successfully.');
+    } catch (error: any) {
+        console.error('[CRITICAL] initializeAdminApp: admin.initializeApp failed.', error.message);
+        throw new Error(`Firebase Admin SDK initialization failed: ${error.message}`);
+    }
+
+    return admin.database();
 }
 
-// The main export is a function that returns a promise of the DB instance.
-export const getDb = async (): Promise<admin.database.Database> => {
-    // If the database is already initialized, return it immediately.
-    if (db) {
-        return db;
+export function getDb(): admin.database.Database {
+    if (!db) {
+        console.log('[DEBUG] getDb: No active DB instance, calling initializeAdminApp.');
+        db = initializeAdminApp();
+    } else {
+        console.log('[DEBUG] getDb: Re-using existing DB instance.');
     }
-    
-    console.log('[DB] Initializing Firebase Admin SDK...');
-
-    // If there are no apps initialized yet, initialize one.
-    if (admin.apps.length === 0) {
-        try {
-            const serviceAccount = await getServiceAccount();
-
-            admin.initializeApp({
-                credential: admin.credential.cert(serviceAccount),
-                databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
-            });
-            
-            console.log('[DB] Firebase Admin SDK initialized successfully.');
-
-        } catch (error) {
-            console.error('[DB] Firebase Admin SDK initialization failed:', error);
-            // Re-throw the error to ensure the calling function knows about the failure.
-            throw error; 
-        }
-    }
-    
-    // Store the database instance in our singleton variable and return it.
-    db = admin.database();
     return db;
-};
+}

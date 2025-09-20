@@ -6,10 +6,10 @@ runConfig:
   # more instances in response to increased traffic.
   maxInstances: 1
 
-# This section is intentionally left empty.
-# The application code now fetches secrets directly from Secret Manager
-# instead of relying on App Hosting to inject them as environment variables.
-secrets: {}
+# This section tells App Hosting to inject the secret value into the
+# specified environment variable.
+secrets:
+  - secret: FIREBASE_SERVICE_ACCOUNT_JSON
       
 # The following environment variables are available during the build process
 # and are sourced from your Firebase project's configuration. You do not
