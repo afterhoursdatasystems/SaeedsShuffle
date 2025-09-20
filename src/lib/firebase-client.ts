@@ -3,8 +3,8 @@
 
 import { initializeApp, getApps, getApp, type FirebaseOptions } from 'firebase/app';
 
-// It's safe to expose this config to the client.
-// Firebase security rules and App Check will protect your backend.
+// These environment variables are set by Firebase App Hosting during the build process.
+// They are safe to expose to the client.
 export const firebaseConfig: FirebaseOptions = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -19,9 +19,7 @@ export const firebaseConfig: FirebaseOptions = {
 // Client-side app initialization
 function initializeClientApp() {
     if (!firebaseConfig.apiKey) {
-        console.error("Firebase API key is missing. Please check your environment variables.");
-        // You might want to return a dummy app or throw an error,
-        // but for now, we'll log the error and let it fail on initializeApp.
+        console.error("Firebase API key is missing. The app may not work correctly in a local development environment if NEXT_PUBLIC environment variables are not set.");
     }
     return !getApps().length ? initializeApp(firebaseConfig) : getApp();
 }
