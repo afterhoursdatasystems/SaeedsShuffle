@@ -89,8 +89,8 @@ export async function getPlayers(): Promise<{ success: boolean; data?: Player[];
             }));
             return { success: true, data: seededPlayersArray };
         }
-    } catch (error) {
-        console.error('Get Players Error:', error);
+    } catch (error: any) {
+        console.error('[CRITICAL DEBUG] getPlayers Error:', error.message);
         return { success: false, error: 'Failed to retrieve players from the database.' };
     }
 }
@@ -108,8 +108,8 @@ export async function addPlayer(player: Omit<Player, 'id' | 'present'>): Promise
         const allPlayers = await getPlayers();
         return { success: true, data: allPlayers.data };
 
-    } catch (error) {
-        console.error('Add Player Error:', error);
+    } catch (error: any) {
+        console.error('[CRITICAL DEBUG] Add Player Error:', error.message);
         return { success: false, error: 'Failed to add player to the database.' };
     }
 }
@@ -122,8 +122,8 @@ export async function updatePlayer(updatedPlayer: Player): Promise<{ success: bo
         
         const allPlayers = await getPlayers();
         return { success: true, data: allPlayers.data };
-    } catch (error) {
-        console.error('Update Player Error:', error);
+    } catch (error: any) {
+        console.error('[CRITICAL DEBUG] Update Player Error:', error.message);
         return { success: false, error: 'Failed to update player in the database.' };
     }
 }
@@ -155,7 +155,7 @@ export async function deletePlayer(playerId: string): Promise<{ success: boolean
         const allPlayers = await getPlayers();
         return { success: true, data: allPlayers.data };
     } catch (error: any) {
-        console.error('[SERVER] deletePlayer error:', error);
+        console.error('[CRITICAL DEBUG] deletePlayer error:', error.message);
         return { success: false, error: error.message || 'Failed to delete player from the database.' };
     }
 }
@@ -166,8 +166,8 @@ export async function updatePlayerPresence(playerId: string, present: boolean): 
         const db = getDb();
         await db.ref(`players/${playerId}/present`).set(present);
         return { success: true };
-    } catch (error) {
-        console.error('Update Player Presence Error:', error);
+    } catch (error: any) {
+        console.error('[CRITICAL DEBUG] Update Player Presence Error:', error.message);
         return { success: false, error: 'Failed to update player presence in the database.' };
     }
 }
@@ -190,8 +190,8 @@ export async function resetAllPlayerPresence(): Promise<{ success: boolean; erro
         await db.ref().update(updates);
 
         return { success: true };
-    } catch (error) {
-        console.error('Reset All Player Presence Error:', error);
+    } catch (error: any) {
+        console.error('[CRITICAL DEBUG] Reset All Player Presence Error:', error.message);
         return { success: false, error: 'Failed to reset player presence in the database.' };
     }
 }
@@ -211,8 +211,8 @@ export async function publishData(teams: Team[], format: GameFormat | GameVarian
         };
         await db.ref('publishedData').set(dataToPublish);
         return { success: true, message: 'Teams, format, and schedule published successfully!' };
-    } catch (error) {
-        console.error('Publish Data Error:', error);
+    } catch (error: any) {
+        console.error('[CRITICAL DEBUG] Publish Data Error:', error.message);
         return { success: false, error: 'Failed to publish data to the database.' };
     }
 }
@@ -232,8 +232,8 @@ export async function getPublishedData(): Promise<{ success: boolean; data?: Pub
         };
         return { success: true, data: saneData };
        
-    } catch (error) {
-        console.error('Get Published Data Error:', error);
+    } catch (error: any) {
+        console.error('[CRITICAL DEBUG] Get Published Data Error:', error.message);
         return { success: false, error: 'Failed to retrieve data from the database.' };
     }
 }
@@ -244,8 +244,8 @@ export async function getSimulatedStandings(input: SimulateLeagueStandingsInput)
     try {
         const result = await simulateLeagueStandings(input);
         return { success: true, data: result };
-    } catch (error) {
-        console.error('AI Simulation Error:', error);
+    } catch (error: any) {
+        console.error('[CRITICAL DEBUG] AI Simulation Error:', error.message);
         return { success: false, error: 'Failed to simulate standings due to an internal error.' };
     }
 }
@@ -264,8 +264,8 @@ export async function exportPlayersToCSV(): Promise<{ success: boolean; csv?: st
         const csv = Papa.unparse(dataForCSV);
         return { success: true, csv };
 
-    } catch (error) {
-        console.error('Export Players Error:', error);
+    } catch (error: any) {
+        console.error('[CRITICAL DEBUG] Export Players Error:', error.message);
         return { success: false, error: 'Failed to export players.' };
     }
 }
@@ -285,7 +285,7 @@ export async function importPlayersFromCSV(csvData: string): Promise<{ success: 
         });
 
         if (parseResult.errors.length > 0) {
-            console.error('CSV Parsing Errors:', parseResult.errors);
+            console.error('[CRITICAL DEBUG] CSV Parsing Errors:', parseResult.errors);
             return { success: false, error: `CSV parsing error on row ${parseResult.errors[0].row}: ${parseResult.errors[0].message}`};
         }
 
@@ -314,8 +314,8 @@ export async function importPlayersFromCSV(csvData: string): Promise<{ success: 
         const allPlayers = await getPlayers();
 
         return { success: true, data: allPlayers.data, importCount: Object.keys(updates).length };
-    } catch (error) {
-        console.error('Import Players Error:', error);
+    } catch (error: any) {
+        console.error('[CRITICAL DEBUG] Import Players Error:', error.message);
         return { success: false, error: 'Failed to import players.' };
     }
 }
