@@ -1,61 +1,62 @@
 
 import admin from 'firebase-admin';
+import { SecretManagerServiceClient } from '@google-cloud/secret-manager';
 
-let db: admin.database.Database;
+// This is a singleton pattern. We'll store the initialized DB instance here.
+let db: admin.database.Database | null = null;
 
-// This function initializes the Firebase Admin SDK.
-// It's designed to run only once.
-const initializeAdminApp = () => {
-  // If the app is already initialized, don't do it again.
-  if (admin.apps.length > 0) {
-    return;
-  }
+// Helper function to fetch the service account from Secret Manager.
+async function getServiceAccount() {
+    console.log('[DB] Accessing secret from Secret Manager...');
+    const client = new SecretManagerServiceClient();
+    const secretName = 'projects/saeeds-shuffle/secrets/FIREBASE_SERVICE_ACCOUNT_JSON/versions/latest';
+    
+    try {
+        const [version] = await client.accessSecretVersion({ name: secretName });
+        const payload = version.payload?.data?.toString();
+        
+        if (!payload) {
+            throw new Error('Secret payload is empty.');
+        }
+        
+        console.log('[DB] Secret fetched successfully.');
+        return JSON.parse(payload);
 
-  console.log('Initializing Firebase Admin SDK...');
-
-  // In production (on App Hosting), the service account JSON is passed as a raw
-  // environment variable. In local development, it's a string from the .env file.
-  const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
-
-  if (!serviceAccountJson) {
-    throw new Error('FIREBASE_SERVICE_ACCOUNT_JSON environment variable is not set. In local dev, check your .env file. In production, check your App Hosting secrets.');
-  }
-
-  try {
-    // Determine the type of the service account credential
-    let serviceAccount: admin.ServiceAccount;
-    if (typeof serviceAccountJson === 'string') {
-      // This path is for local development, where the .env file provides a string.
-      serviceAccount = JSON.parse(serviceAccountJson);
-    } else {
-      // This path is for App Hosting, where the secret is injected as a pre-parsed object.
-      // We assume it's in the correct format.
-      serviceAccount = serviceAccountJson as admin.ServiceAccount;
+    } catch (error) {
+        console.error('[DB] Failed to fetch secret from Secret Manager:', error);
+        throw new Error('Could not fetch database credentials from Secret Manager. Ensure you have run "gcloud auth application-default login" for local development.');
     }
+}
 
-    // Initialize the app
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-      databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
-    });
+// The main export is a function that returns a promise of the DB instance.
+export const getDb = async (): Promise<admin.database.Database> => {
+    // If the database is already initialized, return it immediately.
+    if (db) {
+        return db;
+    }
+    
+    console.log('[DB] Initializing Firebase Admin SDK...');
 
-    console.log('Firebase Admin SDK initialized successfully.');
+    // If there are no apps initialized yet, initialize one.
+    if (admin.apps.length === 0) {
+        try {
+            const serviceAccount = await getServiceAccount();
 
-  } catch (error: any) {
-    console.error('Firebase Admin SDK initialization error:', error.message);
-    // Throwing the error helps debug issues by failing loudly.
-    throw new Error('Could not initialize Firebase Admin SDK: ' + error.message);
-  }
-};
+            admin.initializeApp({
+                credential: admin.credential.cert(serviceAccount),
+                databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
+            });
+            
+            console.log('[DB] Firebase Admin SDK initialized successfully.');
 
-// Run the initialization
-initializeAdminApp();
-
-// Export the initialized database instance
-db = admin.database();
-
-export const getDb = async () => {
-  // The 'db' instance is already initialized, so we can just return it.
-  // The async nature is kept for compatibility with any previous usage.
-  return db;
+        } catch (error) {
+            console.error('[DB] Firebase Admin SDK initialization failed:', error);
+            // Re-throw the error to ensure the calling function knows about the failure.
+            throw error; 
+        }
+    }
+    
+    // Store the database instance in our singleton variable and return it.
+    db = admin.database();
+    return db;
 };
