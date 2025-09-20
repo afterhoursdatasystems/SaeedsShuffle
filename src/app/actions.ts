@@ -1,7 +1,7 @@
 
 'use server';
 
-import { db } from '@/lib/firebase-admin';
+import { getDb } from '@/lib/firebase-admin';
 import { simulateLeagueStandings, type SimulateLeagueStandingsInput } from '@/ai/flows/simulate-league-standings';
 import type { Team, GameFormat, GameVariant, Match, PowerUp, Player } from '@/types';
 import Papa from 'papaparse';
@@ -49,6 +49,7 @@ const seedPlayersData: Omit<Player, 'id' | 'present'>[] = [
 
 async function seedDatabase() {
     console.log('Seeding database with initial players...');
+    const db = await getDb();
     const updates: { [key: string]: Omit<Player, 'id'> } = {};
     seedPlayersData.forEach(player => {
         const newPlayerRef = db.ref('players').push();
@@ -66,6 +67,7 @@ async function seedDatabase() {
 
 export async function getPlayers(): Promise<{ success: boolean; data?: Player[]; error?: string }> {
     try {
+        const db = await getDb();
         const snapshot = await db.ref('players').once('value');
         const playersObject = snapshot.val();
         if (playersObject) {
@@ -95,6 +97,7 @@ export async function getPlayers(): Promise<{ success: boolean; data?: Player[];
 
 export async function addPlayer(player: Omit<Player, 'id' | 'present'>): Promise<{ success: boolean; data?: Player[]; error?: string }> {
     try {
+        const db = await getDb();
         const newPlayerRef = db.ref('players').push();
         const newPlayerData = {
             ...player,
@@ -113,6 +116,7 @@ export async function addPlayer(player: Omit<Player, 'id' | 'present'>): Promise
 
 export async function updatePlayer(updatedPlayer: Player): Promise<{ success: boolean; data?: Player[]; error?: string }> {
     try {
+        const db = await getDb();
         const { id, ...playerData } = updatedPlayer;
         await db.ref(`players/${id}`).update(playerData);
         
@@ -126,6 +130,7 @@ export async function updatePlayer(updatedPlayer: Player): Promise<{ success: bo
 
 export async function deletePlayer(playerId: string): Promise<{ success: boolean; data?: Player[]; error?: string }> {
     try {
+        const db = await getDb();
         // Get all data first
         const publishedDataResult = await getPublishedData();
         if (!publishedDataResult.success || !publishedDataResult.data) {
@@ -158,6 +163,7 @@ export async function deletePlayer(playerId: string): Promise<{ success: boolean
 
 export async function updatePlayerPresence(playerId: string, present: boolean): Promise<{ success: boolean; error?: string }> {
     try {
+        const db = await getDb();
         await db.ref(`players/${playerId}/present`).set(present);
         return { success: true };
     } catch (error) {
@@ -168,6 +174,7 @@ export async function updatePlayerPresence(playerId: string, present: boolean): 
 
 export async function resetAllPlayerPresence(): Promise<{ success: boolean; error?: string }> {
     try {
+        const db = await getDb();
         const playersSnapshot = await db.ref('players').once('value');
         const players = playersSnapshot.val();
 
@@ -194,6 +201,7 @@ export async function resetAllPlayerPresence(): Promise<{ success: boolean; erro
 
 export async function publishData(teams: Team[], format: GameFormat | GameVariant, schedule: Match[], activeRule: PowerUp | null, pointsToWin: number) {
     try {
+        const db = await getDb();
         const dataToPublish: PublishedData = {
             teams: teams || [],
             format: format || 'king-of-the-court',
@@ -211,6 +219,7 @@ export async function publishData(teams: Team[], format: GameFormat | GameVarian
 
 export async function getPublishedData(): Promise<{ success: boolean; data?: PublishedData; error?: string }> {
     try {
+        const db = await getDb();
         const snapshot = await db.ref('publishedData').once('value');
         const data = snapshot.val();
         
@@ -263,6 +272,7 @@ export async function exportPlayersToCSV(): Promise<{ success: boolean; csv?: st
 
 export async function importPlayersFromCSV(csvData: string): Promise<{ success: boolean; data?: Player[]; error?: string; importCount?: number }> {
     try {
+        const db = await getDb();
         const parseResult = Papa.parse<Omit<Player, 'id' | 'present'>>(csvData, {
             header: true,
             skipEmptyLines: true,

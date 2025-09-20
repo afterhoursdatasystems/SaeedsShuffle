@@ -5,12 +5,6 @@ runConfig:
   # Increase this value if you'd like to automatically spin up
   # more instances in response to increased traffic.
   maxInstances: 1
-  # Defines secrets that will be stored in Secret Manager and exposed as
-  # environment variables.
-  secrets:
-    - secret: FIREBASE_SERVICE_ACCOUNT_JSON
-      # This makes the secret available as the FIREBASE_SERVICE_ACCOUNT_JSON
-      # environment variable in your run environment.
       
 # The following environment variables are available during the build process
 # and are sourced from your Firebase project's configuration. You do not
