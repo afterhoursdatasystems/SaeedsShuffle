@@ -67,8 +67,11 @@ async function seedDatabase() {
 
 export async function getPlayers(): Promise<{ success: boolean; data?: Player[]; error?: string }> {
     try {
+        console.log('[VERBOSE DEBUG] actions.getPlayers: Calling getDb()');
         const db = getDb();
+        console.log('[VERBOSE DEBUG] actions.getPlayers: getDb() returned. Calling db.ref()');
         const snapshot = await db.ref('players').once('value');
+        console.log('[VERBOSE DEBUG] actions.getPlayers: Snapshot received.');
         const playersObject = snapshot.val();
         if (playersObject) {
             const playersArray = Object.keys(playersObject).map(key => ({
@@ -219,8 +222,11 @@ export async function publishData(teams: Team[], format: GameFormat | GameVarian
 
 export async function getPublishedData(): Promise<{ success: boolean; data?: PublishedData; error?: string }> {
     try {
+        console.log('[VERBOSE DEBUG] actions.getPublishedData: Calling getDb()');
         const db = getDb();
+        console.log('[VERBOSE DEBUG] actions.getPublishedData: getDb() returned. Calling db.ref()');
         const snapshot = await db.ref('publishedData').once('value');
+        console.log('[VERBOSE DEBUG] actions.getPublishedData: Snapshot received.');
         const data = snapshot.val();
         
         const saneData: PublishedData = {

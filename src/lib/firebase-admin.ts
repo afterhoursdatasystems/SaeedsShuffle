@@ -1,12 +1,13 @@
 
 import admin from 'firebase-admin';
+import 'dotenv/config';
 
-// This is a singleton pattern. We'll store the initialized DB instance here.
 let db: admin.database.Database | null = null;
 
 function initializeAdminApp(): admin.database.Database {
     console.log('[VERBOSE DEBUG] initializeAdminApp: Function called.');
 
+    // Check if the app is already initialized
     if (admin.apps.length > 0) {
         console.log('[VERBOSE DEBUG] initializeAdminApp: Firebase Admin SDK already initialized. Reusing existing instance.');
         return admin.database();
@@ -14,6 +15,7 @@ function initializeAdminApp(): admin.database.Database {
 
     console.log('[VERBOSE DEBUG] initializeAdminApp: Starting new Firebase Admin SDK initialization.');
     
+    // This variable will be injected by App Hosting in production, or read from .env in local dev.
     const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
 
     if (!serviceAccountJson) {
@@ -21,18 +23,15 @@ function initializeAdminApp(): admin.database.Database {
         throw new Error('FIREBASE_SERVICE_ACCOUNT_JSON environment variable is not set. In local dev, check your .env file. In production, check your App Hosting secrets.');
     }
     
-    console.log('[VERBOSE DEBUG] initializeAdminApp: FIREBASE_SERVICE_ACCOUNT_JSON is present. Type:', typeof serviceAccountJson);
-    console.log('[VERBOSE DEBUG] initializeAdminApp: Raw service account string (first 70 chars):', serviceAccountJson.substring(0, 70));
-
+    console.log('[VERBOSE DEBUG] initializeAdminApp: FIREBASE_SERVICE_ACCOUNT_JSON is present.');
     
     let serviceAccount;
     try {
         serviceAccount = JSON.parse(serviceAccountJson);
         console.log('[VERBOSE DEBUG] initializeAdminApp: Successfully parsed service account JSON.');
-        console.log('[VERBOSE DEBUG] initializeAdminApp: Service account project_id from parsed JSON:', serviceAccount.project_id);
     } catch (e: any) {
         console.error('[CRITICAL DEBUG] initializeAdminApp: Failed to parse service account JSON.', e.message);
-        throw new Error(`Failed to parse FIREBASE_SERVICE_ACCOUNT_JSON. Ensure it is a valid JSON string. Error: ${e.message}`);
+        throw new Error(`Failed to parse FIREBASE_SERVICE_ACCOUNT_JSON. Error: ${e.message}`);
     }
 
     try {
