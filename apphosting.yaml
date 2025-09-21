@@ -6,11 +6,11 @@ runConfig:
   # more instances in response to increased traffic.
   maxInstances: 1
 
-# This section tells App Hosting to find the secret named 'ss_secret' in
+# This section tells App Hosting to find the secret named 'firebase_service_account_json' in
 # Secret Manager and inject its contents into the environment variable
 # named 'FIREBASE_SERVICE_ACCOUNT_JSON'.
 secrets:
-  - secret: ss_secret
+  - secret: firebase_service_account_json
     env: FIREBASE_SERVICE_ACCOUNT_JSON
 
 # The following environment variables are available during the build process
