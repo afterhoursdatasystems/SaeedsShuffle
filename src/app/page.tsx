@@ -235,7 +235,7 @@ export default function PublicTeamsPage() {
            if (result.data.pointsToWin !== pointsToWin) {
             setPointsToWin(result.data.pointsToWin || 15);
           }
-        } else {
+        } else if (result.error) {
           console.error('Failed to fetch data:', result.error);
         }
       } catch (error) {
@@ -427,12 +427,3 @@ export default function PublicTeamsPage() {
     </div>
   );
 }
-
-    
-
-    
-
-    
-
-    
-

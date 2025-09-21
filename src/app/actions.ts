@@ -233,7 +233,7 @@ export async function getPublishedData(): Promise<{ success: boolean; data?: Pub
         // Return a default, empty state.
         const saneData: PublishedData = {
             teams: data?.teams || [],
-            format: data?.format || 'king-of-the-court',
+            format: data?.format || 'round-robin',
             schedule: data?.schedule || [],
             activeRule: data?.activeRule || null,
             pointsToWin: data?.pointsToWin || 15,
