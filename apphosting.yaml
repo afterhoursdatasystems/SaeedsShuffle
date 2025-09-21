@@ -11,7 +11,7 @@ runConfig:
 secrets:
   - secret: ss_secret
     env: FIREBASE_SERVICE_ACCOUNT_JSON
-      
+
 # The following environment variables are available during the build process
 # and are sourced from your Firebase project's configuration. You do not
 # need to define them here for them to be available at runtime.
