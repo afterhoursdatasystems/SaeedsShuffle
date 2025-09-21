@@ -7,21 +7,18 @@ let db: admin.database.Database | null = null;
 function initializeAdminApp(): admin.database.Database {
     console.log('[VERBOSE DEBUG] initializeAdminApp: Function called.');
 
-    // --- START OF DEBUGGING BLOCK ---
-    const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
-    console.log('--- BEGIN RAW FIREBASE_SERVICE_ACCOUNT_JSON ---');
-    console.log(serviceAccountJson);
-    console.log('--- END RAW FIREBASE_SERVICE_ACCOUNT_JSON ---');
-    console.log(`[VERBOSE DEBUG] Type of serviceAccountJson: ${typeof serviceAccountJson}`);
-    // --- END OF DEBUGGING BLOCK ---
-
     if (admin.apps.length > 0) {
         console.log('[VERBOSE DEBUG] initializeAdminApp: Firebase Admin SDK already initialized. Reusing existing instance.');
-        return admin.database();
+        if (!db) {
+           db = admin.database();
+        }
+        return db;
     }
 
     console.log('[VERBOSE DEBUG] initializeAdminApp: Starting new Firebase Admin SDK initialization.');
     
+    const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
+
     if (!serviceAccountJson) {
         console.error('[CRITICAL DEBUG] initializeAdminApp: FIREBASE_SERVICE_ACCOUNT_JSON environment variable is NOT SET.');
         throw new Error('FIREBASE_SERVICE_ACCOUNT_JSON environment variable is not set. In local dev, check your .env file. In production, check your App Hosting secrets.');
@@ -31,6 +28,8 @@ function initializeAdminApp(): admin.database.Database {
     
     let serviceAccount;
     try {
+        // The environment variable can be a string (from .env) or an object (from App Hosting).
+        // This handles both cases.
         serviceAccount = typeof serviceAccountJson === 'string'
             ? JSON.parse(serviceAccountJson)
             : serviceAccountJson;
@@ -52,7 +51,8 @@ function initializeAdminApp(): admin.database.Database {
         throw new Error(`Firebase Admin SDK initialization failed: ${error.message}`);
     }
 
-    return admin.database();
+    db = admin.database();
+    return db;
 }
 
 export function getDb(): admin.database.Database {
@@ -66,6 +66,7 @@ export function getDb(): admin.database.Database {
         return db;
     } catch(error: any) {
         console.error("[CRITICAL DEBUG] getDb: An error occurred during database initialization process.", error.message);
+        // Re-throw the error to ensure calling functions know about the failure.
         throw error;
     }
 }
