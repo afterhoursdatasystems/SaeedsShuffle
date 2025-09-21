@@ -7,6 +7,14 @@ let db: admin.database.Database | null = null;
 function initializeAdminApp(): admin.database.Database {
     console.log('[VERBOSE DEBUG] initializeAdminApp: Function called.');
 
+    // --- START OF DEBUGGING BLOCK ---
+    const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
+    console.log('--- BEGIN RAW FIREBASE_SERVICE_ACCOUNT_JSON ---');
+    console.log(serviceAccountJson);
+    console.log('--- END RAW FIREBASE_SERVICE_ACCOUNT_JSON ---');
+    console.log(`[VERBOSE DEBUG] Type of serviceAccountJson: ${typeof serviceAccountJson}`);
+    // --- END OF DEBUGGING BLOCK ---
+
     if (admin.apps.length > 0) {
         console.log('[VERBOSE DEBUG] initializeAdminApp: Firebase Admin SDK already initialized. Reusing existing instance.');
         return admin.database();
@@ -14,8 +22,6 @@ function initializeAdminApp(): admin.database.Database {
 
     console.log('[VERBOSE DEBUG] initializeAdminApp: Starting new Firebase Admin SDK initialization.');
     
-    const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
-
     if (!serviceAccountJson) {
         console.error('[CRITICAL DEBUG] initializeAdminApp: FIREBASE_SERVICE_ACCOUNT_JSON environment variable is NOT SET.');
         throw new Error('FIREBASE_SERVICE_ACCOUNT_JSON environment variable is not set. In local dev, check your .env file. In production, check your App Hosting secrets.');
