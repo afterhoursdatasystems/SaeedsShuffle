@@ -6,8 +6,9 @@ runConfig:
   # more instances in response to increased traffic.
   maxInstances: 1
 
-# This section tells App Hosting to inject the secret value into the
-# specified environment variable.
+# This section tells App Hosting to find the secret named 'ss_secret' in
+# Secret Manager and inject its contents into the environment variable
+# named 'FIREBASE_SERVICE_ACCOUNT_JSON'.
 secrets:
   - secret: ss_secret
     env: FIREBASE_SERVICE_ACCOUNT_JSON
