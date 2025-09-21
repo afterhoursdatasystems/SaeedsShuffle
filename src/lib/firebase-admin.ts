@@ -14,7 +14,7 @@ function initializeAdminApp(): admin.database.Database {
 
     const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
 
-    if (!serviceAccountJson || serviceAccountJson === "PASTE_YOUR_SERVICE_ACCOUNT_JSON_CONTENT_HERE") {
+    if (!serviceAccountJson || serviceAccountJson === "PASTE_YOUR_SERVICE_ACCOUNT_JSON_HERE") {
         console.error('[CRITICAL DEBUG] initializeAdminApp: FIREBASE_SERVICE_ACCOUNT_JSON environment variable is NOT SET.');
         throw new Error('FIREBASE_SERVICE_ACCOUNT_JSON environment variable is not set. In local dev, check your .env file. In production, check your App Hosting secrets.');
     }
