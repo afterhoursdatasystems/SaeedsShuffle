@@ -229,6 +229,8 @@ export async function getPublishedData(): Promise<{ success: boolean; data?: Pub
         console.log('[VERBOSE DEBUG] actions.getPublishedData: Snapshot received.');
         const data = snapshot.val();
         
+        // If data is null or undefined, it's not an error, it just means nothing is published.
+        // Return a default, empty state.
         const saneData: PublishedData = {
             teams: data?.teams || [],
             format: data?.format || 'king-of-the-court',
@@ -240,7 +242,8 @@ export async function getPublishedData(): Promise<{ success: boolean; data?: Pub
        
     } catch (error: any) {
         console.error('[CRITICAL DEBUG] Get Published Data Error:', error.message);
-        return { success: false, error: 'Failed to retrieve data from the database.' };
+        // This catch block will now only trigger for actual database connection errors
+        return { success: false, error: 'Failed to retrieve published data due to a database connection issue.' };
     }
 }
 
