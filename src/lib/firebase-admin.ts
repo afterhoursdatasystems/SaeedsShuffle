@@ -7,7 +7,6 @@ let db: admin.database.Database | null = null;
 function initializeAdminApp(): admin.database.Database {
     console.log('[VERBOSE DEBUG] initializeAdminApp: Function called.');
 
-    // Check if the app is already initialized to prevent re-initialization
     if (admin.apps.length > 0) {
         console.log('[VERBOSE DEBUG] initializeAdminApp: Firebase Admin SDK already initialized. Reusing existing instance.');
         return admin.database();
@@ -15,7 +14,6 @@ function initializeAdminApp(): admin.database.Database {
 
     console.log('[VERBOSE DEBUG] initializeAdminApp: Starting new Firebase Admin SDK initialization.');
     
-    // This variable will be injected by App Hosting in production, or read from .env in local dev.
     const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
 
     if (!serviceAccountJson) {
@@ -27,8 +25,6 @@ function initializeAdminApp(): admin.database.Database {
     
     let serviceAccount;
     try {
-        // App Hosting injects the secret as a pre-parsed object in some cases or a string.
-        // The .env file provides it as a string. This handles both.
         serviceAccount = typeof serviceAccountJson === 'string'
             ? JSON.parse(serviceAccountJson)
             : serviceAccountJson;
@@ -64,7 +60,6 @@ export function getDb(): admin.database.Database {
         return db;
     } catch(error: any) {
         console.error("[CRITICAL DEBUG] getDb: An error occurred during database initialization process.", error.message);
-        // Re-throw the error to ensure calling functions know about the failure.
         throw error;
     }
 }
