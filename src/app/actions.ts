@@ -150,6 +150,18 @@ export async function updatePlayerPresence(playerId: string, present: boolean): 
     }
 }
 
+export async function setAllPlayersAway(): Promise<{ success: boolean; error?: string }> {
+    try {
+        const players = await readPlayersDb();
+        const updatedPlayers = players.map(p => ({ ...p, present: false }));
+        await writePlayersDb(updatedPlayers);
+        return { success: true };
+    } catch (error) {
+        console.error('Set All Players Away Error:', error);
+        return { success: false, error: 'Failed to update all players to away.' };
+    }
+}
+
 export async function getSimulatedStandings(input: SimulateLeagueStandingsInput) {
     try {
         const result = await simulateLeagueStandings(input);

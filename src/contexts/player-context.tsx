@@ -4,7 +4,7 @@
 
 import type { Player, Team, Match, GameFormat, GameVariant, PowerUp } from '@/types';
 import React, { createContext, useContext, useState, type ReactNode, useEffect, useCallback } from 'react';
-import { getPlayers, updatePlayerPresence, getPublishedData, updatePlayer, addPlayer, deletePlayer, publishData } from '@/app/actions';
+import { getPlayers, updatePlayerPresence, getPublishedData, updatePlayer, addPlayer, deletePlayer, publishData, setAllPlayersAway as setAllPlayersAwayAction } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 
 const allPowerUps: PowerUp[] = [
@@ -56,6 +56,7 @@ interface PlayerContextType {
   players: Player[];
   setPlayers: React.Dispatch<React.SetStateAction<Player[]>>;
   togglePlayerPresence: (playerId: string) => void;
+  setAllPlayersAway: () => void;
   updatePlayer: (player: Player) => Promise<boolean>;
   addPlayer: (player: Omit<Player, 'id' | 'present'>) => Promise<boolean>;
   deletePlayer: (playerId: string) => Promise<boolean>;
@@ -176,6 +177,31 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
           p.id === playerId ? { ...p, present: !newPresence } : p
         )
       );
+    }
+  };
+
+  const setAllPlayersAway = async () => {
+    const originalPlayers = [...players];
+    // Optimistically update the UI
+    setPlayers(currentPlayers =>
+      currentPlayers.map(p => ({ ...p, present: false }))
+    );
+
+    const result = await setAllPlayersAwayAction();
+
+    if (result.success) {
+      toast({
+        title: "Presence Reset",
+        description: "All players have been set to 'Away'.",
+      });
+    } else {
+      // Revert on failure
+      setPlayers(originalPlayers);
+      toast({
+        title: "Update Failed",
+        description: result.error || "Could not update all players.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -322,6 +348,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     players,
     setPlayers,
     togglePlayerPresence,
+    setAllPlayersAway,
     updatePlayer: handleUpdatePlayer,
     addPlayer: handleAddPlayer,
     deletePlayer: handleDeletePlayer,

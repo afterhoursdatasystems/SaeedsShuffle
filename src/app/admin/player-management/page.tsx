@@ -25,7 +25,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { UserPlus, Edit, Trash2, ArrowUpDown, MoreVertical } from 'lucide-react';
+import { UserPlus, Edit, Trash2, ArrowUpDown, MoreVertical, UserX } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useMemo, useState } from 'react';
 import type { Player, Team } from '@/types';
@@ -52,7 +52,7 @@ const getSkillColor = (skill: number) => {
 
 
 export default function PlayerManagementPage() {
-  const { players, teams, setTeams, togglePlayerPresence, isLoading, deletePlayer, gameFormat, schedule, activeRule, pointsToWin } = usePlayerContext();
+  const { players, teams, setTeams, togglePlayerPresence, isLoading, deletePlayer, gameFormat, schedule, activeRule, pointsToWin, setAllPlayersAway } = usePlayerContext();
   const { toast } = useToast();
   const [sortKey, setSortKey] = useState<SortKey>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
@@ -179,6 +179,12 @@ export default function PlayerManagementPage() {
     }
   };
 
+  const handleSetAllAway = () => {
+    if (window.confirm('Are you sure you want to set all players to Away?')) {
+      setAllPlayersAway();
+    }
+  };
+
 
   if (isLoading) {
     return (
@@ -198,10 +204,16 @@ export default function PlayerManagementPage() {
               Manage your league's players here. Click a player to toggle their presence.
             </p>
           </div>
-          <Button onClick={() => setIsAddPlayerOpen(true)} className="w-full sm:w-auto">
-            <UserPlus className="mr-2 h-4 w-4" />
-            Add Player
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <Button onClick={handleSetAllAway} variant="outline" className="w-full sm:w-auto">
+                <UserX className="mr-2 h-4 w-4" />
+                Set All to Away
+            </Button>
+            <Button onClick={() => setIsAddPlayerOpen(true)} className="w-full sm:w-auto">
+              <UserPlus className="mr-2 h-4 w-4" />
+              Add Player
+            </Button>
+          </div>
         </div>
         
         {/* Mobile View: Cards */}
