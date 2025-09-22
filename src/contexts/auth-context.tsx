@@ -39,9 +39,14 @@ export function AuthProvider({children}: {children: ReactNode}) {
   const { toast } = useToast();
   
   const app = getClientApp();
-  const auth = getAuth(app);
+  const auth = app ? getAuth(app) : null;
 
   useEffect(() => {
+    if (!auth) {
+      setIsLoading(false);
+      return;
+    }
+
     const unsubscribe = auth.onAuthStateChanged(firebaseUser => {
         setIsLoading(true);
         if (firebaseUser) {
@@ -77,6 +82,15 @@ export function AuthProvider({children}: {children: ReactNode}) {
   }, [auth, toast]);
 
   const login = async () => {
+    if (!auth) {
+      toast({
+        title: 'Login Error',
+        description: 'Firebase authentication not available.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     const provider = new GoogleAuthProvider();
     try {
         await signInWithPopup(auth, provider);
@@ -92,6 +106,15 @@ export function AuthProvider({children}: {children: ReactNode}) {
   };
 
   const logout = async () => {
+    if (!auth) {
+      toast({
+        title: 'Logout Error',
+        description: 'Firebase authentication not available.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     try {
         await signOut(auth);
         // The onAuthStateChanged listener will handle setting user to null.

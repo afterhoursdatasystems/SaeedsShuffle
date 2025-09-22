@@ -18,6 +18,13 @@ export const firebaseConfig: FirebaseOptions = {
 
 // Client-side app initialization
 function initializeClientApp() {
+    // During build/prerendering, Firebase config may not be available
+    // Return a dummy app that will be properly initialized at runtime
+    if (typeof window === 'undefined' && !firebaseConfig.apiKey) {
+        console.warn("Firebase config not available during build - will initialize at runtime");
+        return null;
+    }
+
     if (!firebaseConfig.apiKey) {
         console.error("Firebase API key is missing.");
         console.error("Local dev: Check your .env.local file for NEXT_PUBLIC_FIREBASE_* variables");
