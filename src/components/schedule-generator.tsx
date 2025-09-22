@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import type { Match, GameFormat, GameVariant, Player, Team } from '@/types';
@@ -254,17 +255,17 @@ export function ScheduleGenerator() {
     <div className="space-y-8">
        <Card>
         <CardHeader>
-           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <CardTitle>Schedule Generation</CardTitle>
                 <CardDescription>Generate the match schedule for the chosen game format.</CardDescription>
               </div>
-               <div className="flex gap-2 mt-4 sm:mt-0">
-                 <Button onClick={handleGenerateSchedule}>
+               <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                 <Button onClick={handleGenerateSchedule} className="w-full sm:w-auto">
                   <CalendarDays className="mr-2 h-4 w-4" />
                   Generate Schedule
                 </Button>
-                <Button onClick={handleClearSchedule} variant="outline">
+                <Button onClick={handleClearSchedule} variant="outline" className="w-full sm:w-auto">
                     <Trash2 className="mr-2 h-4 w-4" />
                     Clear Schedule
                 </Button>
@@ -276,17 +277,17 @@ export function ScheduleGenerator() {
       {schedule.length > 0 && (
         <Card>
           <CardHeader>
-             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <CardTitle>Match Schedule & Results</CardTitle>
                     <CardDescription>Enter results as games are completed.</CardDescription>
                 </div>
-                 <div className="flex gap-2 mt-4 sm:mt-0">
-                    <Button onClick={handleSaveAllResults} variant="secondary">
+                 <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                    <Button onClick={handleSaveAllResults} variant="secondary" className="w-full sm:w-auto">
                         <Save className="mr-2 h-4 w-4" />
                         Save All Results
                     </Button>
-                     <Button onClick={handlePublish} disabled={isPublishing}>
+                     <Button onClick={handlePublish} disabled={isPublishing} className="w-full sm:w-auto">
                         <Send className="mr-2 h-4 w-4" />
                         {isPublishing ? 'Publishing...' : 'Publish to Dashboard'}
                     </Button>

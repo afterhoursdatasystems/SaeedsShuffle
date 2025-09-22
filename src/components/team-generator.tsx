@@ -285,7 +285,7 @@ export function TeamGenerator() {
                 </Alert>
             ) : (
                 <div className="space-y-6">
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-lg border p-4">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between rounded-lg border p-4">
                          <div className='space-y-2'>
                             <Label>Team Size</Label>
                             <RadioGroup value={String(teamSize)} onValueChange={(val) => setTeamSize(Number(val))} className="flex space-x-4">
@@ -299,12 +299,12 @@ export function TeamGenerator() {
                                 </div>
                             </RadioGroup>
                         </div>
-                        <Separator orientation='vertical' className='hidden sm:block h-12' />
+                        <Separator orientation='vertical' className='hidden md:block h-12' />
                         <div className="text-center">
                             <p className="text-sm font-medium text-muted-foreground">Attendance</p>
                             <p className="text-2xl font-bold">{presentPlayersCount} / {totalPlayersCount} Present</p>
                         </div>
-                        <Separator orientation='vertical' className='hidden sm:block h-12' />
+                        <Separator orientation='vertical' className='hidden md:block h-12' />
                          <div className="text-center">
                             <p className="text-sm font-medium text-muted-foreground">Gender Breakdown</p>
                             <p className="text-2xl font-bold">
@@ -314,7 +314,7 @@ export function TeamGenerator() {
                                 <span className="ml-2 text-base font-normal">({overallGuyPercentage}% guys)</span>
                             </p>
                         </div>
-                        <Separator orientation='vertical' className='hidden sm:block h-12' />
+                        <Separator orientation='vertical' className='hidden lg:block h-12' />
                         <div className="text-center">
                             <p className="text-sm font-medium text-muted-foreground">Possible Teams</p>
                             <p className="text-2xl font-bold">{possibleTeamsCount}</p>
@@ -325,12 +325,12 @@ export function TeamGenerator() {
         </CardContent>
         {!isBlindDraw && (
             <CardFooter className="border-t px-6 py-4">
-                <div className="flex gap-2">
-                    <Button onClick={handleGenerateTeams}>
+                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                    <Button onClick={handleGenerateTeams} className="w-full sm:w-auto">
                         <Shuffle className="mr-2 h-4 w-4" />
                         Generate New Teams
                     </Button>
-                    <Button onClick={handleClearTeams} variant="outline">
+                    <Button onClick={handleClearTeams} variant="outline" className="w-full sm:w-auto">
                         <Trash2 className="mr-2 h-4 w-4" />
                         Clear Teams
                     </Button>
@@ -344,12 +344,12 @@ export function TeamGenerator() {
             <div className="lg:col-span-3">
                 <Card>
                     <CardHeader>
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                             <div>
                             <CardTitle>Tonight's Teams</CardTitle>
                             <CardDescription>Use the dropdown on each player to move them to a different team.</CardDescription>
                             </div>
-                            <Button onClick={handlePublish} disabled={isPublishing}>
+                            <Button onClick={handlePublish} disabled={isPublishing} className="w-full sm:w-auto">
                                 <Send className="mr-2 h-4 w-4" />
                                 {isPublishing ? 'Publishing...' : 'Publish to Dashboard'}
                             </Button>

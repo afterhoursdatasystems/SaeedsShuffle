@@ -7,6 +7,9 @@ import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
+  CardHeader,
+  CardTitle,
+  CardFooter
 } from '@/components/ui/card';
 import {
   Table,
@@ -22,7 +25,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { UserPlus, Edit, Trash2, ArrowUpDown } from 'lucide-react';
+import { UserPlus, Edit, Trash2, ArrowUpDown, MoreVertical } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useMemo, useState } from 'react';
 import type { Player, Team } from '@/types';
@@ -188,20 +191,103 @@ export default function PlayerManagementPage() {
   return (
     <>
       <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
           <div>
             <h1 className="text-3xl font-bold">Player Management</h1>
             <p className="text-muted-foreground">
               Manage your league's players here. Click a player to toggle their presence.
             </p>
           </div>
-          <Button onClick={() => setIsAddPlayerOpen(true)}>
+          <Button onClick={() => setIsAddPlayerOpen(true)} className="w-full sm:w-auto">
             <UserPlus className="mr-2 h-4 w-4" />
             Add Player
           </Button>
         </div>
+        
+        {/* Mobile View: Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:hidden">
+          {sortedPlayers.map((player) => {
+            const teamName = playerTeamMap.get(player.id) || 'Unassigned';
+            const teamColor = teamName === 'Unassigned' ? '#EAEAEA' : teamColorMap.get(teamName);
+            return (
+              <Card key={player.id} className="flex flex-col">
+                <CardHeader className="flex flex-row items-center justify-between p-4">
+                  <CardTitle className="text-lg cursor-pointer" onClick={() => togglePlayerPresence(player.id)}>{player.name}</CardTitle>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem onSelect={() => setEditingPlayer(player)}>
+                        <Edit className="mr-2 h-4 w-4" /> Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onSelect={(e) => handleDelete(player.id, e)} className="text-destructive">
+                        <Trash2 className="mr-2 h-4 w-4" /> Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </CardHeader>
+                <CardContent className="p-4 pt-0 space-y-3">
+                  <div className="flex items-center justify-between" onClick={() => togglePlayerPresence(player.id)}>
+                      <span className="text-muted-foreground">Presence</span>
+                      <Badge
+                        style={{
+                          backgroundColor: player.present ? '#D4EDDA' : '#F8D7DA',
+                          color: player.present ? '#155724' : '#721C24',
+                          borderColor: player.present ? '#C3E6CB' : '#F5C6CB'
+                        }}
+                        className="border"
+                      >
+                        {player.present ? 'Present' : 'Away'}
+                      </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Team</span>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="p-1 h-auto -mr-2">
+                            <Badge style={{ backgroundColor: teamColor, color: '#333' }} className='border-gray-300 border hover:opacity-80 cursor-pointer'>
+                              {teamName}
+                            </Badge>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          <DropdownMenuItem onSelect={() => handleTeamChange(player, 'Unassigned')}>
+                            Unassigned
+                          </DropdownMenuItem>
+                          {teams.map(team => (
+                            <DropdownMenuItem key={team.name} onSelect={() => handleTeamChange(player, team.name)}>
+                              {team.name}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                  </div>
+                </CardContent>
+                <CardFooter className="p-4 pt-0 flex justify-between">
+                    <Badge
+                      style={{ backgroundColor: player.gender === 'Guy' ? '#A2D2FF' : '#FFC4D6', color: '#333' }}
+                      className="border-gray-300 border"
+                    >
+                      {player.gender}
+                    </Badge>
+                    <Badge
+                      style={{ backgroundColor: getSkillColor(player.skill), color: '#333' }}
+                      className="border-gray-300 border"
+                    >
+                      Skill: {player.skill}
+                    </Badge>
+                </CardFooter>
+              </Card>
+            );
+          })}
+        </div>
 
-        <Card>
+
+        {/* Desktop View: Table */}
+        <Card className="hidden md:block">
           <CardContent className="p-0">
             <Table>
               <TableHeader>
