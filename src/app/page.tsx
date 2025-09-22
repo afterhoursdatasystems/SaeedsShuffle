@@ -280,6 +280,7 @@ export default function PublicTeamsPage() {
   }, []);
   
   const formatDetails = useMemo(() => getFormatDetails(pointsToWin, teams.length), [pointsToWin, teams.length]);
+  
   const isKOTC = ['king-of-the-court', 'monarch-of-the-court', 'king-s-ransom', 'power-up-round', 'standard'].includes(gameFormat);
   const isLevelUp = gameFormat === 'level-up';
   
@@ -338,7 +339,6 @@ export default function PublicTeamsPage() {
 
   const ruleIsActive = (gameFormat === 'power-up-round' || gameFormat === 'king-s-ransom') && activeRule;
   const activeRuleTitle = gameFormat === 'king-s-ransom' ? 'Active Cosmic Scramble' : 'Active Power-Up';
-
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
