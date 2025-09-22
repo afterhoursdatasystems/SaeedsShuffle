@@ -290,6 +290,23 @@ export default function PublicTeamsPage() {
     const interval = setInterval(() => fetchData(false), 2000); // Refresh every 2 seconds
     return () => clearInterval(interval);
   }, [teams, schedule, activeRule, gameFormat, pointsToWin]);
+  
+  const formatDetails = useMemo(() => getFormatDetails(pointsToWin, teams.length), [pointsToWin, teams.length]);
+  const isKOTC = ['king-of-the-court', 'monarch-of-the-court', 'king-s-ransom', 'power-up-round', 'standard'].includes(gameFormat);
+  const isLevelUp = gameFormat === 'level-up';
+  
+  const groupedSchedule = useMemo(() => {
+    if (isKOTC) return null; // Don't group KOTC, it's continuous
+    
+    return schedule.reduce((acc, match) => {
+      const time = match.time;
+      if (!acc[time]) {
+        acc[time] = [];
+      }
+      acc[time].push(match);
+      return acc;
+    }, {} as Record<string, Match[]>);
+  }, [schedule, isKOTC]);
 
   const renderTeamSkeletons = () => (
     Array.from({ length: 4 }).map((_, index) => (
@@ -328,9 +345,6 @@ export default function PublicTeamsPage() {
     </Card>
   );
 
-  const formatDetails = useMemo(() => getFormatDetails(pointsToWin, teams.length), [pointsToWin, teams.length]);
-  const isKOTC = ['king-of-the-court', 'monarch-of-the-court', 'king-s-ransom', 'power-up-round', 'standard'].includes(gameFormat);
-  const isLevelUp = gameFormat === 'level-up';
   const currentFormatDetails = isKOTC ? formatDetails[gameFormat] || formatDetails['king-of-the-court'] : formatDetails[gameFormat];
   const CurrentFormatIcon = currentFormatDetails?.icon || ShieldQuestion;
 
@@ -398,28 +412,61 @@ export default function PublicTeamsPage() {
                 ))}
               </div>
 
-              {schedule.length > 0 && (
+               {schedule.length > 0 && !isKOTC && groupedSchedule && (
+                <div className="space-y-8">
+                  {Object.entries(groupedSchedule).map(([time, matches]) => (
+                    <Card key={time} className="rounded-xl border-2 shadow-2xl">
+                      <CardHeader className="p-6 bg-muted/50 rounded-t-lg">
+                        <CardTitle className="flex items-center gap-4 text-2xl font-bold">
+                          <Clock className="h-7 w-7 text-primary" />
+                          Matches at {time}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-0 sm:p-6">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="w-[150px]">Court</TableHead>
+                              <TableHead>Team A</TableHead>
+                              <TableHead>Team B</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {matches.map((match) => (
+                              <TableRow key={match.id} className="text-base">
+                                <TableCell><Badge>{match.court}</Badge></TableCell>
+                                <TableCell className="font-medium">{match.teamA}</TableCell>
+                                <TableCell className="font-medium">{match.teamB}</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+
+              {schedule.length > 0 && isKOTC && (
                 <Card className="rounded-xl border-2 shadow-2xl">
                   <CardHeader className="p-6 bg-muted/50 rounded-t-lg">
                     <CardTitle className="flex items-center gap-4 text-2xl font-bold">
                         <Calendar className="h-7 w-7 text-primary" />
-                        Tonight's Schedule
+                        Continuous KOTC Schedule
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-6">
-                    <Table>
+                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead className="w-[100px]">Time</TableHead>
-                          <TableHead className="w-[150px]">Court / Status</TableHead>
+                          <TableHead>Court / Status</TableHead>
                           <TableHead>Team A</TableHead>
-                          <TableHead>{ isKOTC ? 'vs Team B / Status' : 'Team B'}</TableHead>
+                          <TableHead>Team B / Status</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {schedule.map((match) => (
                           <TableRow key={match.id} className="text-base">
-                            <TableCell className="font-bold">{match.time}</TableCell>
                             <TableCell><Badge>{match.court}</Badge></TableCell>
                             <TableCell className="font-medium">{match.teamA}</TableCell>
                             <TableCell className="font-medium">{match.teamB}</TableCell>
@@ -430,6 +477,7 @@ export default function PublicTeamsPage() {
                   </CardContent>
                 </Card>
               )}
+
 
               {currentFormatDetails && <Card className="rounded-xl border-2 shadow-2xl">
                 <CardHeader className="p-6 bg-secondary/10 rounded-t-lg">
