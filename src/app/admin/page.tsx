@@ -3,7 +3,7 @@
 
 import PlayerManagement from '@/components/player-management';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bot, Calendar, Crown, BookOpen, Shuffle, Settings, UserPlus, Trophy, Zap, Send } from 'lucide-react';
+import { Bot, Calendar, Crown, BookOpen, Shuffle, Settings, UserPlus, Trophy, Zap, Send, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { usePlayerContext } from '@/contexts/player-context';
 import { Label } from '@/components/ui/label';
@@ -63,6 +63,7 @@ export default function AdminPage() {
                                     <SelectItem value="king-of-the-court"><Crown className="inline-block h-4 w-4 mr-2" /> King of the Court</SelectItem>
                                     <SelectItem value="round-robin"><BookOpen className="inline-block h-4 w-4 mr-2" /> Round Robin</SelectItem>
                                     <SelectItem value="pool-play-bracket"><Trophy className="inline-block h-4 w-4 mr-2" /> Pool Play / Bracket</SelectItem>
+                                    <SelectItem value="level-up"><TrendingUp className="inline-block h-4 w-4 mr-2" /> Level Up</SelectItem>
                                     <SelectItem value="blind-draw"><Shuffle className="inline-block h-4 w-4 mr-2" /> Blind Draw</SelectItem>
                                   </SelectContent>
                                 </Select>

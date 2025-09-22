@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
@@ -7,7 +6,7 @@ import { getPublishedData } from '@/app/actions';
 import type { Team, GameFormat, GameVariant, Match, PowerUp } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Volleyball, Users, Trophy, BookOpen, Crown, Gem, ShieldQuestion, KeyRound, Zap, Calendar, Shuffle, Wand2, Clock } from 'lucide-react';
+import { Volleyball, Users, Trophy, BookOpen, Crown, Gem, ShieldQuestion, KeyRound, Zap, Calendar, Shuffle, Wand2, Clock, TrendingUp } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -172,6 +171,44 @@ const getFormatDetails = (pointsToWin: number, teamCount: number): Record<Combin
         <p>After pool play is complete, teams are seeded into a single-elimination tournament. The top-ranked team plays the lowest-ranked team, and so on. In this phase, if you win, you advance; if you lose, you're out. The last team standing is the tournament champion!</p>
       </div>
     ),
+  },
+   'level-up': {
+    title: 'Level Up',
+    icon: TrendingUp,
+    description: (
+       <div>
+        <p className="mb-4">A competitive format where teams "level up" by winning, adopting progressively harder handicaps. The goal is to reach the highest level and secure a spot in the final tournament.</p>
+        
+        <h4 className="font-bold text-lg mb-2">Base Rules (Enforced at All Levels)</h4>
+        <ul className="list-disc pl-5 space-y-2 mb-6">
+            <li>No touching the net or interfering with play on the other side.</li>
+            <li>Hand sets must be clean (or at least nearly clean); don’t hand set if you can’t keep it clean.</li>
+            <li>No lifts.</li>
+            <li>No open-handed tips.</li>
+        </ul>
+
+        <h4 className="font-bold text-lg mb-2">How It Works</h4>
+        <ul className="list-disc pl-5 space-y-2 mb-6">
+            <li>Each team will play approximately 5 games in pool play.</li>
+            <li>If a team <strong>wins</strong>, they move up one level and must adopt the handicap of that new level for all future games.</li>
+            <li>If a team <strong>loses</strong>, they stay at their current level.</li>
+            <li>Handicaps are <strong>not</strong> cumulative. For example, a team reaching Level 3 only has the Level 3 handicap, not the Level 2 handicap.</li>
+        </ul>
+
+        <h4 className="font-bold text-lg mb-2">The Levels & Handicaps</h4>
+        <div className="space-y-3 mb-6">
+            <p><strong>Level 1:</strong> No additional rules.</p>
+            <p><strong>Level 2:</strong> All players on the team must rotate positions after each side-out.</p>
+            <p><strong>Level 3:</strong> The opposing team designates your strongest hitter, who must then play defense for the entire game.</p>
+            <p><strong>Level 4:</strong> All serves from your team must be underhand.</p>
+            <p><strong>Level 5:</strong> No player on your team is allowed to jump.</p>
+        </div>
+
+        <h4 className="font-bold text-lg mb-2">Playoffs</h4>
+        <p>At the end of pool play, the top four teams (those who have reached the highest levels) will compete in a single-elimination tournament. Point differential is the tie-breaker for seeding. There are no levels/handicaps during playoffs. Matches are best 2 out of 3 (games to 21, 3rd game to 15), with the final round being win-by-two.</p>
+
+       </div>
+    )
   },
   'round-robin': {
     title: 'Round Robin',
@@ -435,4 +472,3 @@ export default function PublicTeamsPage() {
     
 
     
-

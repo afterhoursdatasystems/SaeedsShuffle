@@ -25,6 +25,7 @@ export type GameFormat =
   | 'round-robin' 
   | 'pool-play-bracket' 
   | 'king-of-the-court'
+  | 'level-up'
   | 'blind-draw';
 
 export type GameVariant = 

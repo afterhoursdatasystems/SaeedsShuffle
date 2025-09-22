@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import type { Match, GameFormat, GameVariant, Player, Team } from '@/types';
@@ -141,10 +140,13 @@ export function ScheduleGenerator() {
     let formatDescription = '';
 
     switch(gameFormat) {
+        case 'level-up':
         case 'pool-play-bracket':
         case 'round-robin':
             newSchedule = generateRoundRobinSchedule(teams.map(t => t.name));
-            formatDescription = gameFormat === 'round-robin' ? "Round Robin" : "Pool Play / Bracket";
+            if (gameFormat === 'round-robin') formatDescription = "Round Robin";
+            else if (gameFormat === 'level-up') formatDescription = "Level Up";
+            else formatDescription = "Pool Play / Bracket";
             break;
         case 'king-of-the-court':
             newSchedule = generateKOTCSchedule(teams.map(t => t.name));
