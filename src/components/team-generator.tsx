@@ -376,9 +376,9 @@ export function TeamGenerator() {
                                 <CardTitle className="text-lg flex justify-between items-center">
                                     {team.name}
                                     {isLevelUp && (
-                                        <Badge variant="secondary" className="text-base">
-                                            Level {(team.level || 1)}/5
-                                        </Badge>
+                                        <span className="font-semibold text-muted-foreground text-base">
+                                            {(team.level || 1)}/5
+                                        </span>
                                     )}
                                 </CardTitle>
                                 </CardHeader>
