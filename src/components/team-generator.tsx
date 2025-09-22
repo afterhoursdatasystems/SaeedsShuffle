@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Send, Shuffle, Info, Trash2, Users, MoreVertical, PlusCircle, MinusCircle, Star } from 'lucide-react';
+import { Send, Shuffle, Info, Trash2, Users, MoreVertical, PlusCircle, MinusCircle } from 'lucide-react';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import React, { useEffect, useMemo, useState } from 'react';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
@@ -272,7 +272,7 @@ export function TeamGenerator() {
     const team = teams.find(t => t.id === teamId);
     if (!team) return;
 
-    const newLevel = Math.max(1, (team.level || 1) + delta);
+    const newLevel = Math.max(1, Math.min(5, (team.level || 1) + delta));
     updateTeam({ ...team, level: newLevel });
   }
   
@@ -377,8 +377,7 @@ export function TeamGenerator() {
                                     {team.name}
                                     {isLevelUp && (
                                         <Badge variant="secondary" className="text-base">
-                                            <Star className="w-4 h-4 mr-2 text-yellow-400 fill-yellow-400" />
-                                            Level {team.level || 1}
+                                            Level {(team.level || 1)}/5
                                         </Badge>
                                     )}
                                 </CardTitle>
