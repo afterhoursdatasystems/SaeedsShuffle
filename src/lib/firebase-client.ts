@@ -19,8 +19,15 @@ export const firebaseConfig: FirebaseOptions = {
 // Client-side app initialization
 function initializeClientApp() {
     if (!firebaseConfig.apiKey) {
-        console.error("Firebase API key is missing. The app may not work correctly in a local development environment if NEXT_PUBLIC environment variables are not set.");
+        console.error("Firebase API key is missing. Please check your .env.local file and ensure all NEXT_PUBLIC_FIREBASE_* variables are set.");
+        throw new Error("Firebase configuration is incomplete. Check your environment variables.");
     }
+
+    if (!firebaseConfig.databaseURL) {
+        console.error("Firebase Database URL is missing. This is required for Realtime Database connections.");
+        throw new Error("Firebase Database URL is required for Realtime Database. Check NEXT_PUBLIC_FIREBASE_DATABASE_URL in your .env.local file.");
+    }
+
     return !getApps().length ? initializeApp(firebaseConfig) : getApp();
 }
 

@@ -15,7 +15,9 @@ function initializeAdminApp(): admin.database.Database {
 
     if (!serviceAccountJson) {
         console.error('[CRITICAL DEBUG] initializeAdminApp: FIREBASE_SERVICE_ACCOUNT_JSON environment variable is NOT SET.');
-        throw new Error('FIREBASE_SERVICE_ACCOUNT_JSON environment variable is not set. In local dev, check your .env file. In production, check your App Hosting secrets.');
+        console.error('💡 Fix: Add your Firebase service account JSON to .env.local file');
+        console.error('📖 Guide: See setup-firebase.md for detailed instructions');
+        throw new Error('FIREBASE_SERVICE_ACCOUNT_JSON environment variable is not set. Check your .env.local file and follow setup-firebase.md instructions.');
     }
 
     let serviceAccount;
@@ -32,9 +34,14 @@ function initializeAdminApp(): admin.database.Database {
 
     console.log('[VERBOSE DEBUG] initializeAdminApp: Attempting to initialize Firebase Admin SDK...');
     try {
+        const databaseURL = process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL;
+        if (!databaseURL) {
+            throw new Error('NEXT_PUBLIC_FIREBASE_DATABASE_URL is required for Realtime Database. Check your .env.local file.');
+        }
+
         admin.initializeApp({
             credential: admin.credential.cert(serviceAccount),
-            databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
+            databaseURL: databaseURL,
         });
         console.log('[VERBOSE DEBUG] initializeAdminApp: Firebase Admin SDK initialized successfully.');
     } catch (error: any) {
