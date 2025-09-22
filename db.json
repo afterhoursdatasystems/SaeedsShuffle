@@ -103,7 +103,7 @@
           "present": true
         }
       ],
-      "level": 3
+      "level": 1
     },
     {
       "id": "41e3789c-9e19-4900-827e-077f5d46afbf",
@@ -182,8 +182,8 @@
       "id": "ed5886af-4d25-4aa7-a34e-3dad401810f6",
       "teamA": "Jetton Juggernauts",
       "teamB": "Peninsula Powerhouse",
-      "resultA": null,
-      "resultB": null,
+      "resultA": 15,
+      "resultB": 12,
       "court": "Court 1",
       "time": "6:45 PM"
     },
@@ -191,8 +191,8 @@
       "id": "d82d8762-9184-49c8-bc20-d917d4e6e3ee",
       "teamA": "Summit Strikers",
       "teamB": "Soda Shop Slammers",
-      "resultA": null,
-      "resultB": null,
+      "resultA": 15,
+      "resultB": 13,
       "court": "Court 2",
       "time": "6:45 PM"
     },

@@ -7,7 +7,7 @@ import { getPublishedData } from '@/app/actions';
 import type { Team, GameFormat, GameVariant, Match, PowerUp } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Volleyball, Users, Trophy, BookOpen, Crown, Gem, ShieldQuestion, KeyRound, Zap, Calendar, Shuffle, Wand2, Clock, TrendingUp, Star } from 'lucide-react';
+import { Volleyball, Users, Trophy, BookOpen, Crown, Gem, ShieldQuestion, KeyRound, Zap, Calendar, Shuffle, Wand2, Clock, TrendingUp } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -431,9 +431,10 @@ export default function PublicTeamsPage() {
                         <Table>
                           <TableHeader>
                             <TableRow>
-                              <TableHead className="w-[150px]">Court</TableHead>
+                              <TableHead className="w-[100px]">Court</TableHead>
                               <TableHead>Team A</TableHead>
                               <TableHead>Team B</TableHead>
+                              <TableHead className="text-right">Result</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
@@ -442,6 +443,11 @@ export default function PublicTeamsPage() {
                                 <TableCell><Badge>{match.court}</Badge></TableCell>
                                 <TableCell className="font-medium">{match.teamA}</TableCell>
                                 <TableCell className="font-medium">{match.teamB}</TableCell>
+                                <TableCell className="text-right font-mono">
+                                    {match.resultA !== null && match.resultB !== null
+                                        ? `${match.resultA} - ${match.resultB}`
+                                        : ''}
+                                </TableCell>
                               </TableRow>
                             ))}
                           </TableBody>
@@ -467,6 +473,7 @@ export default function PublicTeamsPage() {
                           <TableHead>Court / Status</TableHead>
                           <TableHead>Team A</TableHead>
                           <TableHead>Team B / Status</TableHead>
+                           <TableHead className="text-right">Result</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -475,6 +482,11 @@ export default function PublicTeamsPage() {
                             <TableCell><Badge>{match.court}</Badge></TableCell>
                             <TableCell className="font-medium">{match.teamA}</TableCell>
                             <TableCell className="font-medium">{match.teamB}</TableCell>
+                             <TableCell className="text-right font-mono">
+                                {match.resultA !== null && match.resultB !== null
+                                    ? `${match.resultA} - ${match.resultB}`
+                                    : ''}
+                            </TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
@@ -528,3 +540,5 @@ export default function PublicTeamsPage() {
     </div>
   );
 }
+
+    
