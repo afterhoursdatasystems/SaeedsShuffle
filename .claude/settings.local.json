@@ -10,7 +10,9 @@
       "Bash(firebase apphosting:secrets:describe:*)",
       "Bash(firebase apphosting:secrets:set:*)",
       "Bash(printf \"\\n\")",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []
