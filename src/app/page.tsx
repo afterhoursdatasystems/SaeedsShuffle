@@ -401,7 +401,7 @@ export default function PublicTeamsPage() {
               </div>
 
                {schedule.length > 0 && !isKOTC && groupedSchedule && (
-                <div className="space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {Object.entries(groupedSchedule).map(([time, matches]) => (
                     <Card key={time} className="rounded-xl border-2 shadow-2xl">
                       <CardHeader className="p-6 bg-muted/50 rounded-t-lg">
@@ -487,7 +487,7 @@ export default function PublicTeamsPage() {
                           <Wand2 className="h-8 w-8 text-primary" />
                           {activeRuleTitle}
                         </CardTitle>
-                      </Header>
+                      </CardHeader>
                       <CardContent className="text-center">
                         <p className="text-2xl font-bold text-primary">{activeRule?.name}</p>
                         <p className="text-lg text-muted-foreground mt-2">{activeRule?.description}</p>
