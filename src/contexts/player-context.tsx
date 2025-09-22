@@ -148,6 +148,43 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     };
     fetchData();
   }, [toast]);
+  
+  useEffect(() => {
+    if (gameFormat === 'level-up' && teams.length > 0 && schedule.length > 0) {
+      const teamWins: { [teamName: string]: number } = {};
+
+      // Initialize wins for all teams
+      for (const team of teams) {
+        teamWins[team.name] = 0;
+      }
+
+      // Calculate wins from schedule
+      for (const match of schedule) {
+        if (match.resultA !== null && match.resultB !== null) {
+          if (match.resultA > match.resultB) {
+            if (teamWins.hasOwnProperty(match.teamA)) {
+              teamWins[match.teamA]++;
+            }
+          } else if (match.resultB > match.resultA) {
+            if (teamWins.hasOwnProperty(match.teamB)) {
+              teamWins[match.teamB]++;
+            }
+          }
+        }
+      }
+
+      // Update team levels
+      const updatedTeams = teams.map(team => ({
+        ...team,
+        level: (teamWins[team.name] || 0) + 1,
+      }));
+      
+      // Only update state if there's a change to prevent infinite loops
+      if (JSON.stringify(updatedTeams) !== JSON.stringify(teams)) {
+        setTeams(updatedTeams);
+      }
+    }
+  }, [schedule, gameFormat, teams]);
 
 
   const togglePlayerPresence = async (playerId: string) => {

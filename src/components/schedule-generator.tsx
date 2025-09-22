@@ -332,8 +332,10 @@ export function ScheduleGenerator() {
     }));
   };
   
-  const handleSaveAllResults = () => {
+  const handleSaveAllResults = async () => {
     toast({ title: "Results saved", description: "All match results have been updated." });
+    // Also publish the data so the public dashboard is updated
+    await handlePublish();
   };
   
     const handleClearSchedule = () => {
