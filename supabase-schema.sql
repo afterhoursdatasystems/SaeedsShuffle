@@ -35,12 +35,14 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
--- Create triggers for updated_at
+-- Create triggers for updated_at (drop first if they exist)
+DROP TRIGGER IF EXISTS update_players_updated_at ON players;
 CREATE TRIGGER update_players_updated_at
     BEFORE UPDATE ON players
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_published_data_updated_at ON published_data;
 CREATE TRIGGER update_published_data_updated_at
     BEFORE UPDATE ON published_data
     FOR EACH ROW
@@ -50,13 +52,23 @@ CREATE TRIGGER update_published_data_updated_at
 ALTER TABLE players ENABLE ROW LEVEL SECURITY;
 ALTER TABLE published_data ENABLE ROW LEVEL SECURITY;
 
--- Create policies for players table
+-- Create policies for players table (drop first if they exist)
+DROP POLICY IF EXISTS "Enable read access for all users" ON players;
+DROP POLICY IF EXISTS "Enable insert access for all users" ON players;
+DROP POLICY IF EXISTS "Enable update access for all users" ON players;
+DROP POLICY IF EXISTS "Enable delete access for all users" ON players;
+
 CREATE POLICY "Enable read access for all users" ON players FOR SELECT USING (true);
 CREATE POLICY "Enable insert access for all users" ON players FOR INSERT WITH CHECK (true);
 CREATE POLICY "Enable update access for all users" ON players FOR UPDATE USING (true);
 CREATE POLICY "Enable delete access for all users" ON players FOR DELETE USING (true);
 
--- Create policies for published_data table
+-- Create policies for published_data table (drop first if they exist)
+DROP POLICY IF EXISTS "Enable read access for all users" ON published_data;
+DROP POLICY IF EXISTS "Enable insert access for all users" ON published_data;
+DROP POLICY IF EXISTS "Enable update access for all users" ON published_data;
+DROP POLICY IF EXISTS "Enable delete access for all users" ON published_data;
+
 CREATE POLICY "Enable read access for all users" ON published_data FOR SELECT USING (true);
 CREATE POLICY "Enable insert access for all users" ON published_data FOR INSERT WITH CHECK (true);
 CREATE POLICY "Enable update access for all users" ON published_data FOR UPDATE USING (true);
