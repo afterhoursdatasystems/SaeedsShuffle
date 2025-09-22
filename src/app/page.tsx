@@ -452,7 +452,7 @@ export default function PublicTeamsPage() {
                           <Wand2 className="h-8 w-8 text-primary" />
                           {activeRuleTitle}
                         </CardTitle>
-                      </CardHeader>
+                      </Header>
                       <CardContent className="text-center">
                         <p className="text-2xl font-bold text-primary">{activeRule?.name}</p>
                         <p className="text-lg text-muted-foreground mt-2">{activeRule?.description}</p>

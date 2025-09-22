@@ -103,7 +103,7 @@
           "present": true
         }
       ],
-      "level": 1
+      "level": 3
     },
     {
       "id": "41e3789c-9e19-4900-827e-077f5d46afbf",
@@ -179,84 +179,94 @@
   "format": "level-up",
   "schedule": [
     {
-      "id": "ab970e2c-2ef1-4f46-af79-f5e66e0aff62",
-      "teamA": "Jetton Juggernauts",
-      "teamB": "Summit Strikers",
-      "resultA": null,
-      "resultB": null,
-      "court": "Court 1"
-    },
-    {
-      "id": "19c67537-cb78-4013-af80-0c745020fa83",
-      "teamA": "Peninsula Powerhouse",
-      "teamB": "Birkdale Bombers",
-      "resultA": null,
-      "resultB": null,
-      "court": "Court 1"
-    },
-    {
-      "id": "34de5dca-733e-4d4e-bcee-b7f1a7c7bed9",
-      "teamA": "Jetton Juggernauts",
-      "teamB": "Birkdale Bombers",
-      "resultA": null,
-      "resultB": null,
-      "court": "Court 2"
-    },
-    {
-      "id": "065e4418-fd40-4c91-a454-2609aaec3581",
-      "teamA": "Birkdale Bombers",
-      "teamB": "Soda Shop Slammers",
-      "resultA": null,
-      "resultB": null,
-      "court": "Court 1"
-    },
-    {
-      "id": "db1d1011-8215-44b4-b7f1-2c6af98c4469",
+      "id": "ed5886af-4d25-4aa7-a34e-3dad401810f6",
       "teamA": "Jetton Juggernauts",
       "teamB": "Peninsula Powerhouse",
       "resultA": null,
       "resultB": null,
-      "court": "Court 1"
+      "court": "Court 1",
+      "time": "6:45 PM"
     },
     {
-      "id": "d805f3e1-bcb9-4905-9844-976eb7c74724",
-      "teamA": "Peninsula Powerhouse",
-      "teamB": "Soda Shop Slammers",
-      "resultA": null,
-      "resultB": null,
-      "court": "Court 1"
-    },
-    {
-      "id": "1aabab66-920e-4a3e-8c5a-240114829d57",
+      "id": "d82d8762-9184-49c8-bc20-d917d4e6e3ee",
       "teamA": "Summit Strikers",
       "teamB": "Soda Shop Slammers",
       "resultA": null,
       "resultB": null,
-      "court": "Court 2"
+      "court": "Court 2",
+      "time": "6:45 PM"
     },
     {
-      "id": "03f50b03-1484-4402-b467-aa3e4d699a1f",
+      "id": "41040c04-5c10-4f2d-8fe9-e2cc20f5f25f",
+      "teamA": "Jetton Juggernauts",
+      "teamB": "Birkdale Bombers",
+      "resultA": null,
+      "resultB": null,
+      "court": "Court 1",
+      "time": "7:15 PM"
+    },
+    {
+      "id": "625970d2-e6a0-4139-8024-8eeba3b68f0c",
+      "teamA": "Summit Strikers",
+      "teamB": "Peninsula Powerhouse",
+      "resultA": null,
+      "resultB": null,
+      "court": "Court 2",
+      "time": "7:15 PM"
+    },
+    {
+      "id": "0972699d-4709-4446-ba62-044f257aed94",
+      "teamA": "Jetton Juggernauts",
+      "teamB": "Summit Strikers",
+      "resultA": null,
+      "resultB": null,
+      "court": "Court 1",
+      "time": "7:45 PM"
+    },
+    {
+      "id": "7c2ab557-d125-4ef4-8ccd-1630ecf6bd91",
+      "teamA": "Soda Shop Slammers",
+      "teamB": "Birkdale Bombers",
+      "resultA": null,
+      "resultB": null,
+      "court": "Court 2",
+      "time": "7:45 PM"
+    },
+    {
+      "id": "72516c67-08f4-46d5-a318-0ceaa63141cf",
       "teamA": "Jetton Juggernauts",
       "teamB": "Soda Shop Slammers",
       "resultA": null,
       "resultB": null,
-      "court": "Court 2"
+      "court": "Court 1",
+      "time": "8:15 PM"
     },
     {
-      "id": "9cb28b0b-4027-4d56-b3ce-6f9ca58c50a8",
+      "id": "6d7fca13-f891-47b2-b03b-46f676151a1b",
       "teamA": "Peninsula Powerhouse",
-      "teamB": "Summit Strikers",
+      "teamB": "Birkdale Bombers",
       "resultA": null,
       "resultB": null,
-      "court": "Court 2"
+      "court": "Court 2",
+      "time": "8:15 PM"
     },
     {
-      "id": "996e2113-fd21-4e4e-8f2f-d6d64c8b2499",
+      "id": "21d86e48-26d2-4a58-88dc-62edc8c862de",
+      "teamA": "Peninsula Powerhouse",
+      "teamB": "Soda Shop Slammers",
+      "resultA": null,
+      "resultB": null,
+      "court": "Court 1",
+      "time": "8:45 PM"
+    },
+    {
+      "id": "39b43d2e-8e10-4e4f-abb6-37ecb9c9d912",
       "teamA": "Birkdale Bombers",
       "teamB": "Summit Strikers",
       "resultA": null,
       "resultB": null,
-      "court": "Court 2"
+      "court": "Court 2",
+      "time": "8:45 PM"
     }
   ],
   "activeRule": null,
