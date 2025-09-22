@@ -452,13 +452,13 @@ export default function PublicTeamsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {Object.entries(groupedSchedule).map(([time, matches]) => (
                     <Card key={time} className="rounded-xl border-2 shadow-2xl">
-                      <CardHeader className="p-6 bg-muted/50 rounded-t-lg">
-                        <CardTitle className="flex items-center gap-4 text-2xl font-bold">
-                          <Clock className="h-7 w-7 text-primary" />
+                      <CardHeader className="p-4 bg-muted/50 rounded-t-lg">
+                        <CardTitle className="flex items-center gap-3 text-xl font-bold">
+                          <Clock className="h-6 w-6 text-primary" />
                           Matches at {time}
                         </CardTitle>
                       </CardHeader>
-                      <CardContent className="p-0 sm:p-6">
+                      <CardContent className="p-0 sm:p-4">
                         <Table>
                           <TableHeader>
                             <TableRow>
