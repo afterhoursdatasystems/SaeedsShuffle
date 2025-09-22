@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
@@ -410,6 +411,7 @@ export default function PublicTeamsPage() {
                     <Table>
                       <TableHeader>
                         <TableRow>
+                          <TableHead className="w-[100px]">Time</TableHead>
                           <TableHead className="w-[150px]">Court / Status</TableHead>
                           <TableHead>Team A</TableHead>
                           <TableHead>{ isKOTC ? 'vs Team B / Status' : 'Team B'}</TableHead>
@@ -418,6 +420,7 @@ export default function PublicTeamsPage() {
                       <TableBody>
                         {schedule.map((match) => (
                           <TableRow key={match.id} className="text-base">
+                            <TableCell className="font-bold">{match.time}</TableCell>
                             <TableCell><Badge>{match.court}</Badge></TableCell>
                             <TableCell className="font-medium">{match.teamA}</TableCell>
                             <TableCell className="font-medium">{match.teamB}</TableCell>

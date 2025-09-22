@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import type { Match, GameFormat, GameVariant, Player, Team } from '@/types';
@@ -13,6 +14,7 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 import { usePlayerContext } from '@/contexts/player-context';
 import { publishData } from '@/app/actions';
+import { format } from 'date-fns';
 
 const shuffleArray = <T,>(array: T[]): T[] => {
   const newArray = [...array];
@@ -34,40 +36,64 @@ export function ScheduleGenerator() {
   const generateRoundRobinSchedule = (teamNames: string[]): Match[] => {
     const newSchedule: Match[] = [];
     const courts = ['Court 1', 'Court 2'];
-    let courtIndex = 0;
+    const gameDuration = 30; // in minutes
     
+    // Create all unique pairings
+    const pairings: { teamA: string, teamB: string }[] = [];
     for (let i = 0; i < teamNames.length; i++) {
       for (let j = i + 1; j < teamNames.length; j++) {
-        newSchedule.push({
-          id: crypto.randomUUID(),
+        pairings.push({
           teamA: teamNames[i],
           teamB: teamNames[j],
-          resultA: null,
-          resultB: null,
-          court: courts[courtIndex % courts.length]
         });
-        courtIndex++;
       }
     }
-    return shuffleArray(newSchedule);
+    const shuffledPairings = shuffleArray(pairings);
+
+    const startTime = new Date();
+    startTime.setHours(18, 45, 0, 0); // 6:45 PM
+
+    let courtIndex = 0;
+    let timeSlot = 0;
+
+    shuffledPairings.forEach((pairing, index) => {
+      const matchTime = new Date(startTime.getTime() + Math.floor(index / courts.length) * gameDuration * 60000);
+      
+      newSchedule.push({
+        id: crypto.randomUUID(),
+        teamA: pairing.teamA,
+        teamB: pairing.teamB,
+        resultA: null,
+        resultB: null,
+        court: courts[index % courts.length],
+        time: format(matchTime, 'h:mm a'),
+      });
+    });
+
+    return newSchedule;
   };
 
   const generateBlindDrawSchedule = (playersForDraw: Player[]): Match[] => {
       const newSchedule: Match[] = [];
       const courts = ['Court 1', 'Court 2'];
       const teamSize = 4;
-      const numMatches = Math.floor(playersForDraw.length / (teamSize * 2));
+      const gameDuration = 30; // in minutes
+      const numMatchesPerRound = Math.floor(playersForDraw.length / (teamSize * 2));
 
-      if(numMatches < 1) {
+      if(numMatchesPerRound < 1) {
         toast({ title: 'Not enough players', description: `Need at least ${teamSize*2} players for a blind draw match.`, variant: 'destructive' });
         return [];
       }
       
       const shuffledPlayers = shuffleArray(playersForDraw);
       
-      for(let i = 0; i < numMatches; i++) {
+      const startTime = new Date();
+      startTime.setHours(18, 45, 0, 0); // 6:45 PM
+
+      for(let i = 0; i < numMatchesPerRound; i++) {
         const teamAPlayers = shuffledPlayers.splice(0, teamSize);
         const teamBPlayers = shuffledPlayers.splice(0, teamSize);
+        const matchTime = new Date(startTime.getTime() + Math.floor(i / courts.length) * gameDuration * 60000);
         
         newSchedule.push({
             id: crypto.randomUUID(),
@@ -76,6 +102,7 @@ export function ScheduleGenerator() {
             resultA: null,
             resultB: null,
             court: courts[i % courts.length],
+            time: format(matchTime, 'h:mm a'),
         });
       }
 
@@ -87,6 +114,7 @@ export function ScheduleGenerator() {
     if (teamNames.length < 2) return [];
     
     const shuffledTeams = shuffleArray(teamNames);
+    const startTime = format(new Date(), 'h:mm a'); // KOTC is continuous
 
     let waitingTeams = [...shuffledTeams];
     const kingCourtMatch: Match = {
@@ -96,6 +124,7 @@ export function ScheduleGenerator() {
         resultA: null,
         resultB: null,
         court: 'King Court',
+        time: startTime,
     };
 
     let newSchedule: Match[] = [kingCourtMatch];
@@ -108,6 +137,7 @@ export function ScheduleGenerator() {
             resultA: null,
             resultB: null,
             court: 'Challenger Court',
+            time: startTime,
         };
         newSchedule.push(challengerCourtMatch);
     }
@@ -120,6 +150,7 @@ export function ScheduleGenerator() {
             resultA: null,
             resultB: null,
             court: 'Challenger Line',
+            time: '---'
         });
     });
 
@@ -301,6 +332,7 @@ export function ScheduleGenerator() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-[100px]">Time</TableHead>
                     <TableHead className="w-[150px]">Court / Status</TableHead>
                     <TableHead>Team A</TableHead>
                     <TableHead>{ isKOTC ? 'vs Team B / Status' : 'Team B'}</TableHead>
@@ -310,6 +342,7 @@ export function ScheduleGenerator() {
                 <TableBody>
                   {schedule.map((match) => (
                     <TableRow key={match.id}>
+                      <TableCell className="font-bold">{match.time}</TableCell>
                       <TableCell><Badge>{match.court}</Badge></TableCell>
                       <TableCell className="font-medium">{match.teamA}</TableCell>
                       <TableCell className="font-medium">{match.teamB}</TableCell>

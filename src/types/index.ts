@@ -22,6 +22,7 @@ export type Match = {
   resultA: number | null;
   resultB: number | null;
   court: string;
+  time: string;
 };
 
 export type GameFormat = 
