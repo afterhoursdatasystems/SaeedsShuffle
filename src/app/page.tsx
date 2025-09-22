@@ -289,7 +289,6 @@ export default function PublicTeamsPage() {
     
     const interval = setInterval(() => fetchData(false), 2000); // Refresh every 2 seconds
     return () => clearInterval(interval);
-
   }, [teams, schedule, activeRule, gameFormat, pointsToWin]);
 
   const renderTeamSkeletons = () => (
