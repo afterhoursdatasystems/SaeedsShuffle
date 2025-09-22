@@ -33,7 +33,7 @@
           "present": true
         }
       ],
-      "level": 2
+      "level": 3
     },
     {
       "id": "9733f3b1-4488-4c36-af19-8b6c0cdb95b0",
@@ -138,7 +138,7 @@
           "present": true
         }
       ],
-      "level": 2
+      "level": 3
     },
     {
       "id": "154c8a5b-de49-47ad-9349-df6c707f9e1b",
@@ -200,8 +200,8 @@
       "id": "41040c04-5c10-4f2d-8fe9-e2cc20f5f25f",
       "teamA": "Jetton Juggernauts",
       "teamB": "Birkdale Bombers",
-      "resultA": null,
-      "resultB": null,
+      "resultA": 15,
+      "resultB": 13,
       "court": "Court 1",
       "time": "7:15 PM"
     },
@@ -209,8 +209,8 @@
       "id": "625970d2-e6a0-4139-8024-8eeba3b68f0c",
       "teamA": "Summit Strikers",
       "teamB": "Peninsula Powerhouse",
-      "resultA": null,
-      "resultB": null,
+      "resultA": 15,
+      "resultB": 12,
       "court": "Court 2",
       "time": "7:15 PM"
     },

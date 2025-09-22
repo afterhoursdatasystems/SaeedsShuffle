@@ -296,6 +296,29 @@ export default function PublicTeamsPage() {
   }, []);
   
   const formatDetails = useMemo(() => getFormatDetails(pointsToWin, teams.length), [pointsToWin, teams.length]);
+
+  const teamStats = useMemo(() => {
+    const stats: { [teamName: string]: { wins: number; losses: number; level: number } } = {};
+
+    teams.forEach(team => {
+      stats[team.name] = { wins: 0, losses: 0, level: team.level || 1 };
+    });
+
+    schedule.forEach(match => {
+      const { teamA, teamB, resultA, resultB } = match;
+      if (resultA !== null && resultB !== null) {
+        if (resultA > resultB) {
+          if (stats[teamA]) stats[teamA].wins++;
+          if (stats[teamB]) stats[teamB].losses++;
+        } else if (resultB > resultA) {
+          if (stats[teamB]) stats[teamB].wins++;
+          if (stats[teamA]) stats[teamA].losses++;
+        }
+      }
+    });
+
+    return stats;
+  }, [teams, schedule]);
   
   const isKOTC = ['king-of-the-court', 'monarch-of-the-court', 'king-s-ransom', 'power-up-round', 'standard'].includes(gameFormat);
   const isLevelUp = gameFormat === 'level-up';
@@ -380,7 +403,10 @@ export default function PublicTeamsPage() {
             <div className="space-y-12">
 
                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5">
-                {teams.map((team) => (
+                {teams.map((team) => {
+                   const stats = teamStats[team.name];
+                   const record = stats ? `${stats.wins}-${stats.losses}` : '0-0';
+                  return(
                   <Card key={team.id} className={cn("flex flex-col rounded-xl border-2 shadow-2xl transition-transform hover:scale-105 bg-card",
                     isLevelUp ? `border-transparent` : 'border-primary'
                   )}>
@@ -390,11 +416,16 @@ export default function PublicTeamsPage() {
                             <Users className="h-5 w-5" />
                             {team.name}
                         </div>
-                         {isLevelUp && (
-                            <Badge variant="outline" className="text-sm bg-black/20 text-white border-white/50">
-                                Lvl {team.level || 1}
+                         <div className="flex items-center gap-2">
+                             <Badge variant="outline" className="text-xs bg-black/20 text-white border-white/50">
+                                {record}
                             </Badge>
-                        )}
+                            {isLevelUp && team.level && (
+                                <Badge variant="outline" className="text-xs bg-black/20 text-white border-white/50">
+                                    Lvl {team.level}
+                                </Badge>
+                            )}
+                        </div>
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="flex-grow p-4">
@@ -414,7 +445,7 @@ export default function PublicTeamsPage() {
                       </div>
                     </CardContent>
                   </Card>
-                ))}
+                )})}
               </div>
 
                {schedule.length > 0 && !isKOTC && groupedSchedule && (
@@ -438,18 +469,25 @@ export default function PublicTeamsPage() {
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {matches.map((match) => (
-                              <TableRow key={match.id} className="text-base">
-                                <TableCell><Badge>{match.court}</Badge></TableCell>
-                                <TableCell className="font-medium">{match.teamA}</TableCell>
-                                <TableCell className="text-center font-mono whitespace-nowrap">
-                                    {match.resultA !== null && match.resultB !== null
-                                        ? `${match.resultA} - ${match.resultB}`
-                                        : 'vs'}
-                                </TableCell>
-                                <TableCell className="font-medium text-right">{match.teamB}</TableCell>
-                              </TableRow>
-                            ))}
+                            {matches.map((match) => {
+                                const teamAStats = teamStats[match.teamA];
+                                const teamBStats = teamStats[match.teamB];
+                                const teamARecord = teamAStats ? `(${teamAStats.wins}-${teamAStats.losses})` : '';
+                                const teamBRecord = teamBStats ? `(${teamBStats.wins}-${teamBStats.losses})` : '';
+
+                                return (
+                                <TableRow key={match.id} className="text-base">
+                                    <TableCell><Badge>{match.court}</Badge></TableCell>
+                                    <TableCell className="font-medium">{match.teamA} <span className="text-muted-foreground text-sm">{teamARecord}</span></TableCell>
+                                    <TableCell className="text-center font-mono whitespace-nowrap">
+                                        {match.resultA !== null && match.resultB !== null
+                                            ? `${match.resultA} - ${match.resultB}`
+                                            : 'vs'}
+                                    </TableCell>
+                                    <TableCell className="font-medium text-right"><span className="text-muted-foreground text-sm">{teamBRecord}</span> {match.teamB}</TableCell>
+                                </TableRow>
+                                );
+                            })}
                           </TableBody>
                         </Table>
                       </CardContent>
