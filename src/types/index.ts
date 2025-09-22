@@ -1,4 +1,5 @@
 
+
 export type Player = {
   id: string;
   name: string;
@@ -8,8 +9,10 @@ export type Player = {
 };
 
 export type Team = {
+  id: string;
   name: string;
   players: Player[];
+  level?: number;
 };
 
 export type Match = {

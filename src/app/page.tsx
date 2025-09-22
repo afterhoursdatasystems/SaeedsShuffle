@@ -6,7 +6,7 @@ import { getPublishedData } from '@/app/actions';
 import type { Team, GameFormat, GameVariant, Match, PowerUp } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Volleyball, Users, Trophy, BookOpen, Crown, Gem, ShieldQuestion, KeyRound, Zap, Calendar, Shuffle, Wand2, Clock, TrendingUp } from 'lucide-react';
+import { Volleyball, Users, Trophy, BookOpen, Crown, Gem, ShieldQuestion, KeyRound, Zap, Calendar, Shuffle, Wand2, Clock, TrendingUp, Star } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -177,7 +177,7 @@ const getFormatDetails = (pointsToWin: number, teamCount: number): Record<Combin
     icon: TrendingUp,
     description: (
        <div>
-        <p className="mb-4">A competitive format where teams "level up" by winning, adopting progressively harder handicaps. The goal is to reach the highest level and secure a spot in the final tournament.</p>
+        <p className="mb-4">A competitive format where teams "level up" by winning, adopting progressively harder handicaps. The goal is to reach the highest level and secure a spot in the final tournament. All games are single games, not sets.</p>
         
         <h4 className="font-bold text-lg mb-2">Base Rules (Enforced at All Levels)</h4>
         <ul className="list-disc pl-5 space-y-2 mb-6">
@@ -205,7 +205,7 @@ const getFormatDetails = (pointsToWin: number, teamCount: number): Record<Combin
         </div>
 
         <h4 className="font-bold text-lg mb-2">Playoffs</h4>
-        <p>At the end of pool play, the top four teams (those who have reached the highest levels) will compete in a single-elimination tournament. Point differential is the tie-breaker for seeding. There are no levels/handicaps during playoffs. Matches are best 2 out of 3 (games to 21, 3rd game to 15), with the final round being win-by-two.</p>
+        <p>At the end of pool play, the top four teams (those who have reached the highest levels) will compete in a single-elimination tournament. Point differential is the tie-breaker for seeding. There are no levels/handicaps during playoffs. All playoff matches are single games.</p>
 
        </div>
     )
@@ -330,6 +330,7 @@ export default function PublicTeamsPage() {
 
   const formatDetails = useMemo(() => getFormatDetails(pointsToWin, teams.length), [pointsToWin, teams.length]);
   const isKOTC = ['king-of-the-court', 'monarch-of-the-court', 'king-s-ransom', 'power-up-round', 'standard'].includes(gameFormat);
+  const isLevelUp = gameFormat === 'level-up';
   const currentFormatDetails = isKOTC ? formatDetails[gameFormat] || formatDetails['king-of-the-court'] : formatDetails[gameFormat];
   const CurrentFormatIcon = currentFormatDetails?.icon || ShieldQuestion;
 
@@ -362,11 +363,19 @@ export default function PublicTeamsPage() {
 
                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5">
                 {teams.map((team) => (
-                  <Card key={team.name} className="flex flex-col rounded-xl border-2 border-primary shadow-2xl transition-transform hover:scale-105 bg-card">
+                  <Card key={team.id} className="flex flex-col rounded-xl border-2 border-primary shadow-2xl transition-transform hover:scale-105 bg-card">
                     <CardHeader className="p-4 bg-slate-600 rounded-t-lg">
-                      <CardTitle className="flex items-center gap-3 text-lg font-bold text-white">
-                        <Users className="h-5 w-5" />
-                        {team.name}
+                      <CardTitle className="flex items-center justify-between gap-3 text-lg font-bold text-white">
+                        <div className="flex items-center gap-3">
+                            <Users className="h-5 w-5" />
+                            {team.name}
+                        </div>
+                         {isLevelUp && (
+                            <Badge variant="secondary" className="text-sm">
+                                <Star className="w-4 h-4 mr-1 text-yellow-400 fill-yellow-400" />
+                                Lvl {team.level || 1}
+                            </Badge>
+                        )}
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="flex-grow p-4">
@@ -464,11 +473,3 @@ export default function PublicTeamsPage() {
     </div>
   );
 }
-
-    
-
-    
-
-    
-
-    

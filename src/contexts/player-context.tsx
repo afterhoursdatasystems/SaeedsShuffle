@@ -77,6 +77,7 @@ interface PlayerContextType {
   publishSettings: () => void;
   allPowerUps: PowerUp[];
   cosmicScrambleRules: PowerUp[];
+  updateTeam: (team: Team) => void;
 }
 
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
@@ -343,6 +344,12 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const updateTeam = (teamToUpdate: Team) => {
+    setTeams(currentTeams => 
+        currentTeams.map(t => t.id === teamToUpdate.id ? teamToUpdate : t)
+    );
+  };
+
 
   const value = {
     players,
@@ -369,6 +376,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     publishSettings,
     allPowerUps,
     cosmicScrambleRules,
+    updateTeam,
   };
 
   return (

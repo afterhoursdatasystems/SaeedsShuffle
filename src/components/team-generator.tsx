@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Send, Shuffle, Info, Trash2, Users, MoreVertical } from 'lucide-react';
+import { Send, Shuffle, Info, Trash2, Users, MoreVertical, PlusCircle, MinusCircle, Star } from 'lucide-react';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import React, { useEffect, useMemo, useState } from 'react';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
@@ -57,7 +57,8 @@ export function TeamGenerator() {
     gameFormat,
     gameVariant,
     activeRule,
-    pointsToWin
+    pointsToWin,
+    updateTeam,
   } = usePlayerContext();
   const { toast } = useToast();
   const [teamSize, setTeamSize] = useState<number>(4);
@@ -122,8 +123,10 @@ export function TeamGenerator() {
     };
     
     const newTeams: Team[] = Array.from({ length: numTeams }, (_, i) => ({
+        id: crypto.randomUUID(),
         name: shuffledTeamNames[i % shuffledTeamNames.length],
         players: [],
+        level: 1, // Start all teams at level 1
     }));
 
     const totalPlayers = allPlayers.length;
@@ -264,8 +267,17 @@ export function TeamGenerator() {
         // Consider reverting state here if persistence fails
     }
   };
+
+  const handleLevelChange = (teamId: string, delta: number) => {
+    const team = teams.find(t => t.id === teamId);
+    if (!team) return;
+
+    const newLevel = Math.max(1, (team.level || 1) + delta);
+    updateTeam({ ...team, level: newLevel });
+  }
   
   const isBlindDraw = gameFormat === 'blind-draw';
+  const isLevelUp = gameFormat === 'level-up';
 
   return (
     <div className="space-y-8">
@@ -359,9 +371,17 @@ export function TeamGenerator() {
                         {teams.map((team) => {
                         const { avgSkill, guyCount, galCount, guyPercentage } = getTeamAnalysis(team);
                         return (
-                            <Card key={team.name} className="flex flex-col">
+                            <Card key={team.id} className="flex flex-col">
                                 <CardHeader className="p-4">
-                                <CardTitle className="text-lg">{team.name}</CardTitle>
+                                <CardTitle className="text-lg flex justify-between items-center">
+                                    {team.name}
+                                    {isLevelUp && (
+                                        <Badge variant="secondary" className="text-base">
+                                            <Star className="w-4 h-4 mr-2 text-yellow-400 fill-yellow-400" />
+                                            Level {team.level || 1}
+                                        </Badge>
+                                    )}
+                                </CardTitle>
                                 </CardHeader>
                                 <CardContent className="flex-grow p-4 pt-0">
                                 <div className="space-y-3 min-h-[100px]">
@@ -402,12 +422,22 @@ export function TeamGenerator() {
                                     <div className='flex items-center gap-2'>Avg Skill: <span className="font-bold text-foreground">{avgSkill}</span></div>
                                     <div className="flex items-center gap-2">Guy %: <span className="font-bold text-foreground">{guyPercentage}%</span></div>
                                     </div>
-                                    <div className="flex w-full justify-between">
+                                    <div className="flex w-full justify-between items-center">
                                         <div className='flex items-center gap-2'>Gender: 
                                             <span className="font-bold text-blue-500">{guyCount}G</span>
                                             <span className="text-muted-foreground">/</span>
                                             <span className="font-bold text-pink-500">{galCount}L</span>
                                         </div>
+                                        {isLevelUp && (
+                                            <div className="flex items-center gap-1">
+                                                <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleLevelChange(team.id, -1)}>
+                                                    <MinusCircle className="w-5 h-5 text-destructive" />
+                                                </Button>
+                                                <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleLevelChange(team.id, 1)}>
+                                                    <PlusCircle className="w-5 h-5 text-green-500" />
+                                                </Button>
+                                            </div>
+                                        )}
                                     </div>
                                 </CardFooter>
                             </Card>
@@ -440,7 +470,7 @@ export function TeamGenerator() {
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent>
                                                 {teams.map(team => (
-                                                    <DropdownMenuItem key={team.name} onSelect={() => handlePlayerMove(player, null, team.name)}>
+                                                    <DropdownMenuItem key={team.id} onSelect={() => handlePlayerMove(player, null, team.name)}>
                                                         Move to {team.name}
                                                     </DropdownMenuItem>
                                                 ))}
