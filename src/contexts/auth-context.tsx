@@ -7,76 +7,76 @@ import {
   useEffect,
   type ReactNode,
 } from 'react';
+import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut, type User } from 'firebase/auth';
+import { app } from '@/lib/firebase-client'; // We'll create this file
 
-const ALLOWED_USER = 'matt@saeedsvolleyball.com';
-const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_LEAGUE_COMMISSIONER_PASSWORD;
+const ALLOWED_USER = 'matt@afterhoursds.com';
 
 interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, pass: string) => void;
+  user: User | null;
+  login: () => Promise<void>;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// A key for storing the auth state in sessionStorage
-const AUTH_STORAGE_KEY = 'saeeds-shuffle-auth';
-
 export function AuthProvider({children}: {children: ReactNode}) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  
+  const auth = getAuth(app);
+  const isAuthenticated = !!user;
 
   useEffect(() => {
-    // Check sessionStorage for persisted login state on mount
-    try {
-      const storedAuth = sessionStorage.getItem(AUTH_STORAGE_KEY);
-      if (storedAuth) {
-        const authData = JSON.parse(storedAuth);
-        // A simple check to re-validate. In a real app, you might check a token's expiry.
-        if (authData.isAuthenticated && authData.email === ALLOWED_USER) {
-          setIsAuthenticated(true);
-        }
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser && currentUser.email?.toLowerCase() === ALLOWED_USER) {
+        setUser(currentUser);
+      } else {
+        setUser(null);
       }
-    } catch (error) {
-        console.error("Could not parse auth state from storage", error);
-    }
-    setIsLoading(false);
-  }, []);
+      setIsLoading(false);
+    });
 
-  const login = (email: string, pass: string) => {
-    if (email.toLowerCase() !== ALLOWED_USER) {
-      throw new Error(`Only ${ALLOWED_USER} can log in.`);
-    }
+    return () => unsubscribe();
+  }, [auth]);
 
-    if (!ADMIN_PASSWORD) {
-        const errorMessage = "Admin password environment variable (NEXT_PUBLIC_LEAGUE_COMMISSIONER_PASSWORD) is not set. Please check your .env file.";
-        console.error(errorMessage);
-        throw new Error(errorMessage);
-    }
-
-    if (pass !== ADMIN_PASSWORD) {
-        throw new Error("The password you entered is incorrect.");
-    }
-    
-    setIsAuthenticated(true);
-    // Persist login state to sessionStorage
+  const login = async () => {
+    setIsLoading(true);
+    const provider = new GoogleAuthProvider();
     try {
-        const authData = { isAuthenticated: true, email };
-        sessionStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authData));
-    } catch (error) {
-        console.error("Could not save auth state to storage", error);
+      const result = await signInWithPopup(auth, provider);
+      const signedInUser = result.user;
+
+      if (signedInUser.email?.toLowerCase() !== ALLOWED_USER) {
+        // If the user is not allowed, sign them out immediately.
+        await signOut(auth);
+        setUser(null);
+        throw new Error(`Access denied. Only ${ALLOWED_USER} can log in.`);
+      }
+      
+      setUser(signedInUser);
+
+    } catch (error: any) {
+      console.error("Google Sign-In Error:", error);
+      // Re-throw the error to be caught by the UI
+      if (error.code === 'auth/popup-closed-by-user') {
+          throw new Error('Sign-in window closed. Please try again.');
+      }
+      if (error.message.includes('Access denied')) {
+        throw error;
+      }
+      throw new Error('An error occurred during sign-in.');
+    } finally {
+        setIsLoading(false);
     }
   };
 
   const logout = () => {
-    setIsAuthenticated(false);
-    // Clear persisted login state
-    try {
-        sessionStorage.removeItem(AUTH_STORAGE_KEY);
-    } catch (error) {
-        console.error("Could not remove auth state from storage", error);
-    }
+    signOut(auth).then(() => {
+        setUser(null);
+    });
   };
 
   return (
@@ -84,6 +84,7 @@ export function AuthProvider({children}: {children: ReactNode}) {
       value={{
         isAuthenticated: !isLoading && isAuthenticated,
         isLoading,
+        user,
         login,
         logout,
       }}
