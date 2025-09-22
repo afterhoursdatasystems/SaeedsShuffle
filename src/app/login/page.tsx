@@ -20,28 +20,25 @@ const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 
 export default function LoginPage() {
-  const { login, isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const { signInWithGoogle, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
   const [isSigningIn, setIsSigningIn] = useState(false);
 
   useEffect(() => {
-    if (!isAuthLoading && isAuthenticated) {
-        router.push('/admin');
+    if (!isLoading && isAuthenticated) {
+      router.push('/admin');
     }
-  }, [isAuthenticated, isAuthLoading, router]);
-  
+  }, [isAuthenticated, isLoading, router]);
+
   const handleLogin = async () => {
     setIsSigningIn(true);
-    await login();
-    // The auth context's onAuthStateChanged listener will handle redirection
-    // or showing an error toast. We can set signing in to false after a delay
-    // in case of errors that don't redirect.
+    await signInWithGoogle();
+    // The auth context will handle redirection
     setTimeout(() => setIsSigningIn(false), 2000);
   };
 
-
-  if (isAuthLoading || isAuthenticated) {
-     return (
+  if (isLoading || isAuthenticated) {
+    return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
       </div>

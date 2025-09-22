@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Bot, RefreshCw } from 'lucide-react';
-import { getSimulatedStandings } from '@/app/actions';
+// import { getSimulatedStandings } from '@/app/actions'; // AI functionality removed
 import { Skeleton } from './ui/skeleton';
 import { usePlayerContext } from '@/contexts/player-context';
 
@@ -23,35 +23,12 @@ export default function Simulation() {
     .join('\n');
 
   const handleRunSimulation = async () => {
-    if (completedMatches.length === 0) {
-      toast({
-        title: 'No completed matches',
-        description: 'Please enter some match results before running a simulation.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    setSimulationResult(null);
-
-    const result = await getSimulatedStandings({ matchResults: matchResultsString });
-    
-    setIsLoading(false);
-
-    if (result.success && result.data) {
-      setSimulationResult(result.data.simulatedStandings);
-      toast({
-        title: 'Simulation Complete',
-        description: 'Projected final standings have been generated.',
-      });
-    } else {
-      toast({
-        title: 'Simulation Failed',
-        description: result.error || 'An unknown error occurred.',
-        variant: 'destructive',
-      });
-    }
+    // AI simulation functionality removed during Supabase migration
+    toast({
+      title: 'Simulation Unavailable',
+      description: 'AI simulation feature has been temporarily disabled.',
+      variant: 'destructive',
+    });
   };
 
   return (

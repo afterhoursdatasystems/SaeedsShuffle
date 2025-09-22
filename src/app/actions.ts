@@ -1,7 +1,6 @@
 'use server';
 
 import { supabase } from '@/lib/supabase';
-import { simulateLeagueStandings, type SimulateLeagueStandingsInput } from '@/ai/flows/simulate-league-standings';
 import type { Team, GameFormat, GameVariant, Match, PowerUp, Player } from '@/types';
 import Papa from 'papaparse';
 
@@ -304,17 +303,6 @@ export async function getPublishedData(): Promise<{ success: boolean; data?: Pub
     }
 }
 
-// --- AI Flow Actions ---
-
-export async function getSimulatedStandings(input: SimulateLeagueStandingsInput) {
-    try {
-        const result = await simulateLeagueStandings(input);
-        return { success: true, data: result };
-    } catch (error: any) {
-        console.error('[CRITICAL DEBUG] AI Simulation Error:', error.message);
-        return { success: false, error: 'Failed to simulate standings due to an internal error.' };
-    }
-}
 
 // --- CSV Actions ---
 export async function exportPlayersToCSV(): Promise<{ success: boolean; csv?: string; error?: string }> {
