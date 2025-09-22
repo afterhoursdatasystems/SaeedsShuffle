@@ -239,6 +239,22 @@ const getFormatDetails = (pointsToWin: number, teamCount: number): Record<Combin
   },
 });
 
+const getLevelHeaderStyle = (level: number | undefined) => {
+    switch (level) {
+        case 1:
+        default:
+            return 'bg-slate-500 text-white';
+        case 2:
+            return 'bg-blue-500 text-white';
+        case 3:
+            return 'bg-green-600 text-white';
+        case 4:
+            return 'bg-yellow-500 text-black';
+        case 5:
+            return 'bg-red-600 text-white';
+    }
+};
+
 
 export default function PublicTeamsPage() {
   const [teams, setTeams] = useState<Team[]>([]);
@@ -365,16 +381,17 @@ export default function PublicTeamsPage() {
 
                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5">
                 {teams.map((team) => (
-                  <Card key={team.id} className="flex flex-col rounded-xl border-2 border-primary shadow-2xl transition-transform hover:scale-105 bg-card">
-                    <CardHeader className="p-4 bg-slate-600 rounded-t-lg">
-                      <CardTitle className="flex items-center justify-between gap-3 text-lg font-bold text-white">
+                  <Card key={team.id} className={cn("flex flex-col rounded-xl border-2 shadow-2xl transition-transform hover:scale-105 bg-card",
+                    isLevelUp ? `border-transparent` : 'border-primary'
+                  )}>
+                    <CardHeader className={cn("p-4 rounded-t-lg", isLevelUp ? getLevelHeaderStyle(team.level) : 'bg-slate-600 text-white')}>
+                      <CardTitle className="flex items-center justify-between gap-3 text-lg font-bold">
                         <div className="flex items-center gap-3">
                             <Users className="h-5 w-5" />
                             {team.name}
                         </div>
                          {isLevelUp && (
-                            <Badge variant="secondary" className="text-sm">
-                                <Star className="w-4 h-4 mr-1 text-yellow-400 fill-yellow-400" />
+                            <Badge variant="outline" className="text-sm bg-black/20 text-white border-white/50">
                                 Lvl {team.level || 1}
                             </Badge>
                         )}
