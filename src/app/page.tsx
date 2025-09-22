@@ -393,14 +393,14 @@ export default function PublicTeamsPage() {
       <main className="flex-1 p-4 md:p-8">
         <div className="mx-auto w-full max-w-none">
           {isLoading ? (
-             <div className="space-y-12">
+             <div className="space-y-8">
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5">
                   {renderTeamSkeletons()}
                 </div>
                 {renderScheduleSkeletons()}
              </div>
           ) : teams.length > 0 || gameFormat === 'blind-draw' ? (
-            <div className="space-y-12">
+            <div className="space-y-8">
 
                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5">
                 {teams.map((team) => {
@@ -449,7 +449,7 @@ export default function PublicTeamsPage() {
               </div>
 
                {schedule.length > 0 && !isKOTC && groupedSchedule && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {Object.entries(groupedSchedule).map(([time, matches]) => (
                     <Card key={time} className="rounded-xl border-2 shadow-2xl">
                       <CardHeader className="p-4 bg-muted/50 rounded-t-lg">
