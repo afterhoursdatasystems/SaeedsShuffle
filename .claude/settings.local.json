@@ -5,7 +5,12 @@
       "Bash(npm run dev:*)",
       "Bash(firebase projects:list:*)",
       "Bash(npm install:*)",
-      "Bash(firebase --version)"
+      "Bash(firebase --version)",
+      "Bash(firebase apphosting:secrets:grantaccess:*)",
+      "Bash(firebase apphosting:secrets:describe:*)",
+      "Bash(firebase apphosting:secrets:set:*)",
+      "Bash(printf \"\\n\")",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []
