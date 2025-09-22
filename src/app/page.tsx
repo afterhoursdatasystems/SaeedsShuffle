@@ -433,8 +433,8 @@ export default function PublicTeamsPage() {
                             <TableRow>
                               <TableHead className="w-[100px]">Court</TableHead>
                               <TableHead>Team A</TableHead>
-                              <TableHead>Team B</TableHead>
-                              <TableHead className="text-right">Result</TableHead>
+                              <TableHead className="w-[80px] text-center">Score</TableHead>
+                              <TableHead className="text-right">Team B</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
@@ -442,12 +442,12 @@ export default function PublicTeamsPage() {
                               <TableRow key={match.id} className="text-base">
                                 <TableCell><Badge>{match.court}</Badge></TableCell>
                                 <TableCell className="font-medium">{match.teamA}</TableCell>
-                                <TableCell className="font-medium">{match.teamB}</TableCell>
-                                <TableCell className="text-right font-mono">
+                                <TableCell className="text-center font-mono">
                                     {match.resultA !== null && match.resultB !== null
                                         ? `${match.resultA} - ${match.resultB}`
-                                        : ''}
+                                        : 'vs'}
                                 </TableCell>
+                                <TableCell className="font-medium text-right">{match.teamB}</TableCell>
                               </TableRow>
                             ))}
                           </TableBody>
@@ -472,8 +472,8 @@ export default function PublicTeamsPage() {
                         <TableRow>
                           <TableHead>Court / Status</TableHead>
                           <TableHead>Team A</TableHead>
-                          <TableHead>Team B / Status</TableHead>
-                           <TableHead className="text-right">Result</TableHead>
+                          <TableHead className="w-[80px] text-center">Score</TableHead>
+                          <TableHead className="text-right">Team B / Status</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -481,12 +481,12 @@ export default function PublicTeamsPage() {
                           <TableRow key={match.id} className="text-base">
                             <TableCell><Badge>{match.court}</Badge></TableCell>
                             <TableCell className="font-medium">{match.teamA}</TableCell>
-                            <TableCell className="font-medium">{match.teamB}</TableCell>
-                             <TableCell className="text-right font-mono">
+                            <TableCell className="text-center font-mono">
                                 {match.resultA !== null && match.resultB !== null
                                     ? `${match.resultA} - ${match.resultB}`
-                                    : ''}
+                                    : 'vs'}
                             </TableCell>
+                            <TableCell className="font-medium text-right">{match.teamB}</TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
@@ -540,5 +540,3 @@ export default function PublicTeamsPage() {
     </div>
   );
 }
-
-    
