@@ -50,8 +50,9 @@ export function AuthProvider({children}: {children: ReactNode}) {
     }
 
     if (!ADMIN_PASSWORD) {
-        console.error("Admin password environment variable is not set.");
-        throw new Error("Login system is not configured correctly. Please contact support.");
+        const errorMessage = "Admin password environment variable (NEXT_PUBLIC_LEAGUE_COMMISSIONER_PASSWORD) is not set. Please check your .env file.";
+        console.error(errorMessage);
+        throw new Error(errorMessage);
     }
 
     if (pass !== ADMIN_PASSWORD) {
