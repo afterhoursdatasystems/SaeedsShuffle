@@ -256,23 +256,11 @@ export default function PublicTeamsPage() {
       try {
         const result = await getPublishedData();
         if (result.success && result.data) {
-          // Only update state if the data has actually changed
-          if (JSON.stringify(result.data.teams) !== JSON.stringify(teams)) {
-            setTeams(result.data.teams || []);
-          }
-          if (JSON.stringify(result.data.schedule) !== JSON.stringify(schedule)) {
-            setSchedule(result.data.schedule || []);
-          }
-          if (JSON.stringify(result.data.activeRule) !== JSON.stringify(activeRule)) {
-            setActiveRule(result.data.activeRule || null);
-          }
-          const format = (result.data.format || 'round-robin') as CombinedGameFormat;
-          if (format !== gameFormat) {
-            setGameFormat(format);
-          }
-           if (result.data.pointsToWin !== pointsToWin) {
-            setPointsToWin(result.data.pointsToWin || 15);
-          }
+          setTeams(result.data.teams || []);
+          setSchedule(result.data.schedule || []);
+          setActiveRule(result.data.activeRule || null);
+          setGameFormat((result.data.format || 'round-robin') as CombinedGameFormat);
+          setPointsToWin(result.data.pointsToWin || 15);
         } else {
           console.error('Failed to fetch data:', result.error);
         }
@@ -287,16 +275,16 @@ export default function PublicTeamsPage() {
     
     fetchData(true);
     
-    const interval = setInterval(() => fetchData(false), 2000); // Refresh every 2 seconds
+    const interval = setInterval(() => fetchData(false), 2000);
     return () => clearInterval(interval);
-  }, [teams, schedule, activeRule, gameFormat, pointsToWin]);
+  }, []);
   
   const formatDetails = useMemo(() => getFormatDetails(pointsToWin, teams.length), [pointsToWin, teams.length]);
   const isKOTC = ['king-of-the-court', 'monarch-of-the-court', 'king-s-ransom', 'power-up-round', 'standard'].includes(gameFormat);
   const isLevelUp = gameFormat === 'level-up';
   
   const groupedSchedule = useMemo(() => {
-    if (isKOTC) return null; // Don't group KOTC, it's continuous
+    if (isKOTC) return null;
     
     return schedule.reduce((acc, match) => {
       const time = match.time;
