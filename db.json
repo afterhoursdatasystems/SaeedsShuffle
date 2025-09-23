@@ -212,7 +212,44 @@
     }
   ],
   "format": "king-of-the-court",
-  "schedule": [],
+  "schedule": [
+    {
+      "id": "50ac510e-682c-4ab1-ae3b-d6d0987e2fc7",
+      "teamA": "Langtree Lightning",
+      "teamB": "Birkdale Bombers",
+      "resultA": null,
+      "resultB": null,
+      "court": "King Court",
+      "time": "6:45 PM"
+    },
+    {
+      "id": "c80fec35-7915-4401-93aa-d7e165331ffb",
+      "teamA": "Bailey Bruisers",
+      "teamB": "Soda Shop Slammers",
+      "resultA": null,
+      "resultB": null,
+      "court": "Challenger Court",
+      "time": "6:45 PM"
+    },
+    {
+      "id": "4a042df0-8588-469a-84b9-4258611d168a",
+      "teamA": "Peninsula Powerhouse",
+      "teamB": "Waiting #1",
+      "resultA": null,
+      "resultB": null,
+      "court": "Challenger Line",
+      "time": "---"
+    },
+    {
+      "id": "563ae7a0-5bfc-4764-8379-c09bcb5f8877",
+      "teamA": "Cool Fish Commandos",
+      "teamB": "Waiting #2",
+      "resultA": null,
+      "resultB": null,
+      "court": "Challenger Line",
+      "time": "---"
+    }
+  ],
   "activeRule": null,
   "pointsToWin": 15
 }
