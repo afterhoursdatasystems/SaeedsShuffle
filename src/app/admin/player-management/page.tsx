@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { usePlayerContext } from '@/contexts/player-context';
@@ -180,9 +179,7 @@ export default function PlayerManagementPage() {
   };
 
   const handleSetAllAway = async () => {
-    if (window.confirm('Are you sure you want to set all players to Away?')) {
-      await setAllPlayersAway();
-    }
+    await setAllPlayersAway();
   };
 
 

@@ -74,7 +74,7 @@
     "name": "Aditya Singh",
     "gender": "Guy",
     "skill": 7,
-    "present": true
+    "present": false
   },
   {
     "id": "12",
