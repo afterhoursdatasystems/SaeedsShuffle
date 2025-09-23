@@ -414,12 +414,9 @@ export default function PublicTeamsPage() {
                   )}>
                     <CardHeader className={cn("p-4 rounded-t-lg", isLevelUp ? getLevelHeaderStyle(team.level) : 'bg-slate-600 text-white')}>
                       <CardTitle className="text-lg font-bold">
-                        <div className="flex items-center gap-3 mb-2">
+                        <div className="flex items-center gap-3">
                             <Users className="h-5 w-5" />
                             {team.name}
-                        </div>
-                        <div className='flex justify-end'>
-                           <div className="text-xs font-medium text-white/80">{badgeText}</div>
                         </div>
                       </CardTitle>
                     </CardHeader>
@@ -472,7 +469,10 @@ export default function PublicTeamsPage() {
                                     <TableRow className="text-base border-b">
                                         <TableCell className="font-medium p-2 text-left">
                                             <div>{match.teamA}</div>
-                                            <div className="text-muted-foreground text-sm">{teamARecord}</div>
+                                            <div className="text-muted-foreground text-sm flex items-center gap-2">
+                                              <span>{teamARecord}</span>
+                                              {isLevelUp && teamAStats && <span>Lvl {teamAStats.level}</span>}
+                                            </div>
                                         </TableCell>
                                         <TableCell className="text-center font-mono whitespace-nowrap p-1">
                                             {match.resultA !== null && match.resultB !== null
@@ -481,7 +481,10 @@ export default function PublicTeamsPage() {
                                         </TableCell>
                                         <TableCell className="font-medium p-2 text-right">
                                             <div>{match.teamB}</div>
-                                            <div className="text-muted-foreground text-sm">{teamBRecord}</div>
+                                            <div className="text-muted-foreground text-sm flex items-center justify-end gap-2">
+                                               {isLevelUp && teamBStats && <span>Lvl {teamBStats.level}</span>}
+                                               <span>{teamBRecord}</span>
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 </React.Fragment>
