@@ -406,6 +406,8 @@ export default function PublicTeamsPage() {
                 {teams.map((team) => {
                    const stats = teamStats[team.name];
                    const record = stats ? `${stats.wins}-${stats.losses}` : '0-0';
+                   const badgeText = isLevelUp && team.level ? `${record} / Lvl ${team.level}` : record;
+
                   return(
                   <Card key={team.id} className={cn("flex flex-col rounded-xl border-2 shadow-2xl transition-transform hover:scale-105 bg-card",
                     isLevelUp ? `border-transparent` : 'border-primary'
@@ -416,16 +418,9 @@ export default function PublicTeamsPage() {
                             <Users className="h-5 w-5" />
                             {team.name}
                         </div>
-                         <div className="flex items-center gap-2">
-                             <Badge variant="outline" className="text-xs bg-black/20 text-white border-white/50">
-                                {record}
-                            </Badge>
-                            {isLevelUp && team.level && (
-                                <Badge variant="outline" className="text-xs bg-black/20 text-white border-white/50">
-                                    Lvl {team.level}
-                                </Badge>
-                            )}
-                        </div>
+                         <Badge variant="outline" className="text-xs bg-black/20 text-white border-white/50">
+                            {badgeText}
+                        </Badge>
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="flex-grow p-4">
