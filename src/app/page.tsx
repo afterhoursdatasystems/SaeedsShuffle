@@ -358,13 +358,13 @@ export default function PublicTeamsPage() {
 
   const renderScheduleSkeletons = () => (
     <Card className="rounded-xl border-2 shadow-2xl">
-      <CardHeader className="p-6 bg-muted/50 rounded-t-lg">
-        <CardTitle className="flex items-center gap-4 text-2xl font-bold">
-            <Skeleton className="h-7 w-7 rounded-md" />
-            <Skeleton className="h-7 w-48 rounded-md" />
+      <CardHeader className="p-4 bg-muted/50 rounded-t-lg">
+        <CardTitle className="flex items-center gap-3 text-xl font-bold">
+            <Skeleton className="h-6 w-6 rounded-md" />
+            <Skeleton className="h-6 w-48 rounded-md" />
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-6 space-y-2">
+      <CardContent className="p-0 sm:p-4">
         <Skeleton className="h-8 w-full" />
         <Skeleton className="h-8 w-full" />
         <Skeleton className="h-8 w-full" />
@@ -404,21 +404,19 @@ export default function PublicTeamsPage() {
 
                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5">
                 {teams.map((team) => {
-                   const stats = teamStats[team.name];
-                   const record = stats ? `${stats.wins}-${stats.losses}` : '0-0';
-                   const badgeText = isLevelUp && team.level ? `${record} / Lvl ${team.level}` : record;
-
                   return(
                   <Card key={team.id} className={cn("flex flex-col rounded-xl border-2 shadow-2xl transition-transform hover:scale-105 bg-card",
                     isLevelUp ? `border-transparent` : 'border-primary'
                   )}>
                     <CardHeader className={cn("p-4 rounded-t-lg", isLevelUp ? getLevelHeaderStyle(team.level) : 'bg-slate-600 text-white')}>
-                      <CardTitle className="text-lg font-bold">
-                        <div className="flex items-center gap-3">
-                            <Users className="h-5 w-5" />
-                            {team.name}
-                        </div>
-                      </CardTitle>
+                        <CardTitle className="text-lg font-bold">
+                            <div className="flex items-center justify-between">
+                               <div className="flex items-center gap-3">
+                                    <Users className="h-5 w-5" />
+                                    {team.name}
+                               </div>
+                            </div>
+                        </CardTitle>
                     </CardHeader>
                     <CardContent className="flex-grow p-4">
                       <div className="space-y-3">
@@ -471,7 +469,7 @@ export default function PublicTeamsPage() {
                                             <div>{match.teamA}</div>
                                             <div className="text-muted-foreground text-sm flex items-center gap-2">
                                               <span>{teamARecord}</span>
-                                              {isLevelUp && teamAStats && <span>Lvl {teamAStats.level}</span>}
+                                              {isLevelUp && teamAStats && <span>Level {teamAStats.level}</span>}
                                             </div>
                                         </TableCell>
                                         <TableCell className="text-center font-mono whitespace-nowrap p-1">
@@ -482,7 +480,7 @@ export default function PublicTeamsPage() {
                                         <TableCell className="font-medium p-2 text-right">
                                             <div>{match.teamB}</div>
                                             <div className="text-muted-foreground text-sm flex items-center justify-end gap-2">
-                                               {isLevelUp && teamBStats && <span>Lvl {teamBStats.level}</span>}
+                                               {isLevelUp && teamBStats && <span>Level {teamBStats.level}</span>}
                                                <span>{teamBRecord}</span>
                                             </div>
                                         </TableCell>
