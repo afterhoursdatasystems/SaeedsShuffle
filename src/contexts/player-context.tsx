@@ -55,8 +55,8 @@ const cosmicScrambleRules: PowerUp[] = [
 interface PlayerContextType {
   players: Player[];
   setPlayers: React.Dispatch<React.SetStateAction<Player[]>>;
-  togglePlayerPresence: (playerId: string) => void;
-  setAllPlayersAway: () => void;
+  togglePlayerPresence: (playerId: string) => Promise<void>;
+  setAllPlayersAway: () => Promise<void>;
   updatePlayer: (player: Player) => Promise<boolean>;
   addPlayer: (player: Omit<Player, 'id' | 'present'>) => Promise<boolean>;
   deletePlayer: (playerId: string) => Promise<boolean>;

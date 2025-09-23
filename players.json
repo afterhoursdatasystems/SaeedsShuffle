@@ -95,7 +95,7 @@
     "name": "Eric Ahrens",
     "gender": "Guy",
     "skill": 7,
-    "present": true
+    "present": false
   },
   {
     "id": "15",

@@ -179,9 +179,9 @@ export default function PlayerManagementPage() {
     }
   };
 
-  const handleSetAllAway = () => {
+  const handleSetAllAway = async () => {
     if (window.confirm('Are you sure you want to set all players to Away?')) {
-      setAllPlayersAway();
+      await setAllPlayersAway();
     }
   };
 
