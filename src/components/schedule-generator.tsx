@@ -5,12 +5,12 @@
 import type { Match, GameFormat, GameVariant, Player, Team } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Save, CalendarDays, Send, Trash2 } from 'lucide-react';
-import React from 'react';
+import { Save, CalendarDays, Send, Trash2, Clock } from 'lucide-react';
+import React, { useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { usePlayerContext } from '@/contexts/player-context';
 import { publishData } from '@/app/actions';
@@ -348,6 +348,19 @@ export function ScheduleGenerator() {
   
   const isKOTC = gameFormat === 'king-of-the-court';
 
+  const groupedSchedule = useMemo(() => {
+    if (isKOTC) return null;
+    
+    return schedule.reduce((acc, match) => {
+      const time = match.time;
+      if (!acc[time]) {
+        acc[time] = [];
+      }
+      acc[time].push(match);
+      return acc;
+    }, {} as Record<string, Match[]>);
+  }, [schedule, isKOTC]);
+
   return (
     <div className="space-y-8">
        <Card>
@@ -392,48 +405,81 @@ export function ScheduleGenerator() {
              </div>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[100px]">Time</TableHead>
-                    <TableHead className="w-[150px]">Court / Status</TableHead>
-                    <TableHead>Team A</TableHead>
-                    <TableHead>{ isKOTC ? 'vs Team B / Status' : 'Team B'}</TableHead>
-                    <TableHead className={cn("w-[120px] text-center", isKOTC && "hidden")}>Result</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {schedule.map((match) => (
-                    <TableRow key={match.id}>
-                      <TableCell className="font-bold">{match.time}</TableCell>
-                      <TableCell><Badge>{match.court}</Badge></TableCell>
-                      <TableCell className="font-medium">{match.teamA}</TableCell>
-                      <TableCell className="font-medium">{match.teamB}</TableCell>
-                      <TableCell className={cn(isKOTC && "hidden")}>
-                        <div className="flex items-center justify-center gap-2">
-                          <Input
-                            type="number"
-                            className="h-8 w-12 p-1 text-center"
-                            value={match.resultA ?? ''}
-                            onChange={(e) => handleResultChange(match.id, 'A', e.target.value)}
-                            aria-label={`${match.teamA} score`}
-                          />
-                          <span>-</span>
-                          <Input
-                            type="number"
-                            className="h-8 w-12 p-1 text-center"
-                            value={match.resultB ?? ''}
-                            onChange={(e) => handleResultChange(match.id, 'B', e.target.value)}
-                            aria-label={`${match.teamB} score`}
-                          />
-                        </div>
-                      </TableCell>
-                    </TableRow>
+            {isKOTC ? (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[100px]">Time</TableHead>
+                        <TableHead className="w-[150px]">Court / Status</TableHead>
+                        <TableHead>Team A</TableHead>
+                        <TableHead>vs Team B / Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {schedule.map((match) => (
+                        <TableRow key={match.id}>
+                          <TableCell className="font-bold">{match.time}</TableCell>
+                          <TableCell><Badge>{match.court}</Badge></TableCell>
+                          <TableCell className="font-medium">{match.teamA}</TableCell>
+                          <TableCell className="font-medium">{match.teamB}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {groupedSchedule && Object.entries(groupedSchedule).map(([time, matches]) => (
+                    <Card key={time}>
+                      <CardHeader className="p-4 bg-muted/50">
+                        <CardTitle className="flex items-center gap-3 text-lg">
+                          <Clock className="h-5 w-5 text-primary" />
+                          Matches at {time}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-0">
+                        <Table>
+                          <TableBody>
+                            {matches.map((match) => (
+                                <React.Fragment key={match.id}>
+                                    <TableRow className="border-b-0">
+                                        <TableCell colSpan={3} className="p-2 text-center">
+                                            <Badge variant="outline">{match.court}</Badge>
+                                        </TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell className="font-medium p-2">{match.teamA}</TableCell>
+                                        <TableCell className="p-1 w-[120px]">
+                                          <div className="flex items-center justify-center gap-2">
+                                            <Input
+                                              type="number"
+                                              className="h-8 w-12 p-1 text-center"
+                                              value={match.resultA ?? ''}
+                                              onChange={(e) => handleResultChange(match.id, 'A', e.target.value)}
+                                              aria-label={`${match.teamA} score`}
+                                            />
+                                            <span>-</span>
+                                            <Input
+                                              type="number"
+                                              className="h-8 w-12 p-1 text-center"
+                                              value={match.resultB ?? ''}
+                                              onChange={(e) => handleResultChange(match.id, 'B', e.target.value)}
+                                              aria-label={`${match.teamB} score`}
+                                            />
+                                          </div>
+                                        </TableCell>
+                                        <TableCell className="font-medium p-2 text-right">{match.teamB}</TableCell>
+                                    </TableRow>
+                                </React.Fragment>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </CardContent>
+                    </Card>
                   ))}
-                </TableBody>
-              </Table>
-            </div>
+                </div>
+            )}
           </CardContent>
         </Card>
       )}
