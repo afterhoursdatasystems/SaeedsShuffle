@@ -191,8 +191,8 @@ const getFormatDetails = (pointsToWin: number, teamCount: number): Record<Combin
         <h4 className="font-bold text-lg mb-2">How It Works</h4>
         <ul className="list-disc pl-5 space-y-2 mb-6">
             <li>Each team will play approximately 5 games in pool play.</li>
-            <li>If a team <strong>wins</strong>, they move up one level and must adopt the handicap of that new level for all future games.</li>
-            <li>If a team <strong>loses</strong>, they stay at their current level.</li>
+            <li>If a team <strong>wins</strong>, they move up one level and must adopt the handicap of that new level for all future games. The team's level is determined by their number of wins + 1.</li>
+            <li>If a team <strong>loses</strong>, their level does not change. You can only level up.</li>
             <li>Handicaps are <strong>not</strong> cumulative. For example, a team reaching Level 3 only has the Level 3 handicap, not the Level 2 handicap.</li>
         </ul>
 
@@ -404,6 +404,7 @@ export default function PublicTeamsPage() {
 
                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5">
                 {teams.map((team) => {
+                  const teamRecord = teamStats[team.name] ? `${teamStats[team.name].wins}-${teamStats[team.name].losses}` : '0-0';
                   return(
                   <Card key={team.id} className={cn("flex flex-col rounded-xl border-2 shadow-2xl transition-transform hover:scale-105 bg-card",
                     isLevelUp ? `border-transparent` : 'border-primary'
