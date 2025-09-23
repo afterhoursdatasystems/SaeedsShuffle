@@ -462,10 +462,10 @@ export default function PublicTeamsPage() {
                         <Table>
                           <TableHeader>
                             <TableRow>
-                              <TableHead className="w-[100px]">Court</TableHead>
-                              <TableHead>Team A</TableHead>
-                              <TableHead className="w-[80px] text-center">Score</TableHead>
-                              <TableHead className="text-right">Team B</TableHead>
+                              <TableHead className="w-[80px] px-2">Court</TableHead>
+                              <TableHead className="px-2">Team A</TableHead>
+                              <TableHead className="w-[80px] text-center px-1">Score</TableHead>
+                              <TableHead className="text-right px-2">Team B</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
@@ -477,14 +477,20 @@ export default function PublicTeamsPage() {
 
                                 return (
                                 <TableRow key={match.id} className="text-base">
-                                    <TableCell><Badge>{match.court}</Badge></TableCell>
-                                    <TableCell className="font-medium">{match.teamA} <span className="text-muted-foreground text-sm">{teamARecord}</span></TableCell>
-                                    <TableCell className="text-center font-mono whitespace-nowrap">
+                                    <TableCell className="px-2"><Badge>{match.court}</Badge></TableCell>
+                                    <TableCell className="font-medium px-2">
+                                        <div>{match.teamA}</div>
+                                        <div className="text-muted-foreground text-sm">{teamARecord}</div>
+                                    </TableCell>
+                                    <TableCell className="text-center font-mono whitespace-nowrap px-1">
                                         {match.resultA !== null && match.resultB !== null
                                             ? `${match.resultA} - ${match.resultB}`
                                             : 'vs'}
                                     </TableCell>
-                                    <TableCell className="font-medium text-right"><span className="text-muted-foreground text-sm">{teamBRecord}</span> {match.teamB}</TableCell>
+                                    <TableCell className="font-medium text-right px-2">
+                                        <div>{match.teamB}</div>
+                                        <div className="text-muted-foreground text-sm">{teamBRecord}</div>
+                                    </TableCell>
                                 </TableRow>
                                 );
                             })}
@@ -504,27 +510,27 @@ export default function PublicTeamsPage() {
                         Continuous KOTC Schedule
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="p-6">
+                  <CardContent className="p-0 sm:p-4">
                      <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Court / Status</TableHead>
-                          <TableHead>Team A</TableHead>
-                           <TableHead className="w-[80px] text-center">Score</TableHead>
-                          <TableHead className="text-right">Team B / Status</TableHead>
+                          <TableHead className="px-2">Court / Status</TableHead>
+                          <TableHead className="px-2">Team A</TableHead>
+                           <TableHead className="w-[80px] text-center px-1">Score</TableHead>
+                          <TableHead className="text-right px-2">Team B / Status</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {schedule.map((match) => (
                           <TableRow key={match.id} className="text-base">
-                            <TableCell><Badge>{match.court}</Badge></TableCell>
-                            <TableCell className="font-medium">{match.teamA}</TableCell>
-                            <TableCell className="text-center font-mono whitespace-nowrap">
+                            <TableCell className="px-2"><Badge>{match.court}</Badge></TableCell>
+                            <TableCell className="font-medium px-2">{match.teamA}</TableCell>
+                            <TableCell className="text-center font-mono whitespace-nowrap px-1">
                                 {match.resultA !== null && match.resultB !== null
                                     ? `${match.resultA} - ${match.resultB}`
                                     : 'vs'}
                             </TableCell>
-                            <TableCell className="font-medium text-right">{match.teamB}</TableCell>
+                            <TableCell className="font-medium text-right px-2">{match.teamB}</TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
