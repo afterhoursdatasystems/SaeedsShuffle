@@ -1,8 +1,8 @@
 
-
 'use client';
 
-import React, { useEffect, useState, useMemo } from 'react';
+import React from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { getPublishedData } from '@/app/actions';
 import type { Team, GameFormat, GameVariant, Match, PowerUp } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -413,15 +413,13 @@ export default function PublicTeamsPage() {
                     isLevelUp ? `border-transparent` : 'border-primary'
                   )}>
                     <CardHeader className={cn("p-4 rounded-t-lg", isLevelUp ? getLevelHeaderStyle(team.level) : 'bg-slate-600 text-white')}>
-                       <CardTitle className="text-lg font-bold">
+                      <CardTitle className="text-lg font-bold">
                         <div className="flex items-center gap-3 mb-2">
                             <Users className="h-5 w-5" />
                             {team.name}
                         </div>
                         <div className='flex justify-end'>
-                            <Badge variant="outline" className="text-xs bg-black/20 text-white border-white/50">
-                                {badgeText}
-                            </Badge>
+                           <div className="text-xs font-medium text-white/80">{badgeText}</div>
                         </div>
                       </CardTitle>
                     </CardHeader>
