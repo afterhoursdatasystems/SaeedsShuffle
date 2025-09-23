@@ -468,22 +468,28 @@ export default function PublicTeamsPage() {
                                 const teamBRecord = teamBStats ? `(${teamBStats.wins}-${teamBStats.losses})` : '';
 
                                 return (
-                                <TableRow key={match.id} className="text-base border-b">
-                                     <TableCell className="font-medium p-2 text-left">
-                                        <div>{match.teamA}</div>
-                                        <div className="text-muted-foreground text-sm">{teamARecord}</div>
-                                    </TableCell>
-                                    <TableCell className="text-center font-mono whitespace-nowrap p-1">
-                                        <Badge variant="outline" className="mr-2">{match.court}</Badge>
-                                        {match.resultA !== null && match.resultB !== null
-                                            ? `${match.resultA} - ${match.resultB}`
-                                            : 'vs'}
-                                    </TableCell>
-                                    <TableCell className="font-medium p-2 text-right">
-                                        <div>{match.teamB}</div>
-                                        <div className="text-muted-foreground text-sm">{teamBRecord}</div>
-                                    </TableCell>
-                                </TableRow>
+                                <React.Fragment key={match.id}>
+                                    <TableRow className="border-b-0">
+                                        <TableCell colSpan={3} className="p-2 text-center">
+                                            <Badge variant="outline">{match.court}</Badge>
+                                        </TableCell>
+                                    </TableRow>
+                                    <TableRow className="text-base border-b">
+                                        <TableCell className="font-medium p-2 text-left">
+                                            <div>{match.teamA}</div>
+                                            <div className="text-muted-foreground text-sm">{teamARecord}</div>
+                                        </TableCell>
+                                        <TableCell className="text-center font-mono whitespace-nowrap p-1">
+                                            {match.resultA !== null && match.resultB !== null
+                                                ? `${match.resultA} - ${match.resultB}`
+                                                : 'vs'}
+                                        </TableCell>
+                                        <TableCell className="font-medium p-2 text-right">
+                                            <div>{match.teamB}</div>
+                                            <div className="text-muted-foreground text-sm">{teamBRecord}</div>
+                                        </TableCell>
+                                    </TableRow>
+                                </React.Fragment>
                                 );
                             })}
                           </TableBody>
