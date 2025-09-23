@@ -416,6 +416,7 @@ export default function PublicTeamsPage() {
                                     <Users className="h-5 w-5" />
                                     {team.name}
                                </div>
+                               {isLevelUp && <span className="font-semibold">{team.level}</span>}
                             </div>
                         </CardTitle>
                     </CardHeader>
