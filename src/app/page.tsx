@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { getPublishedData } from '@/app/actions';
 import type { Team, GameFormat, GameVariant, Match, PowerUp } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
