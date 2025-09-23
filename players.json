@@ -11,7 +11,7 @@
     "name": "Melissa Roy",
     "gender": "Gal",
     "skill": 6,
-    "present": false
+    "present": true
   },
   {
     "id": "3",
@@ -102,7 +102,7 @@
     "name": "Stephen Jaqua",
     "gender": "Guy",
     "skill": 4,
-    "present": false
+    "present": true
   },
   {
     "id": "16",
@@ -116,14 +116,14 @@
     "name": "Shaylyn Murphy",
     "gender": "Gal",
     "skill": 8,
-    "present": false
+    "present": true
   },
   {
     "id": "18",
     "name": "William Van Meter",
     "gender": "Guy",
     "skill": 3,
-    "present": false
+    "present": true
   },
   {
     "id": "19",

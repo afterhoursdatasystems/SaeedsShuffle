@@ -176,7 +176,7 @@ export function ScheduleGenerator() {
     if (teamNames.length < 2) return [];
     
     const shuffledTeams = shuffleArray(teamNames);
-    const startTime = format(new Date(), 'h:mm a'); // KOTC is continuous
+    const startTime = "6:45 PM"; // KOTC is continuous but starts at a set time
 
     let waitingTeams = [...shuffledTeams];
     const kingCourtMatch: Match = {

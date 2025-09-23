@@ -1,43 +1,8 @@
 {
   "teams": [
     {
-      "id": "ea1340c1-b321-4aa9-9fe1-77758052e63c",
-      "name": "Jetton Juggernauts",
-      "players": [
-        {
-          "id": "14",
-          "name": "Eric Ahrens",
-          "gender": "Guy",
-          "skill": 7,
-          "present": true
-        },
-        {
-          "id": "13",
-          "name": "Emily Victoria",
-          "gender": "Gal",
-          "skill": 6,
-          "present": true
-        },
-        {
-          "id": "25",
-          "name": "Lauren Hopkins",
-          "gender": "Gal",
-          "skill": 6,
-          "present": true
-        },
-        {
-          "id": "22",
-          "name": "Jasona Jones",
-          "gender": "Gal",
-          "skill": 1,
-          "present": true
-        }
-      ],
-      "level": 3
-    },
-    {
-      "id": "9733f3b1-4488-4c36-af19-8b6c0cdb95b0",
-      "name": "Peninsula Powerhouse",
+      "id": "62d684d6-6548-4e8e-b454-4f7ec9896709",
+      "name": "Soda Shop Slammers",
       "players": [
         {
           "id": "12",
@@ -51,41 +16,6 @@
           "name": "Alexandra Broskey",
           "gender": "Gal",
           "skill": 6,
-          "present": true
-        },
-        {
-          "id": "23",
-          "name": "Joy Swasy",
-          "gender": "Gal",
-          "skill": 6,
-          "present": true
-        },
-        {
-          "id": "24",
-          "name": "Jesica Bullrich",
-          "gender": "Gal",
-          "skill": 2,
-          "present": true
-        }
-      ],
-      "level": 1
-    },
-    {
-      "id": "5534e066-c761-4aa4-83e0-c7a280bc30b6",
-      "name": "Birkdale Bombers",
-      "players": [
-        {
-          "id": "7",
-          "name": "Brian Kempert",
-          "gender": "Guy",
-          "skill": 8,
-          "present": true
-        },
-        {
-          "id": "3",
-          "name": "Kristin Drinka",
-          "gender": "Gal",
-          "skill": 7,
           "present": true
         },
         {
@@ -106,12 +36,117 @@
       "level": 1
     },
     {
-      "id": "41e3789c-9e19-4900-827e-077f5d46afbf",
-      "name": "Summit Strikers",
+      "id": "cb202522-5433-4a86-aab9-d4c01cd3f05f",
+      "name": "Langtree Lightning",
       "players": [
         {
           "id": "26",
           "name": "Matt Taylor",
+          "gender": "Guy",
+          "skill": 7,
+          "present": true
+        },
+        {
+          "id": "13",
+          "name": "Emily Victoria",
+          "gender": "Gal",
+          "skill": 6,
+          "present": true
+        },
+        {
+          "id": "2",
+          "name": "Melissa Roy",
+          "gender": "Gal",
+          "skill": 6,
+          "present": true
+        },
+        {
+          "id": "24",
+          "name": "Jesica Bullrich",
+          "gender": "Gal",
+          "skill": 2,
+          "present": true
+        }
+      ],
+      "level": 1
+    },
+    {
+      "id": "642116a1-1d89-4574-83dd-bdd113bf71a6",
+      "name": "Peninsula Powerhouse",
+      "players": [
+        {
+          "id": "7",
+          "name": "Brian Kempert",
+          "gender": "Guy",
+          "skill": 8,
+          "present": true
+        },
+        {
+          "id": "3",
+          "name": "Kristin Drinka",
+          "gender": "Gal",
+          "skill": 7,
+          "present": true
+        },
+        {
+          "id": "23",
+          "name": "Joy Swasy",
+          "gender": "Gal",
+          "skill": 6,
+          "present": true
+        },
+        {
+          "id": "22",
+          "name": "Jasona Jones",
+          "gender": "Gal",
+          "skill": 1,
+          "present": true
+        }
+      ],
+      "level": 1
+    },
+    {
+      "id": "f0885cd7-ba36-4dd1-b966-1544bfb5f584",
+      "name": "Cool Fish Commandos",
+      "players": [
+        {
+          "id": "11",
+          "name": "Aditya Singh",
+          "gender": "Guy",
+          "skill": 7,
+          "present": true
+        },
+        {
+          "id": "17",
+          "name": "Shaylyn Murphy",
+          "gender": "Gal",
+          "skill": 8,
+          "present": true
+        },
+        {
+          "id": "25",
+          "name": "Lauren Hopkins",
+          "gender": "Gal",
+          "skill": 6,
+          "present": true
+        },
+        {
+          "id": "18",
+          "name": "William Van Meter",
+          "gender": "Guy",
+          "skill": 3,
+          "present": true
+        }
+      ],
+      "level": 1
+    },
+    {
+      "id": "f3b7ed91-fbe0-4067-988b-e7fb78267241",
+      "name": "Bailey Bruisers",
+      "players": [
+        {
+          "id": "14",
+          "name": "Eric Ahrens",
           "gender": "Guy",
           "skill": 7,
           "present": true
@@ -124,31 +159,31 @@
           "present": true
         },
         {
-          "id": "6",
-          "name": "Heidi Kempert",
+          "id": "27",
+          "name": "Alaina McCoy",
           "gender": "Gal",
           "skill": 4,
           "present": true
         },
         {
+          "id": "15",
+          "name": "Stephen Jaqua",
+          "gender": "Guy",
+          "skill": 4,
+          "present": true
+        }
+      ],
+      "level": 1
+    },
+    {
+      "id": "3f3dcb67-0b87-452a-86f2-dfd35a462d19",
+      "name": "Birkdale Bombers",
+      "players": [
+        {
           "id": "10",
           "name": "Jonathan Bradley",
           "gender": "Guy",
           "skill": 5,
-          "present": true
-        }
-      ],
-      "level": 3
-    },
-    {
-      "id": "154c8a5b-de49-47ad-9349-df6c707f9e1b",
-      "name": "Soda Shop Slammers",
-      "players": [
-        {
-          "id": "11",
-          "name": "Aditya Singh",
-          "gender": "Guy",
-          "skill": 7,
           "present": true
         },
         {
@@ -159,8 +194,8 @@
           "present": true
         },
         {
-          "id": "27",
-          "name": "Alaina McCoy",
+          "id": "6",
+          "name": "Heidi Kempert",
           "gender": "Gal",
           "skill": 4,
           "present": true
@@ -176,99 +211,8 @@
       "level": 1
     }
   ],
-  "format": "level-up",
-  "schedule": [
-    {
-      "id": "ed5886af-4d25-4aa7-a34e-3dad401810f6",
-      "teamA": "Jetton Juggernauts",
-      "teamB": "Peninsula Powerhouse",
-      "resultA": 15,
-      "resultB": 12,
-      "court": "Court 1",
-      "time": "6:45 PM"
-    },
-    {
-      "id": "d82d8762-9184-49c8-bc20-d917d4e6e3ee",
-      "teamA": "Summit Strikers",
-      "teamB": "Soda Shop Slammers",
-      "resultA": 15,
-      "resultB": 13,
-      "court": "Court 2",
-      "time": "6:45 PM"
-    },
-    {
-      "id": "41040c04-5c10-4f2d-8fe9-e2cc20f5f25f",
-      "teamA": "Jetton Juggernauts",
-      "teamB": "Birkdale Bombers",
-      "resultA": 15,
-      "resultB": 13,
-      "court": "Court 1",
-      "time": "7:15 PM"
-    },
-    {
-      "id": "625970d2-e6a0-4139-8024-8eeba3b68f0c",
-      "teamA": "Summit Strikers",
-      "teamB": "Peninsula Powerhouse",
-      "resultA": 15,
-      "resultB": 12,
-      "court": "Court 2",
-      "time": "7:15 PM"
-    },
-    {
-      "id": "0972699d-4709-4446-ba62-044f257aed94",
-      "teamA": "Jetton Juggernauts",
-      "teamB": "Summit Strikers",
-      "resultA": null,
-      "resultB": null,
-      "court": "Court 1",
-      "time": "7:45 PM"
-    },
-    {
-      "id": "7c2ab557-d125-4ef4-8ccd-1630ecf6bd91",
-      "teamA": "Soda Shop Slammers",
-      "teamB": "Birkdale Bombers",
-      "resultA": null,
-      "resultB": null,
-      "court": "Court 2",
-      "time": "7:45 PM"
-    },
-    {
-      "id": "72516c67-08f4-46d5-a318-0ceaa63141cf",
-      "teamA": "Jetton Juggernauts",
-      "teamB": "Soda Shop Slammers",
-      "resultA": null,
-      "resultB": null,
-      "court": "Court 1",
-      "time": "8:15 PM"
-    },
-    {
-      "id": "6d7fca13-f891-47b2-b03b-46f676151a1b",
-      "teamA": "Peninsula Powerhouse",
-      "teamB": "Birkdale Bombers",
-      "resultA": null,
-      "resultB": null,
-      "court": "Court 2",
-      "time": "8:15 PM"
-    },
-    {
-      "id": "21d86e48-26d2-4a58-88dc-62edc8c862de",
-      "teamA": "Peninsula Powerhouse",
-      "teamB": "Soda Shop Slammers",
-      "resultA": null,
-      "resultB": null,
-      "court": "Court 1",
-      "time": "8:45 PM"
-    },
-    {
-      "id": "39b43d2e-8e10-4e4f-abb6-37ecb9c9d912",
-      "teamA": "Birkdale Bombers",
-      "teamB": "Summit Strikers",
-      "resultA": null,
-      "resultB": null,
-      "court": "Court 2",
-      "time": "8:45 PM"
-    }
-  ],
+  "format": "king-of-the-court",
+  "schedule": [],
   "activeRule": null,
   "pointsToWin": 15
 }
