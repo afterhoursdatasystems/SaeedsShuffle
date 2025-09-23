@@ -12,7 +12,7 @@ import { SidebarTrigger } from './ui/sidebar';
 
 const navItems = [
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/admin/player-management', label: 'Player Management', icon: Home },
+    { href: '/admin/player-management', label: 'Player Management', icon: Users },
     { href: '/admin/check-in', label: 'Player Check-in', icon: UserCheck },
     { href: '/admin/teams', label: 'Team Management', icon: Users },
     { href: '/admin/schedule', label: 'Schedule Management', icon: Calendar },
@@ -31,7 +31,7 @@ export default function AppHeader() {
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:px-6">
-        <SidebarTrigger />
+        <SidebarTrigger className="md:flex hidden" />
         <Sheet>
             <SheetTrigger asChild>
                 <Button variant="outline" size="icon" className="md:hidden">
