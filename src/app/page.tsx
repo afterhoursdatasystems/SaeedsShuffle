@@ -460,14 +460,6 @@ export default function PublicTeamsPage() {
                       </CardHeader>
                       <CardContent className="p-0 sm:p-4">
                         <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead className="w-[80px] px-2">Court</TableHead>
-                              <TableHead className="px-2">Team A</TableHead>
-                              <TableHead className="w-[80px] text-center px-1">Score</TableHead>
-                              <TableHead className="text-right px-2">Team B</TableHead>
-                            </TableRow>
-                          </TableHeader>
                           <TableBody>
                             {matches.map((match) => {
                                 const teamAStats = teamStats[match.teamA];
@@ -476,18 +468,18 @@ export default function PublicTeamsPage() {
                                 const teamBRecord = teamBStats ? `(${teamBStats.wins}-${teamBStats.losses})` : '';
 
                                 return (
-                                <TableRow key={match.id} className="text-base">
-                                    <TableCell className="px-2"><Badge>{match.court}</Badge></TableCell>
-                                    <TableCell className="font-medium px-2">
+                                <TableRow key={match.id} className="text-base border-b">
+                                     <TableCell className="font-medium p-2 text-left">
                                         <div>{match.teamA}</div>
                                         <div className="text-muted-foreground text-sm">{teamARecord}</div>
                                     </TableCell>
-                                    <TableCell className="text-center font-mono whitespace-nowrap px-1">
+                                    <TableCell className="text-center font-mono whitespace-nowrap p-1">
+                                        <Badge variant="outline" className="mr-2">{match.court}</Badge>
                                         {match.resultA !== null && match.resultB !== null
                                             ? `${match.resultA} - ${match.resultB}`
                                             : 'vs'}
                                     </TableCell>
-                                    <TableCell className="font-medium text-right px-2">
+                                    <TableCell className="font-medium p-2 text-right">
                                         <div>{match.teamB}</div>
                                         <div className="text-muted-foreground text-sm">{teamBRecord}</div>
                                     </TableCell>
