@@ -413,14 +413,16 @@ export default function PublicTeamsPage() {
                     isLevelUp ? `border-transparent` : 'border-primary'
                   )}>
                     <CardHeader className={cn("p-4 rounded-t-lg", isLevelUp ? getLevelHeaderStyle(team.level) : 'bg-slate-600 text-white')}>
-                      <CardTitle className="flex items-center justify-between gap-3 text-lg font-bold">
-                        <div className="flex items-center gap-3">
+                       <CardTitle className="text-lg font-bold">
+                        <div className="flex items-center gap-3 mb-2">
                             <Users className="h-5 w-5" />
                             {team.name}
                         </div>
-                         <Badge variant="outline" className="text-xs bg-black/20 text-white border-white/50">
-                            {badgeText}
-                        </Badge>
+                        <div className='flex justify-end'>
+                            <Badge variant="outline" className="text-xs bg-black/20 text-white border-white/50">
+                                {badgeText}
+                            </Badge>
+                        </div>
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="flex-grow p-4">
@@ -459,8 +461,8 @@ export default function PublicTeamsPage() {
                             {matches.map((match) => {
                                 const teamAStats = teamStats[match.teamA];
                                 const teamBStats = teamStats[match.teamB];
-                                const teamARecord = teamAStats ? `(${teamAStats.wins}-${teamAStats.losses})` : '';
-                                const teamBRecord = teamBStats ? `(${teamBStats.wins}-${teamBStats.losses})` : '';
+                                const teamARecord = teamAStats ? `${teamAStats.wins}-${teamAStats.losses}` : '';
+                                const teamBRecord = teamBStats ? `${teamBStats.wins}-${teamBStats.losses}` : '';
 
                                 return (
                                 <React.Fragment key={match.id}>
@@ -565,7 +567,7 @@ export default function PublicTeamsPage() {
           ) : (
              <div className="flex h-[60vh] flex-col items-center justify-center rounded-xl border-4 border-dashed bg-muted/50 p-12 text-center">
               <h3 className="text-4xl font-bold tracking-tight">Teams Not Yet Published</h3>
-              <p className="mt-6 text-xl text-muted-foreground">The commissioner is still drafting. Check back soon!</p>
+              <p className="mt-6 text-xl text-muted-foreground">Check back soon!</p>
             </div>
           )}
         </div>
