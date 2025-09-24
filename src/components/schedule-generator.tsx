@@ -53,38 +53,34 @@ export function ScheduleGenerator() {
             allPairings.push({ teamA: teamNames[i], teamB: teamNames[j] });
         }
     }
-    allPairings = shuffleArray(allPairings);
-
+    
     // 2. Initialize data structures
     const newSchedule: Match[] = [];
     const gamesCount: { [teamName: string]: number } = {};
     teamNames.forEach(name => gamesCount[name] = 0);
     const timeSlots: { time: Date, courts: (Match | null)[] }[] = [{ time: startTime, courts: Array(numCourts).fill(null) }];
 
-    // 3. Loop until all teams have enough games or we run out of pairings
-    let pairingsToConsider = [...allPairings];
+    let pairingsToConsider = shuffleArray(allPairings);
     
-    while (Object.values(gamesCount).some(c => c < gamesPerTeam) && pairingsToConsider.length > 0) {
+    let allTeamsScheduled = false;
+
+    while(!allTeamsScheduled && pairingsToConsider.length > 0) {
         let scheduledInThisPass = false;
 
-        // Create a copy to iterate over, so we can modify the original
-        const currentPairings = [...pairingsToConsider];
-        pairingsToConsider = []; // Clear for the next pass
+        const remainingPairings: { teamA: string, teamB: string }[] = [];
 
-        for (const pairing of currentPairings) {
+        for (const pairing of pairingsToConsider) {
             const { teamA, teamB } = pairing;
 
-            // Skip if either team has already played enough games
             if (gamesCount[teamA] >= gamesPerTeam || gamesCount[teamB] >= gamesPerTeam) {
-                continue;
+                continue; 
             }
 
             let scheduled = false;
-            // Find the first available time slot and court
             for (const slot of timeSlots) {
                 const teamsInSlot = new Set(slot.courts.flatMap(m => m ? [m.teamA, m.teamB] : []));
                 if (teamsInSlot.has(teamA) || teamsInSlot.has(teamB)) {
-                    continue; // One team is busy
+                    continue; // One team is busy in this slot
                 }
 
                 const openCourtIndex = slot.courts.indexOf(null);
@@ -104,30 +100,30 @@ export function ScheduleGenerator() {
                     gamesCount[teamB]++;
                     scheduled = true;
                     scheduledInThisPass = true;
-                    break; // Move to the next pairing
+                    break;
                 }
             }
-
-            if (!scheduled) {
-                 // If not scheduled, carry it over to the next pass
-                 pairingsToConsider.push(pairing);
+             if (!scheduled) {
+                remainingPairings.push(pairing);
             }
         }
         
-        // If we need to schedule more games but couldn't in any existing slots, add a new time slot.
-        if (pairingsToConsider.length > 0 && !scheduledInThisPass) {
-             const lastSlotTime = timeSlots[timeSlots.length - 1].time;
-             timeSlots.push({ time: addMinutes(lastSlotTime, gameDuration), courts: Array(numCourts).fill(null) });
-        } else if (pairingsToConsider.length > 0) {
-             // If we scheduled some games, it might have opened up spots. Reset and try scheduling remaining games.
-        }
+        pairingsToConsider = shuffleArray(remainingPairings);
 
-        // Failsafe to prevent infinite loops if pairings get exhausted but game counts aren't met
-        // (e.g., requesting more games than possible pairings)
-        if (pairingsToConsider.length === currentPairings.length && !scheduledInThisPass) {
-            break;
+        if (!scheduledInThisPass && pairingsToConsider.length > 0) {
+            const lastSlotTime = timeSlots[timeSlots.length - 1].time;
+            timeSlots.push({ time: addMinutes(lastSlotTime, gameDuration), courts: Array(numCourts).fill(null) });
+        }
+        
+        allTeamsScheduled = Object.values(gamesCount).every(c => c >= gamesPerTeam);
+
+        // Failsafe: if we run out of pairings, stop.
+        if (pairingsToConsider.length === 0 && !allTeamsScheduled) {
+             // If we still have teams that need games, re-populate pairings to allow repeats
+             pairingsToConsider = shuffleArray(allPairings);
         }
     }
+
 
     return newSchedule.sort((a, b) => {
         const timeA = new Date(`1/1/1970 ${a.time}`).getTime();
