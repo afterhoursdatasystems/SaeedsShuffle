@@ -61,13 +61,13 @@ export default function CheckinPage() {
                     'cursor-pointer select-none transition-all duration-200 ease-in-out flex flex-col',
                     isPresent && 'border-green-500 bg-green-50/50 border-2 shadow-lg',
                     isAbsent && 'border-red-500 bg-red-50/20 text-muted-foreground',
-                    isPending && 'border-yellow-500 bg-yellow-50/20'
+                    isPending && 'border-slate-400 bg-slate-50/20'
                 )}
             >
                 <CardContent className="flex flex-col items-center justify-center text-center p-4 gap-3 flex-grow">
                     {isPresent && <CheckCircle className="h-10 w-10 text-green-500 flex-shrink-0" />}
                     {isAbsent && <XCircle className="h-10 w-10 text-red-500 flex-shrink-0" />}
-                    {isPending && <HelpCircle className="h-10 w-10 text-yellow-600 flex-shrink-0" />}
+                    {isPending && <HelpCircle className="h-10 w-10 text-slate-500 flex-shrink-0" />}
                     <p className="text-base font-bold leading-tight">
                         {player.name}
                     </p>
