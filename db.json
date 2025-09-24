@@ -4,5 +4,22 @@
   "schedule": [],
   "activeRule": null,
   "pointsToWin": 15,
-  "levelUpHandicaps": []
+  "levelUpHandicaps": [
+    {
+      "level": 2,
+      "description": "All players on the team must rotate positions after each side-out."
+    },
+    {
+      "level": 3,
+      "description": "The opposing team designates your strongest hitter, who must then play defense for the entire game."
+    },
+    {
+      "level": 4,
+      "description": "All serves from your team must be underhand."
+    },
+    {
+      "level": 5,
+      "description": "No player on your team is allowed to jump."
+    }
+  ]
 }
