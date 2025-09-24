@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Wand2, RefreshCw, Info, ListChecks } from 'lucide-react';
+import { Wand2, RefreshCw, Info, ListChecks, RotateCcw } from 'lucide-react';
 import type { PowerUp, Handicap } from '@/types';
 import { usePlayerContext } from '@/contexts/player-context';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
@@ -13,6 +13,7 @@ import { publishData } from '@/app/actions';
 import { generateLevelUpHandicaps } from '@/ai/flows/generate-level-up-handicaps';
 import { generatePowerUps } from '@/ai/flows/generate-power-ups';
 import { generateCosmicScrambleRules } from '@/ai/flows/generate-cosmic-scramble-rules';
+import { regenerateLevelUpHandicap } from '@/ai/flows/regenerate-level-up-handicap';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 
@@ -32,9 +33,11 @@ export default function RuleGeneratorPage() {
     cosmicScrambleRules,
     levelUpHandicaps,
     setLevelUpHandicaps,
+    resetLevelUpHandicapsToDefault,
   } = usePlayerContext();
 
   const [isLoading, setIsLoading] = useState(false);
+  const [regeneratingLevel, setRegeneratingLevel] = useState<number | null>(null);
   const [isClient, setIsClient] = useState(false);
   const [generationMode, setGenerationMode] = useState<GenerationMode>('random');
 
@@ -124,6 +127,47 @@ export default function RuleGeneratorPage() {
     }
   }
 
+  const handleRegenerateSingleHandicap = async (level: number) => {
+    setRegeneratingLevel(level);
+    try {
+        const existingHandicaps = levelUpHandicaps.filter(h => h.level !== level);
+        const result = await regenerateLevelUpHandicap({
+            levelToRegenerate: level,
+            existingHandicaps: existingHandicaps,
+            gameType: 'Level Up',
+        });
+
+        if (result && result.description) {
+            const newHandicaps = levelUpHandicaps.map(h => h.level === level ? result : h);
+            const sortedHandicaps = newHandicaps.sort((a,b) => a.level - b.level);
+            setLevelUpHandicaps(sortedHandicaps);
+            await publishData(teams, gameFormat, schedule, activeRule, pointsToWin, sortedHandicaps);
+            toast({
+                title: `Level ${level} Handicap Regenerated!`,
+                description: `The new rule has been published to the dashboard.`,
+            });
+        }
+    } catch(e) {
+        toast({
+            title: `Error Regenerating Handicap`,
+            description: `Could not generate a new rule for Level ${level}. Please try again.`,
+            variant: 'destructive',
+        });
+    } finally {
+        setRegeneratingLevel(null);
+    }
+  };
+
+  const handleResetToDefault = async () => {
+    setIsLoading(true);
+    await resetLevelUpHandicapsToDefault();
+    setIsLoading(false);
+    toast({
+        title: 'Handicaps Reset',
+        description: 'The handicaps have been reset to their default values.',
+    });
+  }
+
   const publishNewRule = async (newRule: PowerUp) => {
     setActiveRule(newRule);
       
@@ -204,10 +248,16 @@ export default function RuleGeneratorPage() {
 
             <div className="text-center mb-8">
               {isLevelUp ? (
-                  <Button onClick={handleAIGeneration} disabled={isLoading || !isClient} size="lg">
-                    {isLoading ? <RefreshCw className="mr-2 h-5 w-5 animate-spin" /> : <Wand2 className="mr-2 h-5 w-5" />}
-                    {isLoading ? 'Generating...' : `Generate New Handicaps`}
-                </Button>
+                  <div className="flex justify-center gap-4">
+                     <Button onClick={handleAIGeneration} disabled={isLoading || !isClient} size="lg">
+                        {isLoading && !regeneratingLevel ? <RefreshCw className="mr-2 h-5 w-5 animate-spin" /> : <Wand2 className="mr-2 h-5 w-5" />}
+                        {isLoading && !regeneratingLevel ? 'Generating All...' : `Generate New Set`}
+                    </Button>
+                     <Button onClick={handleResetToDefault} disabled={isLoading || !isClient} size="lg" variant="outline">
+                        <RotateCcw className="mr-2 h-5 w-5" />
+                        Reset to Default
+                    </Button>
+                  </div>
               ) : (
                 <>
                   {generationMode === 'random' && (
@@ -259,7 +309,22 @@ export default function RuleGeneratorPage() {
                                 </div>
                                 {levelUpHandicaps.map((handicap) => (
                                     <div key={handicap.level} className="space-y-1 rounded-md bg-muted/50 p-4">
-                                        <p className="font-semibold text-lg">Level {handicap.level}</p>
+                                        <div className="flex justify-between items-center">
+                                            <p className="font-semibold text-lg">Level {handicap.level}</p>
+                                            <Button 
+                                                size="sm" 
+                                                variant="ghost" 
+                                                onClick={() => handleRegenerateSingleHandicap(handicap.level)}
+                                                disabled={regeneratingLevel !== null}
+                                            >
+                                                {regeneratingLevel === handicap.level ? (
+                                                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                                                ) : (
+                                                    <Wand2 className="mr-2 h-4 w-4" />
+                                                )}
+                                                Regenerate
+                                            </Button>
+                                        </div>
                                         <p className="text-muted-foreground">{handicap.description}</p>
                                     </div>
                                 ))}

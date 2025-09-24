@@ -51,6 +51,13 @@ const cosmicScrambleRules: PowerUp[] = [
     { name: 'Movie Goer Swap', description: 'The player who last watched a movie in a theater on the losing team swaps places with the player who last did the same on the other team.' },
 ];
 
+const defaultLevelUpHandicaps: Handicap[] = [
+    { level: 2, description: 'All players on the team must rotate positions after each side-out.' },
+    { level: 3, description: 'The opposing team designates your strongest hitter, who must then play defense for the entire game.' },
+    { level: 4, description: 'All serves from your team must be underhand.' },
+    { level: 5, description: 'No player on your team is allowed to jump.' },
+];
+
 
 interface PlayerContextType {
   players: Player[];
@@ -80,6 +87,7 @@ interface PlayerContextType {
   updateTeam: (team: Team) => void;
   levelUpHandicaps: Handicap[];
   setLevelUpHandicaps: React.Dispatch<React.SetStateAction<Handicap[]>>;
+  resetLevelUpHandicapsToDefault: () => Promise<void>;
 }
 
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
@@ -92,7 +100,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [gameVariant, setGameVariant] = useState<GameVariant>('standard');
   const [activeRule, setActiveRule] = useState<PowerUp | null>(null);
   const [pointsToWin, setPointsToWin] = useState<number>(15);
-  const [levelUpHandicaps, setLevelUpHandicaps] = useState<Handicap[]>([]);
+  const [levelUpHandicaps, setLevelUpHandicaps] = useState<Handicap[]>(defaultLevelUpHandicaps);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
@@ -121,7 +129,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
                 setSchedule(schedule || []);
                 setActiveRule(activeRule || null);
                 setPointsToWin(pointsToWin || 15);
-                setLevelUpHandicaps(levelUpHandicaps || []);
+                setLevelUpHandicaps(levelUpHandicaps && levelUpHandicaps.length > 0 ? levelUpHandicaps : defaultLevelUpHandicaps);
                 
                 // Handle complex format state
                 if (format === 'monarch-of-the-court' || format === 'king-s-ransom' || format === 'power-up-round' || format === 'standard') {
@@ -393,6 +401,11 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         currentTeams.map(t => t.id === teamToUpdate.id ? teamToUpdate : t)
     );
   };
+  
+  const resetLevelUpHandicapsToDefault = async () => {
+    setLevelUpHandicaps(defaultLevelUpHandicaps);
+    await publishData(teams, gameFormat, schedule, activeRule, pointsToWin, defaultLevelUpHandicaps);
+  };
 
 
   const value = {
@@ -423,6 +436,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     updateTeam,
     levelUpHandicaps,
     setLevelUpHandicaps,
+    resetLevelUpHandicapsToDefault,
   };
 
   return (
