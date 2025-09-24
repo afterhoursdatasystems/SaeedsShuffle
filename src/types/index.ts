@@ -45,3 +45,8 @@ export type PowerUp = {
   name: string;
   description: string;
 };
+
+export type Handicap = {
+  level: number;
+  description: string;
+};

@@ -4,3 +4,4 @@ config();
 
 import '@/ai/flows/simulate-league-standings.ts';
 import '@/ai/flows/generate-power-ups.ts';
+import '@/ai/flows/generate-level-up-handicaps.ts';

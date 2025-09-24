@@ -4,7 +4,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { simulateLeagueStandings, type SimulateLeagueStandingsInput } from '@/ai/flows/simulate-league-standings';
-import type { Team, GameFormat, GameVariant, Match, PowerUp, Player, PlayerPresence } from '@/types';
+import type { Team, GameFormat, GameVariant, Match, PowerUp, Player, PlayerPresence, Handicap } from '@/types';
 
 type PublishedData = {
     teams: Team[];
@@ -13,6 +13,7 @@ type PublishedData = {
     activeRule: PowerUp | null;
     pointsToWin: number;
     players?: Player[]; // Players can now be part of the main DB
+    levelUpHandicaps?: Handicap[];
 };
 
 // Use a JSON file as a simple database for this prototype.
@@ -71,7 +72,7 @@ async function readDb(): Promise<PublishedData> {
     } catch (error: any) {
         if (error.code === 'ENOENT') {
             // If the file doesn't exist, return a default structure
-            return { teams: [], format: 'king-of-the-court', schedule: [], activeRule: null, pointsToWin: 15 };
+            return { teams: [], format: 'king-of-the-court', schedule: [], activeRule: null, pointsToWin: 15, levelUpHandicaps: [] };
         }
         console.error('Error reading from DB:', error);
         throw error;
@@ -187,9 +188,9 @@ export async function getSimulatedStandings(input: SimulateLeagueStandingsInput)
     }
 }
 
-export async function publishData(teams: Team[], format: GameFormat | GameVariant, schedule: Match[], activeRule: PowerUp | null, pointsToWin: number) {
+export async function publishData(teams: Team[], format: GameFormat | GameVariant, schedule: Match[], activeRule: PowerUp | null, pointsToWin: number, levelUpHandicaps?: Handicap[]) {
     try {
-        console.log('Publishing data:', { teams, format, schedule, activeRule, pointsToWin });
+        console.log('Publishing data:', { teams, format, schedule, activeRule, pointsToWin, levelUpHandicaps });
         // Read the existing data first to avoid overwriting unrelated fields
         const currentData = await readDb();
         
@@ -200,6 +201,7 @@ export async function publishData(teams: Team[], format: GameFormat | GameVarian
             schedule,
             activeRule,
             pointsToWin,
+            levelUpHandicaps: levelUpHandicaps || currentData.levelUpHandicaps,
         };
 
         await writeDb(dataToPublish);

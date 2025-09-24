@@ -2,7 +2,7 @@
 
 'use client';
 
-import type { Player, Team, Match, GameFormat, GameVariant, PowerUp, PlayerPresence } from '@/types';
+import type { Player, Team, Match, GameFormat, GameVariant, PowerUp, PlayerPresence, Handicap } from '@/types';
 import React, { createContext, useContext, useState, type ReactNode, useEffect, useCallback } from 'react';
 import { getPlayers, updatePlayerPresence, getPublishedData, updatePlayer, addPlayer, deletePlayer, publishData, resetAllPlayerPresence as resetAllPlayerPresenceAction } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
@@ -78,6 +78,8 @@ interface PlayerContextType {
   allPowerUps: PowerUp[];
   cosmicScrambleRules: PowerUp[];
   updateTeam: (team: Team) => void;
+  levelUpHandicaps: Handicap[];
+  setLevelUpHandicaps: React.Dispatch<React.SetStateAction<Handicap[]>>;
 }
 
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
@@ -90,6 +92,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [gameVariant, setGameVariant] = useState<GameVariant>('standard');
   const [activeRule, setActiveRule] = useState<PowerUp | null>(null);
   const [pointsToWin, setPointsToWin] = useState<number>(15);
+  const [levelUpHandicaps, setLevelUpHandicaps] = useState<Handicap[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
@@ -113,11 +116,12 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
             }
 
             if (publishedDataResult.success && publishedDataResult.data) {
-                const { teams, format, schedule, activeRule, pointsToWin } = publishedDataResult.data;
+                const { teams, format, schedule, activeRule, pointsToWin, levelUpHandicaps } = publishedDataResult.data;
                 setTeams(teams || []);
                 setSchedule(schedule || []);
                 setActiveRule(activeRule || null);
                 setPointsToWin(pointsToWin || 15);
+                setLevelUpHandicaps(levelUpHandicaps || []);
                 
                 // Handle complex format state
                 if (format === 'monarch-of-the-court' || format === 'king-s-ransom' || format === 'power-up-round' || format === 'standard') {
@@ -338,7 +342,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         finalFormat = gameVariant;
     }
 
-    const result = await publishData(teams, finalFormat, schedule, activeRule, pointsToWin);
+    const result = await publishData(teams, finalFormat, schedule, activeRule, pointsToWin, levelUpHandicaps);
     
     if (result.success) {
       toast({
@@ -352,7 +356,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         variant: 'destructive',
       });
     }
-  }, [gameFormat, gameVariant, teams, schedule, activeRule, pointsToWin, toast]);
+  }, [gameFormat, gameVariant, teams, schedule, activeRule, pointsToWin, levelUpHandicaps, toast]);
 
   const handleSetGameVariant = (variant: GameVariant) => {
     setGameVariant(variant);
@@ -417,6 +421,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     allPowerUps,
     cosmicScrambleRules,
     updateTeam,
+    levelUpHandicaps,
+    setLevelUpHandicaps,
   };
 
   return (

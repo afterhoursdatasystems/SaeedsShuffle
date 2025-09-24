@@ -4,7 +4,7 @@
 import React from 'react';
 import { useEffect, useState, useMemo } from 'react';
 import { getPublishedData } from '@/app/actions';
-import type { Team, GameFormat, GameVariant, Match, PowerUp } from '@/types';
+import type { Team, GameFormat, GameVariant, Match, PowerUp, Handicap } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Volleyball, Users, Trophy, BookOpen, Crown, Gem, ShieldQuestion, KeyRound, Zap, Calendar, Shuffle, Wand2, Clock, TrendingUp } from 'lucide-react';
@@ -90,7 +90,7 @@ const KOTCBaseRules = ({ pointsToWin, teamCount }: { pointsToWin: number; teamCo
 );
 
 
-const getFormatDetails = (pointsToWin: number, teamCount: number): Record<CombinedGameFormat, { title: string; description: React.ReactNode; icon: React.ElementType }> => ({
+const getFormatDetails = (pointsToWin: number, teamCount: number, handicaps: Handicap[]): Record<CombinedGameFormat, { title: string; description: React.ReactNode; icon: React.ElementType }> => ({
   'king-of-the-court': {
     title: 'Continuous King of the Court',
     icon: Crown,
@@ -199,10 +199,18 @@ const getFormatDetails = (pointsToWin: number, teamCount: number): Record<Combin
         <h4 className="font-bold text-lg mb-2">The Levels & Handicaps</h4>
         <div className="space-y-3 mb-6">
             <p><strong>Level 1:</strong> No additional rules.</p>
-            <p><strong>Level 2:</strong> All players on the team must rotate positions after each side-out.</p>
-            <p><strong>Level 3:</strong> The opposing team designates your strongest hitter, who must then play defense for the entire game.</p>
-            <p><strong>Level 4:</strong> All serves from your team must be underhand.</p>
-            <p><strong>Level 5:</strong> No player on your team is allowed to jump.</p>
+            {handicaps.length > 0 ? (
+                handicaps.map(h => (
+                    <p key={h.level}><strong>Level {h.level}:</strong> {h.description}</p>
+                ))
+            ) : (
+                <>
+                  <p><strong>Level 2:</strong> All players on the team must rotate positions after each side-out.</p>
+                  <p><strong>Level 3:</strong> The opposing team designates your strongest hitter, who must then play defense for the entire game.</p>
+                  <p><strong>Level 4:</strong> All serves from your team must be underhand.</p>
+                  <p><strong>Level 5:</strong> No player on your team is allowed to jump.</p>
+                </>
+            )}
         </div>
 
         <h4 className="font-bold text-lg mb-2">Playoffs</h4>
@@ -262,6 +270,7 @@ export default function PublicTeamsPage() {
   const [gameFormat, setGameFormat] = useState<CombinedGameFormat>('round-robin');
   const [activeRule, setActiveRule] = useState<PowerUp | null>(null);
   const [pointsToWin, setPointsToWin] = useState<number>(15);
+  const [levelUpHandicaps, setLevelUpHandicaps] = useState<Handicap[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -277,6 +286,7 @@ export default function PublicTeamsPage() {
           setActiveRule(result.data.activeRule || null);
           setGameFormat((result.data.format || 'round-robin') as CombinedGameFormat);
           setPointsToWin(result.data.pointsToWin || 15);
+          setLevelUpHandicaps(result.data.levelUpHandicaps || []);
         } else {
           console.error('Failed to fetch data:', result.error);
         }
@@ -295,7 +305,7 @@ export default function PublicTeamsPage() {
     return () => clearInterval(interval);
   }, []);
   
-  const formatDetails = useMemo(() => getFormatDetails(pointsToWin, teams.length), [pointsToWin, teams.length]);
+  const formatDetails = useMemo(() => getFormatDetails(pointsToWin, teams.length, levelUpHandicaps), [pointsToWin, teams.length, levelUpHandicaps]);
 
   const teamStats = useMemo(() => {
     const stats: { [teamName: string]: { wins: number; losses: number; level: number } } = {};
