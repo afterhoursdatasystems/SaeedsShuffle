@@ -4,18 +4,15 @@
 import type { Match, GameFormat, GameVariant, Player, Team } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Save, CalendarDays, Send, Trash2, Clock } from 'lucide-react';
-import React, { useMemo, useEffect } from 'react';
+import { Save, CalendarDays, Send, Trash2 } from 'lucide-react';
+import React from 'react';
 import { cn } from '@/lib/utils';
 import { usePlayerContext } from '@/contexts/player-context';
 import { publishData } from '@/app/actions';
-import { format, addMinutes } from 'date-fns';
-import { Label } from './ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 const shuffleArray = <T,>(array: T[]): T[] => {
   const newArray = [...array];
@@ -28,157 +25,82 @@ const shuffleArray = <T,>(array: T[]): T[] => {
 
 
 export function ScheduleGenerator() {
-  const { teams, schedule, setSchedule, gameFormat, gameVariant, players, activeRule, pointsToWin, gamesPerTeam, setGamesPerTeam } = usePlayerContext();
+  const { teams, schedule, setSchedule, gameFormat, gameVariant, players, activeRule, pointsToWin } = usePlayerContext();
   const { toast } = useToast();
   const [isPublishing, setIsPublishing] = React.useState(false);
 
-  const presentPlayers = players.filter(p => p.presence === 'Present');
+  const presentPlayers = players.filter(p => p.present);
   
-  const generateRoundRobinSchedule = (teamNames: string[], gamesPerTeam: number): Match[] => {
-    console.log('--- Generating Schedule ---');
-    console.log(`Teams: ${teamNames.join(', ')} (${teamNames.length} teams)`);
-    console.log(`Games per team: ${gamesPerTeam}`);
-
-    const numTeams = teamNames.length;
-    if (numTeams < 2) return [];
-
-    const totalGamesToSchedule = Math.ceil((numTeams * gamesPerTeam) / 2);
-    console.log(`Total games to schedule: ${totalGamesToSchedule}`);
-
-    let allPossiblePairings: { teamA: string; teamB: string }[] = [];
-    for (let i = 0; i < numTeams; i++) {
-        for (let j = i + 1; j < numTeams; j++) {
-            allPossiblePairings.push({ teamA: teamNames[i], teamB: teamNames[j] });
-        }
-    }
-
-    let gamePool: { teamA: string; teamB: string }[] = [];
-    while (gamePool.length < totalGamesToSchedule) {
-        gamePool.push(...shuffleArray(allPossiblePairings));
-    }
-    gamePool = gamePool.slice(0, totalGamesToSchedule);
-    console.log(`Created a game pool with ${gamePool.length} potential matches.`);
-
-    const newSchedule: Match[] = [];
-    const gamesCount: { [key: string]: number } = {};
-    teamNames.forEach(name => (gamesCount[name] = 0));
-
-    const startTime = new Date();
-    startTime.setHours(18, 45, 0, 0);
+  const generateRoundRobinSchedule = (teamNames: string[]): Match[] => {
+    const matches: Match[] = [];
     const courts = ['Court 1', 'Court 2'];
-    const gameDuration = 30;
 
-    let timeSlotIndex = 0;
-    while (newSchedule.length < totalGamesToSchedule) {
-        const currentTime = addMinutes(startTime, timeSlotIndex * gameDuration);
-        const timeSlotStr = format(currentTime, 'h:mm a');
-        console.log(`\nProcessing Time Slot: ${timeSlotStr}`);
-        const teamsInCurrentTimeslot = new Set<string>();
-        let scheduledInSlot = 0;
-
-        // Try to schedule for both courts
-        for (const court of courts) {
-            let scheduledOnCourt = false;
-
-            // Find a game for the current court
-            for (let i = 0; i < gamePool.length; i++) {
-                const game = gamePool[i];
-                const { teamA, teamB } = game;
-
-                // Check if this game is valid for this slot
-                if (gamesCount[teamA] < gamesPerTeam &&
-                    gamesCount[teamB] < gamesPerTeam &&
-                    !teamsInCurrentTimeslot.has(teamA) &&
-                    !teamsInCurrentTimeslot.has(teamB))
-                {
-                    // If we are trying to fill the second court, we need to find a compatible partner
-                    if (court === 'Court 2') {
-                        // We need to ensure that the remaining pool of games has a compatible match
-                        const remainingTeamsForSecondCourt = new Set(teamNames.filter(t => !teamsInCurrentTimeslot.has(t)));
-                        if (remainingTeamsForSecondCourt.size >= 2) {
-                           // This logic can be complex. A simpler approach is to find a compatible pair directly.
-                        }
-                    }
-
-                    const match: Match = {
-                        id: crypto.randomUUID(),
-                        ...game,
-                        resultA: null,
-                        resultB: null,
-                        court,
-                        time: timeSlotStr,
-                    };
-                    newSchedule.push(match);
-                    gamesCount[teamA]++;
-                    gamesCount[teamB]++;
-                    teamsInCurrentTimeslot.add(teamA);
-                    teamsInCurrentTimeslot.add(teamB);
-                    gamePool.splice(i, 1); // Remove game from pool
-                    scheduledOnCourt = true;
-                    scheduledInSlot++;
-                    console.log(`  - Scheduled on ${court}: ${teamA} vs ${teamB}`);
-                    break; // Move to the next court
-                }
-            }
-            if (!scheduledOnCourt) {
-                console.log(`  - Could not find a suitable match for ${court} in this time slot.`);
-            }
-        }
-        
-        if (scheduledInSlot === 0 && gamePool.length > 0) {
-             console.log(`  - No games could be scheduled in this slot. Advancing time.`);
-        }
-
-        if (gamePool.length === 0) {
-            console.log('All required games have been scheduled. Exiting loop.');
-            break;
-        }
-
-        timeSlotIndex++;
-        if (timeSlotIndex > 50) {
-            console.error("Scheduler safety break triggered. Aborting.");
-            toast({ title: "Scheduler Error", description: "Could not generate a complete schedule.", variant: "destructive"});
-            break;
-        }
+    for (let i = 0; i < teamNames.length; i++) {
+      for (let j = i + 1; j < teamNames.length; j++) {
+        matches.push({
+          id: crypto.randomUUID(),
+          teamA: teamNames[i],
+          teamB: teamNames[j],
+          resultA: null,
+          resultB: null,
+          court: ''
+        });
+      }
     }
 
-    console.log('--- Schedule Generation Complete ---');
-    console.log(newSchedule);
-    return newSchedule;
-};
+    const shuffledMatches = shuffleArray(matches);
+    const newSchedule: Match[] = [];
 
+    for (let i = 0; i < shuffledMatches.length; i += courts.length) {
+      for (let courtIndex = 0; courtIndex < courts.length && i + courtIndex < shuffledMatches.length; courtIndex++) {
+        const match = shuffledMatches[i + courtIndex];
+        newSchedule.push({
+          ...match,
+          court: courts[courtIndex]
+        });
+      }
+    }
+
+    return newSchedule;
+  };
 
   const generateBlindDrawSchedule = (playersForDraw: Player[]): Match[] => {
-      const newSchedule: Match[] = [];
       const courts = ['Court 1', 'Court 2'];
       const teamSize = 4;
-      const gameDuration = 30; // in minutes
-      const numMatchesPerRound = Math.floor(playersForDraw.length / (teamSize * 2));
+      const numMatches = Math.floor(playersForDraw.length / (teamSize * 2));
 
-      if(numMatchesPerRound < 1) {
+      if(numMatches < 1) {
         toast({ title: 'Not enough players', description: `Need at least ${teamSize*2} players for a blind draw match.`, variant: 'destructive' });
         return [];
       }
-      
-      const shuffledPlayers = shuffleArray(playersForDraw);
-      
-      const startTime = new Date();
-      startTime.setHours(18, 45, 0, 0); // 6:45 PM
 
-      for(let i = 0; i < numMatchesPerRound; i++) {
+      const shuffledPlayers = shuffleArray(playersForDraw);
+      const matches: Match[] = [];
+
+      for(let i = 0; i < numMatches; i++) {
         const teamAPlayers = shuffledPlayers.splice(0, teamSize);
         const teamBPlayers = shuffledPlayers.splice(0, teamSize);
-        const matchTime = new Date(startTime.getTime() + Math.floor(i / courts.length) * gameDuration * 60000);
-        
-        newSchedule.push({
+
+        matches.push({
             id: crypto.randomUUID(),
             teamA: teamAPlayers.map(p => p.name).join(', '),
             teamB: teamBPlayers.map(p => p.name).join(', '),
             resultA: null,
             resultB: null,
-            court: courts[i % courts.length],
-            time: format(matchTime, 'h:mm a'),
+            court: ''
         });
+      }
+
+      const newSchedule: Match[] = [];
+
+      for (let i = 0; i < matches.length; i += courts.length) {
+        for (let courtIndex = 0; courtIndex < courts.length && i + courtIndex < matches.length; courtIndex++) {
+          const match = matches[i + courtIndex];
+          newSchedule.push({
+            ...match,
+            court: courts[courtIndex]
+          });
+        }
       }
 
       // In a real app, you'd handle leftover players
@@ -189,7 +111,6 @@ export function ScheduleGenerator() {
     if (teamNames.length < 2) return [];
     
     const shuffledTeams = shuffleArray(teamNames);
-    const startTime = "6:45 PM"; // KOTC is continuous but starts at a set time
 
     let waitingTeams = [...shuffledTeams];
     const kingCourtMatch: Match = {
@@ -199,7 +120,6 @@ export function ScheduleGenerator() {
         resultA: null,
         resultB: null,
         court: 'King Court',
-        time: startTime,
     };
 
     let newSchedule: Match[] = [kingCourtMatch];
@@ -212,7 +132,6 @@ export function ScheduleGenerator() {
             resultA: null,
             resultB: null,
             court: 'Challenger Court',
-            time: startTime,
         };
         newSchedule.push(challengerCourtMatch);
     }
@@ -225,7 +144,6 @@ export function ScheduleGenerator() {
             resultA: null,
             resultB: null,
             court: 'Challenger Line',
-            time: '---'
         });
     });
 
@@ -242,24 +160,17 @@ export function ScheduleGenerator() {
       return;
     }
 
-    const teamNames = teams.map(t => t.name);
-    
     let newSchedule: Match[] = [];
     let formatDescription = '';
 
     switch(gameFormat) {
-        case 'level-up':
         case 'pool-play-bracket':
         case 'round-robin':
-            newSchedule = generateRoundRobinSchedule(teamNames, gamesPerTeam);
-            if(newSchedule.length > 0) {
-              if (gameFormat === 'round-robin') formatDescription = "Round Robin";
-              else if (gameFormat === 'level-up') formatDescription = "Level Up";
-              else formatDescription = "Pool Play / Bracket";
-            }
+            newSchedule = generateRoundRobinSchedule(teams.map(t => t.name));
+            formatDescription = gameFormat === 'round-robin' ? "Round Robin" : "Pool Play / Bracket";
             break;
         case 'king-of-the-court':
-            newSchedule = generateKOTCSchedule(teamNames);
+            newSchedule = generateKOTCSchedule(teams.map(t => t.name));
             switch(gameVariant) {
                 case 'standard': formatDescription = "King of the Court"; break;
                 case 'monarch-of-the-court': formatDescription = "Monarch of the Court"; break;
@@ -279,14 +190,13 @@ export function ScheduleGenerator() {
              });
              return;
     }
+
+    setSchedule(newSchedule);
     
-    if (newSchedule.length > 0 || formatDescription === 'Blind Draw') {
-        setSchedule(newSchedule);
-        toast({
-            title: 'Schedule Generated!',
-            description: `${newSchedule.length} matches have been created for the ${formatDescription} format.`,
-        });
-    }
+    toast({
+      title: 'Schedule Generated!',
+      description: `${newSchedule.length} matches have been created for the ${formatDescription} format.`,
+    });
   };
   
   const handlePublish = async () => {
@@ -350,10 +260,8 @@ export function ScheduleGenerator() {
     }));
   };
   
-  const handleSaveAllResults = async () => {
+  const handleSaveAllResults = () => {
     toast({ title: "Results saved", description: "All match results have been updated." });
-    // Also publish the data so the public dashboard is updated
-    await handlePublish();
   };
   
     const handleClearSchedule = () => {
@@ -366,45 +274,6 @@ export function ScheduleGenerator() {
   
   const isKOTC = gameFormat === 'king-of-the-court';
 
-  const groupedSchedule = useMemo(() => {
-    if (isKOTC) return null;
-    
-    return schedule.reduce((acc, match) => {
-      const time = match.time;
-      if (!acc[time]) {
-        acc[time] = [];
-      }
-      acc[time].push(match);
-      return acc;
-    }, {} as Record<string, Match[]>);
-  }, [schedule, isKOTC]);
-  
-  const isOddTeamCount = teams.length % 2 !== 0;
-  const gameOptions = [2, 3, 4, 5, 6];
-  
-  const validGameOptions = useMemo(() => {
-      if (isOddTeamCount && teams.length > 0) {
-          return gameOptions.filter(num => num % 2 === 0);
-      }
-      return gameOptions;
-  }, [isOddTeamCount, teams.length]);
-  
-  // Effect to auto-correct gamesPerTeam if it becomes invalid
-  useEffect(() => {
-    if (isOddTeamCount && gamesPerTeam % 2 !== 0 && teams.length > 0) {
-        const closestEven = gamesPerTeam > 2 ? gamesPerTeam - 1 : 2;
-        if(validGameOptions.includes(closestEven)) {
-            setGamesPerTeam(closestEven);
-            toast({
-                title: 'Game Count Adjusted',
-                description: `With an odd number of teams, game count must be even. Switched to ${closestEven} games per team.`,
-                variant: 'default'
-            });
-        }
-    }
-  }, [isOddTeamCount, gamesPerTeam, setGamesPerTeam, toast, validGameOptions, teams.length]);
-
-
   return (
     <div className="space-y-8">
        <Card>
@@ -414,7 +283,7 @@ export function ScheduleGenerator() {
                 <CardTitle>Schedule Generation</CardTitle>
                 <CardDescription>Generate the match schedule for the chosen game format.</CardDescription>
               </div>
-               <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+               <div className="flex gap-2 w-full sm:w-auto">
                  <Button onClick={handleGenerateSchedule} className="w-full sm:w-auto">
                   <CalendarDays className="mr-2 h-4 w-4" />
                   Generate Schedule
@@ -426,34 +295,6 @@ export function ScheduleGenerator() {
               </div>
            </div>
         </CardHeader>
-        {!isKOTC && gameFormat !== 'blind-draw' && (
-             <CardContent>
-                <div className='space-y-2 max-w-xs'>
-                    <Label>Games Per Team</Label>
-                    <Select 
-                        value={String(gamesPerTeam)} 
-                        onValueChange={(val) => setGamesPerTeam(Number(val))}
-                        disabled={teams.length === 0}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select number of games" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {gameOptions.map(num => (
-                            <SelectItem 
-                                key={num} 
-                                value={String(num)}
-                                disabled={isOddTeamCount && num % 2 !== 0 && teams.length > 0}
-                            >
-                                {num} games {isOddTeamCount && num % 2 !== 0 && teams.length > 0 && '(Disabled)'}
-                            </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {isOddTeamCount && teams.length > 0 && <p className='text-xs text-muted-foreground pt-1'>With an odd number of teams, only even game counts are possible for a fair schedule.</p>}
-                </div>
-            </CardContent>
-        )}
        </Card>
 
       {schedule.length > 0 && (
@@ -464,7 +305,7 @@ export function ScheduleGenerator() {
                     <CardTitle>Match Schedule & Results</CardTitle>
                     <CardDescription>Enter results as games are completed.</CardDescription>
                 </div>
-                 <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                 <div className="flex gap-2 w-full sm:w-auto">
                     <Button onClick={handleSaveAllResults} variant="secondary" className="w-full sm:w-auto">
                         <Save className="mr-2 h-4 w-4" />
                         Save All Results
@@ -477,81 +318,46 @@ export function ScheduleGenerator() {
              </div>
           </CardHeader>
           <CardContent>
-            {isKOTC ? (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-[100px]">Time</TableHead>
-                        <TableHead className="w-[150px]">Court / Status</TableHead>
-                        <TableHead>Team A</TableHead>
-                        <TableHead>vs Team B / Status</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {schedule.map((match) => (
-                        <TableRow key={match.id}>
-                          <TableCell className="font-bold">{match.time}</TableCell>
-                          <TableCell><Badge>{match.court}</Badge></TableCell>
-                          <TableCell className="font-medium">{match.teamA}</TableCell>
-                          <TableCell className="font-medium">{match.teamB}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {groupedSchedule && Object.entries(groupedSchedule).map(([time, matches]) => (
-                    <Card key={time}>
-                      <CardHeader className="p-4 bg-muted/50">
-                        <CardTitle className="flex items-center gap-3 text-lg">
-                          <Clock className="h-5 w-5 text-primary" />
-                          Matches at {time}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="p-0">
-                        <Table>
-                          <TableBody>
-                            {matches.map((match) => (
-                                <React.Fragment key={match.id}>
-                                    <TableRow className="border-b-0">
-                                        <TableCell colSpan={3} className="p-2 text-center">
-                                            <Badge variant="outline">{match.court}</Badge>
-                                        </TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell className="font-medium p-2">{match.teamA}</TableCell>
-                                        <TableCell className="p-1 w-[120px]">
-                                          <div className="flex items-center justify-center gap-2">
-                                            <Input
-                                              type="number"
-                                              className="h-8 w-12 p-1 text-center"
-                                              value={match.resultA ?? ''}
-                                              onChange={(e) => handleResultChange(match.id, 'A', e.target.value)}
-                                              aria-label={`${match.teamA} score`}
-                                            />
-                                            <span>-</span>
-                                            <Input
-                                              type="number"
-                                              className="h-8 w-12 p-1 text-center"
-                                              value={match.resultB ?? ''}
-                                              onChange={(e) => handleResultChange(match.id, 'B', e.target.value)}
-                                              aria-label={`${match.teamB} score`}
-                                            />
-                                          </div>
-                                        </TableCell>
-                                        <TableCell className="font-medium p-2 text-right">{match.teamB}</TableCell>
-                                    </TableRow>
-                                </React.Fragment>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </CardContent>
-                    </Card>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[150px]">Court / Status</TableHead>
+                    <TableHead>Team A</TableHead>
+                    <TableHead>{ isKOTC ? 'vs Team B / Status' : 'Team B'}</TableHead>
+                    <TableHead className={cn("w-[120px] text-center", isKOTC && "hidden")}>Result</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {schedule.map((match) => (
+                    <TableRow key={match.id}>
+                      <TableCell><Badge>{match.court}</Badge></TableCell>
+                      <TableCell className="font-medium">{match.teamA}</TableCell>
+                      <TableCell className="font-medium">{match.teamB}</TableCell>
+                      <TableCell className={cn(isKOTC && "hidden")}>
+                        <div className="flex items-center justify-center gap-2">
+                          <Input
+                            type="number"
+                            className="h-8 w-12 p-1 text-center"
+                            value={match.resultA ?? ''}
+                            onChange={(e) => handleResultChange(match.id, 'A', e.target.value)}
+                            aria-label={`${match.teamA} score`}
+                          />
+                          <span>-</span>
+                          <Input
+                            type="number"
+                            className="h-8 w-12 p-1 text-center"
+                            value={match.resultB ?? ''}
+                            onChange={(e) => handleResultChange(match.id, 'B', e.target.value)}
+                            aria-label={`${match.teamB} score`}
+                          />
+                        </div>
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </div>
-            )}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
       )}
