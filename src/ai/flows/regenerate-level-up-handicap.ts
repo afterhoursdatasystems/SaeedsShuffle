@@ -19,7 +19,7 @@ const ExistingHandicapSchema = z.object({
     description: z.string(),
 });
 
-export const RegenerateLevelUpHandicapInputSchema = z.object({
+const RegenerateLevelUpHandicapInputSchema = z.object({
   levelToRegenerate: z.number().describe('The specific level (2-5) for which to generate a new handicap.'),
   existingHandicaps: z.array(ExistingHandicapSchema).describe('An array of the other handicaps that are already in use for the other levels.'),
   gameType: z.string().describe('The type of game, e.g., "Level Up".'),
@@ -29,7 +29,7 @@ export type RegenerateLevelUpHandicapInput = z.infer<
   typeof RegenerateLevelUpHandicapInputSchema
 >;
 
-export const RegenerateLevelUpHandicapOutputSchema = z.object({
+const RegenerateLevelUpHandicapOutputSchema = z.object({
     level: z.number().describe('The level this new handicap applies to.'),
     description: z.string().describe('A brief, clear description of the newly generated handicap.'),
 });
