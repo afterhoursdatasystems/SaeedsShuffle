@@ -1,7 +1,7 @@
 
 'use client';
 
-import type { Match, GameFormat, GameVariant, Player, Team } from '@/types';
+import type { Match, Player, Team } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
