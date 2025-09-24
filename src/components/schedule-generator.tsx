@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Save, CalendarDays, Send, Trash2, Clock } from 'lucide-react';
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { usePlayerContext } from '@/contexts/player-context';
 import { publishData } from '@/app/actions';
@@ -35,100 +35,93 @@ export function ScheduleGenerator() {
 
   const presentPlayers = players.filter(p => p.presence === 'Present');
   
-  const generateRoundRobinSchedule = (teamsInput: string[], gamesPerTeam: number): Match[] => {
-    const teamNames = [...teamsInput];
-    const numTeams = teamNames.length;
-    if (numTeams < 2) return [];
+    const generateRoundRobinSchedule = (teamNames: string[], gamesPerTeam: number): Match[] => {
+        const numTeams = teamNames.length;
+        if (numTeams < 2) return [];
 
-    let time = new Date();
-    time.setHours(18, 45, 0, 0); // 6:45 PM
-    const courts = ['Court 1', 'Court 2'];
-    const gameDuration = 30; // 30 minutes per game
-
-    // 1. Create a large pool of all possible pairings
-    const pairings: { teamA: string; teamB: string }[] = [];
-    for (let i = 0; i < numTeams; i++) {
-        for (let j = i + 1; j < numTeams; j++) {
-            pairings.push({ teamA: teamNames[i], teamB: teamNames[j] });
+        // Mathematical check for schedulability
+        if ((numTeams * gamesPerTeam) % 2 !== 0) {
+            toast({
+                title: "Scheduling Impossible",
+                description: `With ${numTeams} teams, each team must play an even number of games.`,
+                variant: "destructive",
+            });
+            return [];
         }
-    }
 
-    // 2. Duplicate and shuffle the pairings to create a sufficient pool for scheduling
-    let gamePool = [];
-    // Ensure the pool is large enough for the requested number of games
-    const requiredRounds = Math.ceil((numTeams * gamesPerTeam) / numTeams);
-    for (let i = 0; i < requiredRounds; i++) {
-        gamePool.push(...shuffleArray(pairings));
-    }
-    gamePool = shuffleArray(gamePool);
-    
-    // 3. Schedule games
-    const newSchedule: Match[] = [];
-    const gamesCount: { [key: string]: number } = {};
-    teamNames.forEach(name => (gamesCount[name] = 0));
-
-    let timeSlotIndex = 0;
-    
-    // Use a safety counter to prevent accidental infinite loops
-    let safetyBreak = 0;
-    const maxIterations = numTeams * gamesPerTeam * 5; 
-
-    while(Object.values(gamesCount).some(count => count < gamesPerTeam) && safetyBreak < maxIterations) {
-        safetyBreak++;
-        const currentTime = addMinutes(time, timeSlotIndex * gameDuration);
-        const teamsInCurrentTimeslot = new Set<string>();
-
-        // Attempt to fill both courts for the current timeslot
-        for(const court of courts) {
-            let gameScheduledForCourt = false;
-            
-            for (let i = 0; i < gamePool.length; i++) {
-                const pairing = gamePool[i];
-                const { teamA, teamB } = pairing;
-
-                if (
-                    gamesCount[teamA] < gamesPerTeam &&
-                    gamesCount[teamB] < gamesPerTeam &&
-                    !teamsInCurrentTimeslot.has(teamA) &&
-                    !teamsInCurrentTimeslot.has(teamB)
-                ) {
-                    newSchedule.push({
-                        id: crypto.randomUUID(),
-                        teamA,
-                        teamB,
-                        resultA: null,
-                        resultB: null,
-                        court: court,
-                        time: format(currentTime, 'h:mm a'),
-                    });
-                    
-                    gamesCount[teamA]++;
-                    gamesCount[teamB]++;
-                    teamsInCurrentTimeslot.add(teamA);
-                    teamsInCurrentTimeslot.add(teamB);
-                    
-                    // Remove the used pairing so it's not picked again immediately
-                    gamePool.splice(i, 1);
-                    gameScheduledForCourt = true;
-                    break; // Found a game for this court, move to the next court
-                }
+        let allPairings: { teamA: string; teamB: string }[] = [];
+        for (let i = 0; i < numTeams; i++) {
+            for (let j = i + 1; j < numTeams; j++) {
+                allPairings.push({ teamA: teamNames[i], teamB: teamNames[j] });
             }
         }
         
-        // If we filled any court in this timeslot, we can potentially start the next timeslot
-        if(teamsInCurrentTimeslot.size > 0) {
-            timeSlotIndex++;
-        } else {
-            // If we couldn't schedule any game in a full pass, break to avoid infinite loop
-            break;
+        let gamePool: { teamA: string; teamB: string }[] = [];
+        // Create a large enough pool of games
+        for (let i = 0; i < gamesPerTeam; i++) {
+            gamePool.push(...shuffleArray(allPairings));
         }
-    }
-    
-    return newSchedule;
-};
 
+        const newSchedule: Match[] = [];
+        const gamesCount: { [key: string]: number } = {};
+        teamNames.forEach(name => (gamesCount[name] = 0));
+        
+        let time = new Date();
+        time.setHours(18, 45, 0, 0); // 6:45 PM
+        const courts = ['Court 1', 'Court 2'];
+        const gameDuration = 30;
+        let timeSlotIndex = 0;
 
+        const totalGamesToSchedule = (numTeams * gamesPerTeam) / 2;
 
+        while (newSchedule.length < totalGamesToSchedule && gamePool.length > 0) {
+            const currentTime = addMinutes(time, timeSlotIndex * gameDuration);
+            const teamsInCurrentTimeslot = new Set<string>();
+
+            // Try to fill courts for the current timeslot
+            for (let courtIndex = 0; courtIndex < courts.length; courtIndex++) {
+                let gameScheduledForCourt = false;
+                for (let poolIndex = 0; poolIndex < gamePool.length; poolIndex++) {
+                    const { teamA, teamB } = gamePool[poolIndex];
+
+                    if (
+                        gamesCount[teamA] < gamesPerTeam &&
+                        gamesCount[teamB] < gamesPerTeam &&
+                        !teamsInCurrentTimeslot.has(teamA) &&
+                        !teamsInCurrentTimeslot.has(teamB)
+                    ) {
+                        newSchedule.push({
+                            id: crypto.randomUUID(),
+                            teamA,
+                            teamB,
+                            resultA: null,
+                            resultB: null,
+                            court: courts[courtIndex],
+                            time: format(currentTime, 'h:mm a'),
+                        });
+
+                        gamesCount[teamA]++;
+                        gamesCount[teamB]++;
+                        teamsInCurrentTimeslot.add(teamA);
+                        teamsInCurrentTimeslot.add(teamB);
+                        gamePool.splice(poolIndex, 1); // Remove used pairing
+                        gameScheduledForCourt = true;
+                        break; // Game found for this court, move to next court
+                    }
+                }
+            }
+
+            // Move to the next time slot if any game was scheduled
+            if (teamsInCurrentTimeslot.size > 0) {
+                timeSlotIndex++;
+            } else {
+                // If we iterate through the entire pool and can't schedule any more games, break to prevent infinite loop
+                 break;
+            }
+        }
+        
+        return newSchedule;
+    };
 
   const generateBlindDrawSchedule = (playersForDraw: Player[]): Match[] => {
       const newSchedule: Match[] = [];
@@ -259,14 +252,13 @@ export function ScheduleGenerator() {
              });
              return;
     }
-
-    setSchedule(newSchedule);
     
-    if(formatDescription) {
-      toast({
-        title: 'Schedule Generated!',
-        description: `${newSchedule.length} matches have been created for the ${formatDescription} format.`,
-      });
+    if (newSchedule.length > 0 || formatDescription === 'Blind Draw') {
+        setSchedule(newSchedule);
+        toast({
+            title: 'Schedule Generated!',
+            description: `${newSchedule.length} matches have been created for the ${formatDescription} format.`,
+        });
     }
   };
   
@@ -360,7 +352,25 @@ export function ScheduleGenerator() {
     }, {} as Record<string, Match[]>);
   }, [schedule, isKOTC]);
   
-  const maxGamesPerTeam = teams.length > 1 ? teams.length - 1 : 0;
+  const isOddTeamCount = teams.length % 2 !== 0;
+  const gameOptions = [2, 3, 4, 5, 6].filter(num => 
+    !isOddTeamCount || (isOddTeamCount && num % 2 === 0)
+  );
+  
+  // Effect to auto-correct gamesPerTeam if it becomes invalid
+  useEffect(() => {
+    if (isOddTeamCount && gamesPerTeam % 2 !== 0) {
+        const closestEven = gamesPerTeam > 2 ? gamesPerTeam - 1 : 2;
+        if(gameOptions.includes(closestEven)) {
+            setGamesPerTeam(closestEven);
+            toast({
+                title: 'Game Count Adjusted',
+                description: `With an odd number of teams, game count must be even. Switched to ${closestEven} games per team.`,
+                variant: 'default'
+            });
+        }
+    }
+  }, [isOddTeamCount, gamesPerTeam, setGamesPerTeam, toast, gameOptions]);
 
 
   return (
@@ -391,16 +401,18 @@ export function ScheduleGenerator() {
                     <Select 
                         value={String(gamesPerTeam)} 
                         onValueChange={(val) => setGamesPerTeam(Number(val))}
+                        disabled={teams.length === 0}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select number of games" />
                       </SelectTrigger>
                       <SelectContent>
-                        {Array.from({ length: 5 }, (_, i) => i + 2).map(num => (
+                        {gameOptions.map(num => (
                             <SelectItem key={num} value={String(num)}>{num} games</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
+                    {isOddTeamCount && <p className='text-xs text-muted-foreground pt-1'>With an odd number of teams, only even game counts are selectable to ensure a fair schedule.</p>}
                 </div>
             </CardContent>
         )}
@@ -508,9 +520,3 @@ export function ScheduleGenerator() {
     </div>
   );
 }
-
-    
-
-    
-
-
