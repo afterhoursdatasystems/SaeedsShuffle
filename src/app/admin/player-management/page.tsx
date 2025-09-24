@@ -64,7 +64,7 @@ const getPresenceProps = (presence: Player['presence']) => {
         case 'Pending':
         default:
             return {
-                style: { backgroundColor: '#FFF3CD', color: '#856404', borderColor: '#FFEEBA' },
+                style: { backgroundColor: '#E2E8F0', color: '#475569', borderColor: '#CBD5E1' },
                 text: 'Pending',
             };
     }
