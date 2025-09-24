@@ -46,7 +46,6 @@ export function ScheduleGenerator() {
     const numTeams = teamNames.length;
     if (numTeams < 2) return [];
 
-    // 1. Create all possible unique pairings
     let allPairings: { teamA: string, teamB: string }[] = [];
     for (let i = 0; i < numTeams; i++) {
         for (let j = i + 1; j < numTeams; j++) {
@@ -54,29 +53,29 @@ export function ScheduleGenerator() {
         }
     }
     
-    // 2. Initialize data structures
-    const newSchedule: Match[] = [];
     const gamesCount: { [teamName: string]: number } = {};
     teamNames.forEach(name => gamesCount[name] = 0);
+    
+    const newSchedule: Match[] = [];
     const timeSlots: { time: Date, courts: (Match | null)[] }[] = [{ time: startTime, courts: Array(numCourts).fill(null) }];
 
-    let pairingsToConsider = shuffleArray(allPairings);
-    
-    let allTeamsScheduled = false;
+    let pairingsPool = shuffleArray(allPairings);
+    let attempts = 0;
+    const maxAttempts = pairingsPool.length * numTeams; // A safe limit to prevent infinite loops
 
-    while(!allTeamsScheduled && pairingsToConsider.length > 0) {
+    while (Object.values(gamesCount).some(c => c < gamesPerTeam) && attempts < maxAttempts) {
         let scheduledInThisPass = false;
+        
+        let remainingPairings: typeof allPairings = [];
 
-        const remainingPairings: { teamA: string, teamB: string }[] = [];
-
-        for (const pairing of pairingsToConsider) {
+        for(const pairing of pairingsPool) {
             const { teamA, teamB } = pairing;
 
             if (gamesCount[teamA] >= gamesPerTeam || gamesCount[teamB] >= gamesPerTeam) {
-                continue; 
+                continue; // One of the teams has already played enough games
             }
 
-            let scheduled = false;
+            let wasScheduled = false;
             for (const slot of timeSlots) {
                 const teamsInSlot = new Set(slot.courts.flatMap(m => m ? [m.teamA, m.teamB] : []));
                 if (teamsInSlot.has(teamA) || teamsInSlot.has(teamB)) {
@@ -98,30 +97,30 @@ export function ScheduleGenerator() {
                     newSchedule.push(match);
                     gamesCount[teamA]++;
                     gamesCount[teamB]++;
-                    scheduled = true;
+                    wasScheduled = true;
                     scheduledInThisPass = true;
-                    break;
+                    break; // Move to next pairing
                 }
             }
-             if (!scheduled) {
+             if (!wasScheduled) {
                 remainingPairings.push(pairing);
             }
         }
         
-        pairingsToConsider = shuffleArray(remainingPairings);
-
-        if (!scheduledInThisPass && pairingsToConsider.length > 0) {
+        pairingsPool = shuffleArray(remainingPairings);
+        
+        // If we went through all pairings and couldn't schedule anything, add a new time slot
+        if (!scheduledInThisPass && pairingsPool.length > 0) {
             const lastSlotTime = timeSlots[timeSlots.length - 1].time;
             timeSlots.push({ time: addMinutes(lastSlotTime, gameDuration), courts: Array(numCourts).fill(null) });
         }
         
-        allTeamsScheduled = Object.values(gamesCount).every(c => c >= gamesPerTeam);
-
-        // Failsafe: if we run out of pairings, stop.
-        if (pairingsToConsider.length === 0 && !allTeamsScheduled) {
-             // If we still have teams that need games, re-populate pairings to allow repeats
-             pairingsToConsider = shuffleArray(allPairings);
+        // If the pool is empty, we might need to add more games by allowing repeats
+        if (pairingsPool.length === 0 && Object.values(gamesCount).some(c => c < gamesPerTeam)) {
+            pairingsPool = shuffleArray(allPairings);
         }
+
+        attempts++;
     }
 
 
@@ -509,3 +508,5 @@ export function ScheduleGenerator() {
     </div>
   );
 }
+
+    
