@@ -38,7 +38,7 @@ export function ScheduleGenerator() {
   const generateRoundRobinSchedule = (teamsInput: string[], gamesPerTeam: number): Match[] => {
     const courts = ['Court 1', 'Court 2'];
     const numCourts = courts.length;
-    const gameDuration = 20; // in minutes
+    const gameDuration = 30; // in minutes
     let startTime = new Date();
     startTime.setHours(18, 45, 0, 0); // 6:45 PM
     
@@ -385,8 +385,8 @@ export function ScheduleGenerator() {
                         <SelectValue placeholder="Select number of games" />
                       </SelectTrigger>
                       <SelectContent>
-                        {Array.from({ length: maxGamesPerTeam }, (_, i) => i + 1).map(num => (
-                            <SelectItem key={num} value={String(num)}>{num} game{num > 1 ? 's' : ''}</SelectItem>
+                        {Array.from({ length: 5 }, (_, i) => i + 2).map(num => (
+                            <SelectItem key={num} value={String(num)}>{num} games</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>

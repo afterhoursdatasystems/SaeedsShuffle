@@ -102,7 +102,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [gameVariant, setGameVariant] = useState<GameVariant>('standard');
   const [activeRule, setActiveRule] = useState<PowerUp | null>(null);
   const [pointsToWin, setPointsToWin] = useState<number>(15);
-  const [gamesPerTeam, setGamesPerTeam] = useState<number>(5);
+  const [gamesPerTeam, setGamesPerTeam] = useState<number>(2);
   const [levelUpHandicaps, setLevelUpHandicaps] = useState<Handicap[]>(defaultLevelUpHandicaps);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
