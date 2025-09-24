@@ -46,51 +46,42 @@ export function ScheduleGenerator() {
     // 1. Create all unique pairings for one full round robin
     const singleRoundRobinPairings: { teamA: string; teamB: string }[] = [];
     for (let i = 0; i < numTeams; i++) {
-      for (let j = i + 1; j < numTeams; j++) {
-        singleRoundRobinPairings.push({ teamA: teamNames[i], teamB: teamNames[j] });
-      }
+        for (let j = i + 1; j < numTeams; j++) {
+            singleRoundRobinPairings.push({ teamA: teamNames[i], teamB: teamNames[j] });
+        }
     }
-    
-    // 2. Create a large enough pool of games by repeating the round robin pairings
-    let gamePool = [];
-    // Calculate how many full round robins we might need to satisfy the gamesPerTeam requirement
-    const gamesPerTeamInSingleRR = numTeams % 2 === 0 ? numTeams - 1 : numTeams;
-    const repeats = Math.ceil(gamesPerTeam / gamesPerTeamInSingleRR);
 
+    // 2. Repeat pairings enough times to satisfy gamesPerTeam, then shuffle
+    let gamePool: { teamA: string; teamB: string }[] = [];
+    let requiredGames = Math.ceil((numTeams * gamesPerTeam) / 2);
+    let repeats = Math.ceil(requiredGames / singleRoundRobinPairings.length);
+    if(singleRoundRobinPairings.length === 0 && requiredGames > 0) repeats = 0; // Avoid infinite loop if no pairings
+    
     for (let i = 0; i < repeats; i++) {
-        gamePool.push(...shuffleArray(singleRoundRobinPairings));
+        gamePool.push(...singleRoundRobinPairings);
     }
     gamePool = shuffleArray(gamePool);
-
 
     const newSchedule: Match[] = [];
     const gamesCount: { [key: string]: number } = {};
     teamNames.forEach(name => (gamesCount[name] = 0));
-
-    let time = new Date();
-    time.setHours(18, 45, 0, 0); // 6:45 PM
     
-    let allTeamsScheduled = false;
+    let time = new Date();
+    time.setHours(18, 45, 0, 0);
 
-    // Failsafe to prevent infinite loops
-    let maxIterations = gamePool.length * numTeams;
-    let iterations = 0;
-
-    while (!allTeamsScheduled && gamePool.length > 0 && iterations < maxIterations) {
-        iterations++;
-        const teamsInCurrentTimeslot: Set<string> = new Set();
-        let gamesInCurrentTimeslot = 0;
+    // Keep adding timeslots until all teams have enough games
+    while (Object.values(gamesCount).some(count => count < gamesPerTeam)) {
+        const teamsInCurrentTimeslot = new Set<string>();
+        let scheduledOnThisCourt = 0;
         
-        // Try to fill courts for the current timeslot
         for (let i = 0; i < gamePool.length; i++) {
-            if (gamesInCurrentTimeslot >= courts.length) {
+            if (scheduledOnThisCourt >= courts.length) {
                 break; // All courts for this timeslot are filled
             }
 
             const pairing = gamePool[i];
             const { teamA, teamB } = pairing;
 
-            // Check if teams can be scheduled
             const canSchedule =
                 gamesCount[teamA] < gamesPerTeam &&
                 gamesCount[teamB] < gamesPerTeam &&
@@ -104,7 +95,7 @@ export function ScheduleGenerator() {
                     teamB,
                     resultA: null,
                     resultB: null,
-                    court: courts[gamesInCurrentTimeslot],
+                    court: courts[scheduledOnThisCourt],
                     time: format(time, 'h:mm a'),
                 };
                 newSchedule.push(match);
@@ -113,35 +104,20 @@ export function ScheduleGenerator() {
                 gamesCount[teamB]++;
                 teamsInCurrentTimeslot.add(teamA);
                 teamsInCurrentTimeslot.add(teamB);
-                gamesInCurrentTimeslot++;
+                scheduledOnThisCourt++;
                 
-                // Remove the scheduled game from the pool
                 gamePool.splice(i, 1);
-                i--; // Adjust index after splice
+                i--;
             }
         }
         
-        // Move to the next timeslot if any games were scheduled
-        if (gamesInCurrentTimeslot > 0) {
-            time = addMinutes(time, gameDuration);
-        }
-
-        // Check if all teams have played the required number of games
-        allTeamsScheduled = teamNames.every(name => gamesCount[name] >= gamesPerTeam);
-
-        // If we exhausted the pool but not all teams are scheduled, break to prevent infinite loops on impossible schedules
-        if (gamePool.length === 0 && !allTeamsScheduled) {
-            console.warn("Could not schedule all games. The game pool was exhausted.");
+        if (gamePool.length === 0 && Object.values(gamesCount).some(count => count < gamesPerTeam)) {
+            // Not enough unique pairings to fulfill the request, break to avoid infinite loop
             break;
         }
-    }
-    
-    if (iterations >= maxIterations) {
-      toast({
-        title: 'Scheduling Warning',
-        description: 'Could not create a full schedule with the current settings. Please try adjusting the number of games.',
-        variant: 'destructive',
-      })
+
+        // Move to the next timeslot
+        time = addMinutes(time, gameDuration);
     }
 
     return newSchedule;
