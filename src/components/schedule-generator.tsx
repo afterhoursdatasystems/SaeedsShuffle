@@ -14,7 +14,9 @@ import React, { useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { usePlayerContext } from '@/contexts/player-context';
 import { publishData } from '@/app/actions';
-import { format } from 'date-fns';
+import { format, addMinutes } from 'date-fns';
+import { Label } from './ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 const shuffleArray = <T,>(array: T[]): T[] => {
   const newArray = [...array];
@@ -27,105 +29,89 @@ const shuffleArray = <T,>(array: T[]): T[] => {
 
 
 export function ScheduleGenerator() {
-  const { teams, schedule, setSchedule, gameFormat, gameVariant, players, activeRule, pointsToWin } = usePlayerContext();
+  const { teams, schedule, setSchedule, gameFormat, gameVariant, players, activeRule, pointsToWin, gamesPerTeam, setGamesPerTeam } = usePlayerContext();
   const { toast } = useToast();
   const [isPublishing, setIsPublishing] = React.useState(false);
 
   const presentPlayers = players.filter(p => p.presence === 'Present');
   
-  const generateRoundRobinSchedule = (teamsInput: string[]): Match[] => {
+  const generateRoundRobinSchedule = (teamsInput: string[], gamesPerTeam: number): Match[] => {
     const courts = ['Court 1', 'Court 2'];
     const numCourts = courts.length;
-    const gameDuration = 30; // in minutes
-    const startTime = new Date();
+    const gameDuration = 20; // in minutes
+    let startTime = new Date();
     startTime.setHours(18, 45, 0, 0); // 6:45 PM
     
     let teamNames = [...teamsInput];
-    // If odd number of teams, add a "BYE" team to make scheduling even.
-    if (teamNames.length % 2 !== 0) {
-      teamNames.push('BYE');
-    }
-    
     const numTeams = teamNames.length;
-    const numRounds = numTeams - 1;
+    if (numTeams < 2) return [];
+
+    let allPairings: { teamA: string, teamB: string }[] = [];
+    for (let i = 0; i < numTeams; i++) {
+        for (let j = i + 1; j < numTeams; j++) {
+            allPairings.push({ teamA: teamNames[i], teamB: teamNames[j] });
+        }
+    }
+    allPairings = shuffleArray(allPairings);
+
     const newSchedule: Match[] = [];
+    const gamesCount: { [teamName: string]: number } = {};
+    teamNames.forEach(name => gamesCount[name] = 0);
 
-    // All pairings for the entire tournament are generated first.
-    const allPairings: { teamA: string, teamB: string }[] = [];
-    const rotatingTeams = teamNames.slice(1);
+    const timeSlots: { time: Date, courts: (Match | null)[] }[] = [{ time: startTime, courts: Array(numCourts).fill(null) }];
+    const teamsInCurrentTimeslot: Set<string> = new Set();
+    let pairingsUsed = 0;
 
-    for (let round = 0; round < numRounds; round++) {
-      const firstTeam = teamNames[0];
-      const opponent = rotatingTeams[round % rotatingTeams.length];
-      if (firstTeam !== 'BYE' && opponent !== 'BYE') {
-        allPairings.push({ teamA: firstTeam, teamB: opponent });
-      }
+    while (Object.values(gamesCount).some(c => c < gamesPerTeam) && pairingsUsed < allPairings.length) {
+        let scheduledInThisPass = false;
+        
+        for (let i = 0; i < allPairings.length; i++) {
+            const pairing = allPairings[i];
+            if (!pairing) continue;
 
-      for (let i = 1; i < numTeams / 2; i++) {
-        const teamA = rotatingTeams[(round + i) % rotatingTeams.length];
-        const teamB = rotatingTeams[(round + rotatingTeams.length - i) % rotatingTeams.length];
-        if (teamA !== 'BYE' && teamB !== 'BYE') {
-           allPairings.push({ teamA, teamB });
+            const { teamA, teamB } = pairing;
+            
+            if (gamesCount[teamA] >= gamesPerTeam || gamesCount[teamB] >= gamesPerTeam) {
+                continue;
+            }
+
+            let scheduled = false;
+            // Try to find a slot for the current pairing
+            for (const slot of timeSlots) {
+                const teamsInSlot = slot.courts.flatMap(m => m ? [m.teamA, m.teamB] : []);
+                if (teamsInSlot.includes(teamA) || teamsInSlot.includes(teamB)) {
+                    continue; // One of the teams is busy in this slot
+                }
+                const openCourtIndex = slot.courts.indexOf(null);
+                if (openCourtIndex !== -1) {
+                    const match = {
+                        id: crypto.randomUUID(),
+                        teamA,
+                        teamB,
+                        resultA: null,
+                        resultB: null,
+                        court: courts[openCourtIndex],
+                        time: format(slot.time, 'h:mm a'),
+                    };
+                    slot.courts[openCourtIndex] = match;
+                    newSchedule.push(match);
+                    gamesCount[teamA]++;
+                    gamesCount[teamB]++;
+                    scheduled = true;
+                    scheduledInThisPass = true;
+                    allPairings[i] = null as any; // Mark pairing as used
+                    break; 
+                }
+            }
         }
-      }
+        
+        // If we went through all pairings and couldn't schedule anything, add a new time slot
+        if (!scheduledInThisPass) {
+            const lastSlotTime = timeSlots[timeSlots.length - 1].time;
+            timeSlots.push({ time: addMinutes(lastSlotTime, gameDuration), courts: Array(numCourts).fill(null) });
+        }
     }
-    
-    // Now, assign pairings to time slots and courts, ensuring no team plays twice at the same time.
-    let timeSlotIndex = 0;
-    const assignedInSlot: Record<number, string[]> = {};
 
-    for (const pairing of allPairings) {
-      let assigned = false;
-      // Find the earliest available time slot where neither team is already playing.
-      for (let i = 0; i <= timeSlotIndex; i++) {
-        if (!assignedInSlot[i]) {
-          assignedInSlot[i] = [];
-        }
-
-        const teamsInSlot = assignedInSlot[i];
-        if (
-          teamsInSlot.length < numCourts * 2 && // is there an open court in this slot?
-          !teamsInSlot.includes(pairing.teamA) &&
-          !teamsInSlot.includes(pairing.teamB)
-        ) {
-          const matchTime = new Date(startTime.getTime() + i * gameDuration * 60000);
-          const courtIndex = Math.floor(teamsInSlot.length / 2);
-          
-          newSchedule.push({
-            id: crypto.randomUUID(),
-            teamA: pairing.teamA,
-            teamB: pairing.teamB,
-            resultA: null,
-            resultB: null,
-            court: courts[courtIndex],
-            time: format(matchTime, 'h:mm a'),
-          });
-          
-          assignedInSlot[i].push(pairing.teamA, pairing.teamB);
-          assigned = true;
-          break;
-        }
-      }
-
-      if (!assigned) {
-          // If we couldn't fit the match in any existing slot, start a new one.
-          timeSlotIndex++;
-          if (!assignedInSlot[timeSlotIndex]) {
-            assignedInSlot[timeSlotIndex] = [];
-          }
-          const matchTime = new Date(startTime.getTime() + timeSlotIndex * gameDuration * 60000);
-           newSchedule.push({
-            id: crypto.randomUUID(),
-            teamA: pairing.teamA,
-            teamB: pairing.teamB,
-            resultA: null,
-            resultB: null,
-            court: courts[0],
-            time: format(matchTime, 'h:mm a'),
-          });
-          assignedInSlot[timeSlotIndex].push(pairing.teamA, pairing.teamB);
-      }
-    }
 
     return newSchedule.sort((a, b) => {
         const timeA = new Date(`1/1/1970 ${a.time}`).getTime();
@@ -133,7 +119,8 @@ export function ScheduleGenerator() {
         if(timeA !== timeB) return timeA - timeB;
         return a.court.localeCompare(b.court);
     });
-  };
+};
+
 
   const generateBlindDrawSchedule = (playersForDraw: Player[]): Match[] => {
       const newSchedule: Match[] = [];
@@ -236,7 +223,7 @@ export function ScheduleGenerator() {
         case 'level-up':
         case 'pool-play-bracket':
         case 'round-robin':
-            newSchedule = generateRoundRobinSchedule(teams.map(t => t.name));
+            newSchedule = generateRoundRobinSchedule(teams.map(t => t.name), gamesPerTeam);
             if (gameFormat === 'round-robin') formatDescription = "Round Robin";
             else if (gameFormat === 'level-up') formatDescription = "Level Up";
             else formatDescription = "Pool Play / Bracket";
@@ -360,6 +347,9 @@ export function ScheduleGenerator() {
       return acc;
     }, {} as Record<string, Match[]>);
   }, [schedule, isKOTC]);
+  
+  const maxGamesPerTeam = teams.length > 1 ? teams.length - 1 : 0;
+
 
   return (
     <div className="space-y-8">
@@ -382,6 +372,27 @@ export function ScheduleGenerator() {
               </div>
            </div>
         </CardHeader>
+        {!isKOTC && gameFormat !== 'blind-draw' && (
+             <CardContent>
+                <div className='space-y-2 max-w-xs'>
+                    <Label>Games Per Team</Label>
+                    <Select 
+                        value={String(gamesPerTeam)} 
+                        onValueChange={(val) => setGamesPerTeam(Number(val))}
+                        disabled={maxGamesPerTeam === 0}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select number of games" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: maxGamesPerTeam }, (_, i) => i + 1).map(num => (
+                            <SelectItem key={num} value={String(num)}>{num} game{num > 1 ? 's' : ''}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                </div>
+            </CardContent>
+        )}
        </Card>
 
       {schedule.length > 0 && (

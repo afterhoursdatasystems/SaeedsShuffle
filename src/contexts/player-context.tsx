@@ -81,6 +81,8 @@ interface PlayerContextType {
   setActiveRule: React.Dispatch<React.SetStateAction<PowerUp | null>>;
   pointsToWin: number;
   setPointsToWin: React.Dispatch<React.SetStateAction<number>>;
+  gamesPerTeam: number;
+  setGamesPerTeam: React.Dispatch<React.SetStateAction<number>>;
   publishSettings: () => void;
   allPowerUps: PowerUp[];
   cosmicScrambleRules: PowerUp[];
@@ -100,6 +102,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [gameVariant, setGameVariant] = useState<GameVariant>('standard');
   const [activeRule, setActiveRule] = useState<PowerUp | null>(null);
   const [pointsToWin, setPointsToWin] = useState<number>(15);
+  const [gamesPerTeam, setGamesPerTeam] = useState<number>(5);
   const [levelUpHandicaps, setLevelUpHandicaps] = useState<Handicap[]>(defaultLevelUpHandicaps);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
@@ -430,6 +433,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setActiveRule,
     pointsToWin,
     setPointsToWin,
+    gamesPerTeam,
+    setGamesPerTeam,
     publishSettings,
     allPowerUps,
     cosmicScrambleRules,
