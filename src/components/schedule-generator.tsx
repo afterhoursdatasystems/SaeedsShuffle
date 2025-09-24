@@ -36,12 +36,16 @@ export function ScheduleGenerator() {
   const presentPlayers = players.filter(p => p.presence === 'Present');
   
   const generateRoundRobinSchedule = (teamNames: string[], gamesPerTeam: number): Match[] => {
+    console.log('--- Generating Schedule ---');
+    console.log(`Teams: ${teamNames.join(', ')} (${teamNames.length} teams)`);
+    console.log(`Games per team: ${gamesPerTeam}`);
+
     const numTeams = teamNames.length;
     if (numTeams < 2) return [];
 
     const totalGamesToSchedule = (numTeams * gamesPerTeam) / 2;
-    
-    // 1. Generate all unique pairings for a single round-robin
+    console.log(`Total games to schedule: ${totalGamesToSchedule}`);
+
     let allPossiblePairings: { teamA: string; teamB: string }[] = [];
     for (let i = 0; i < numTeams; i++) {
         for (let j = i + 1; j < numTeams; j++) {
@@ -49,16 +53,15 @@ export function ScheduleGenerator() {
         }
     }
 
-    // 2. Create a pool of games to be scheduled
     let gamePool: { teamA: string; teamB: string }[] = [];
-    let repeats = 0;
-    while(gamePool.length < totalGamesToSchedule) {
-        gamePool.push(...shuffleArray(allPossiblePairings));
-        repeats++;
+    // Ensure the pool is large enough
+    while (gamePool.length < totalGamesToSchedule) {
+        gamePool.push(...allPossiblePairings);
     }
-    gamePool = gamePool.slice(0, totalGamesToSchedule);
-    
-    // 3. Schedule games into time slots
+    gamePool = shuffleArray(gamePool).slice(0, totalGamesToSchedule);
+    console.log(`Created a game pool with ${gamePool.length} potential matches.`);
+
+
     const newSchedule: Match[] = [];
     const gamesCount: { [key: string]: number } = {};
     teamNames.forEach(name => (gamesCount[name] = 0));
@@ -72,14 +75,11 @@ export function ScheduleGenerator() {
     while (newSchedule.length < totalGamesToSchedule) {
         const currentTime = addMinutes(startTime, timeSlotIndex * gameDuration);
         const teamsInCurrentTimeslot = new Set<string>();
-        
-        let gamesScheduledInTimeslot = 0;
+        console.log(`\nProcessing Time Slot: ${format(currentTime, 'h:mm a')}`);
 
         for (const court of courts) {
-             if (newSchedule.length >= totalGamesToSchedule) break;
-
-            // Find a valid game for the current court and time slot
-            let foundGame = false;
+            let scheduledOnCourt = false;
+            // Iterate through a copy of the pool to find a match
             for (let i = 0; i < gamePool.length; i++) {
                 const game = gamePool[i];
                 if (
@@ -102,23 +102,32 @@ export function ScheduleGenerator() {
                     gamesCount[game.teamB]++;
                     teamsInCurrentTimeslot.add(game.teamA);
                     teamsInCurrentTimeslot.add(game.teamB);
+                    // Remove the scheduled game from the pool
                     gamePool.splice(i, 1);
-                    gamesScheduledInTimeslot++;
-                    foundGame = true;
-                    break; // Found a game for this court, move to the next court
+                    console.log(`  - Scheduled on ${court}: ${game.teamA} vs ${game.teamB}`);
+                    scheduledOnCourt = true;
+                    break; // Move to the next court
                 }
+            }
+            if (!scheduledOnCourt) {
+                console.log(`  - Could not find a suitable match for ${court} in this time slot.`);
             }
         }
         
         timeSlotIndex++;
-        
         if (timeSlotIndex > 50) { // Safety break
-            console.error("Scheduler timed out.");
+            console.error("Scheduler safety break triggered. Aborting.");
             toast({ title: "Scheduler Error", description: "Could not generate a complete schedule.", variant: "destructive"});
             break;
         }
     }
     
+    if (newSchedule.length >= totalGamesToSchedule) {
+        console.log('All required games have been scheduled. Exiting loop.');
+    }
+    
+    console.log('--- Schedule Generation Complete ---');
+    console.log(newSchedule);
     return newSchedule;
 };
 
@@ -217,13 +226,17 @@ export function ScheduleGenerator() {
       return;
     }
 
-    if (gameFormat !== 'blind-draw' && teams.length % 2 !== 0 && gamesPerTeam % 2 !== 0) {
-        toast({
-            title: "Scheduling Impossible",
-            description: "With an odd number of teams, each team must play an even number of games for a perfectly balanced schedule.",
-            variant: "destructive"
-        });
-        return;
+    const teamNames = teams.map(t => t.name);
+    const numTeams = teamNames.length;
+    
+    // Check for impossible combinations
+    if (numTeams > 0 && numTeams % 2 !== 0 && gamesPerTeam % 2 !== 0) {
+      toast({
+        title: "Scheduling Impossible",
+        description: `With an odd number of teams (${numTeams}), each team must play an even number of games. Please select an even number for games per team.`,
+        variant: "destructive"
+      });
+      return;
     }
 
 
@@ -234,7 +247,7 @@ export function ScheduleGenerator() {
         case 'level-up':
         case 'pool-play-bracket':
         case 'round-robin':
-            newSchedule = generateRoundRobinSchedule(teams.map(t => t.name), gamesPerTeam);
+            newSchedule = generateRoundRobinSchedule(teamNames, gamesPerTeam);
             if(newSchedule.length > 0) {
               if (gameFormat === 'round-robin') formatDescription = "Round Robin";
               else if (gameFormat === 'level-up') formatDescription = "Level Up";
@@ -242,7 +255,7 @@ export function ScheduleGenerator() {
             }
             break;
         case 'king-of-the-court':
-            newSchedule = generateKOTCSchedule(teams.map(t => t.name));
+            newSchedule = generateKOTCSchedule(teamNames);
             switch(gameVariant) {
                 case 'standard': formatDescription = "King of the Court"; break;
                 case 'monarch-of-the-court': formatDescription = "Monarch of the Court"; break;
@@ -366,15 +379,15 @@ export function ScheduleGenerator() {
   const gameOptions = [2, 3, 4, 5, 6];
   
   const validGameOptions = useMemo(() => {
-      if (isOddTeamCount) {
+      if (isOddTeamCount && teams.length > 0) {
           return gameOptions.filter(num => num % 2 === 0);
       }
       return gameOptions;
-  }, [isOddTeamCount]);
+  }, [isOddTeamCount, teams.length]);
   
   // Effect to auto-correct gamesPerTeam if it becomes invalid
   useEffect(() => {
-    if (isOddTeamCount && gamesPerTeam % 2 !== 0) {
+    if (isOddTeamCount && gamesPerTeam % 2 !== 0 && teams.length > 0) {
         const closestEven = gamesPerTeam > 2 ? gamesPerTeam - 1 : 2;
         if(validGameOptions.includes(closestEven)) {
             setGamesPerTeam(closestEven);
@@ -385,7 +398,7 @@ export function ScheduleGenerator() {
             });
         }
     }
-  }, [isOddTeamCount, gamesPerTeam, setGamesPerTeam, toast, validGameOptions]);
+  }, [isOddTeamCount, gamesPerTeam, setGamesPerTeam, toast, validGameOptions, teams.length]);
 
 
   return (
@@ -422,12 +435,18 @@ export function ScheduleGenerator() {
                         <SelectValue placeholder="Select number of games" />
                       </SelectTrigger>
                       <SelectContent>
-                        {validGameOptions.map(num => (
-                            <SelectItem key={num} value={String(num)}>{num} games</SelectItem>
+                        {gameOptions.map(num => (
+                            <SelectItem 
+                                key={num} 
+                                value={String(num)}
+                                disabled={isOddTeamCount && num % 2 !== 0 && teams.length > 0}
+                            >
+                                {num} games {isOddTeamCount && num % 2 !== 0 && teams.length > 0 && '(Disabled)'}
+                            </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                    {isOddTeamCount && <p className='text-xs text-muted-foreground pt-1'>With an odd number of teams, only even game counts are selectable to ensure a fair schedule.</p>}
+                    {isOddTeamCount && teams.length > 0 && <p className='text-xs text-muted-foreground pt-1'>With an odd number of teams, only even game counts are possible for a fair schedule.</p>}
                 </div>
             </CardContent>
         )}
