@@ -35,99 +35,105 @@ export function ScheduleGenerator() {
 
   const presentPlayers = players.filter(p => p.presence === 'Present');
   
-    const generateRoundRobinSchedule = (teamNames: string[], gamesPerTeam: number): Match[] => {
-        const numTeams = teamNames.length;
-        if (numTeams < 2) return [];
+  const generateRoundRobinSchedule = (teamNames: string[], gamesPerTeam: number): Match[] => {
+    console.log(`--- Generating Schedule ---`);
+    console.log(`Teams: ${teamNames.join(', ')} (${teamNames.length} teams)`);
+    console.log(`Games per team: ${gamesPerTeam}`);
 
-        if ((numTeams * gamesPerTeam) % 2 !== 0) {
-            // This case should be prevented by the UI, but as a safeguard:
-            toast({
-                title: "Scheduling Impossible",
-                description: `With an odd number of teams, each team must play an even number of games.`,
-                variant: "destructive",
-            });
-            return [];
+    const numTeams = teamNames.length;
+    if (numTeams < 2) return [];
+
+    const totalGamesToSchedule = (numTeams * gamesPerTeam) / 2;
+    console.log(`Total games to schedule: ${totalGamesToSchedule}`);
+
+    let allPossiblePairings: { teamA: string; teamB: string }[] = [];
+    for (let i = 0; i < numTeams; i++) {
+        for (let j = i + 1; j < numTeams; j++) {
+            allPossiblePairings.push({ teamA: teamNames[i], teamB: teamNames[j] });
         }
+    }
 
-        let allPossiblePairings: { teamA: string; teamB: string }[] = [];
-        for (let i = 0; i < numTeams; i++) {
-            for (let j = i + 1; j < numTeams; j++) {
-                allPossiblePairings.push({ teamA: teamNames[i], teamB: teamNames[j] });
+    let gamePool: { teamA: string; teamB: string }[] = [];
+    // Ensure there are enough games in the pool for the requested number of games
+    const repeats = Math.ceil(totalGamesToSchedule / allPossiblePairings.length) || 1;
+    for (let i = 0; i < repeats; i++) {
+        gamePool.push(...shuffleArray(allPossiblePairings));
+    }
+    gamePool = shuffleArray(gamePool);
+    console.log(`Created a game pool with ${gamePool.length} potential matches.`);
+
+    const newSchedule: Match[] = [];
+    const gamesCount: { [key: string]: number } = {};
+    teamNames.forEach(name => (gamesCount[name] = 0));
+    
+    const startTime = new Date();
+    startTime.setHours(18, 45, 0, 0); // 6:45 PM
+    const courts = ['Court 1', 'Court 2'];
+    const gameDuration = 30; // 30 minutes
+    let timeSlotIndex = 0;
+
+    while (newSchedule.length < totalGamesToSchedule) {
+        const currentTime = addMinutes(startTime, timeSlotIndex * gameDuration);
+        const teamsInCurrentTimeslot = new Set<string>();
+        console.log(`\nProcessing Time Slot: ${format(currentTime, 'h:mm a')}`);
+
+        for (const court of courts) {
+            if (newSchedule.length >= totalGamesToSchedule) {
+              console.log('All required games have been scheduled. Exiting loop.');
+              break;
             }
-        }
-        
-        let gamePool: { teamA: string; teamB: string }[] = [];
-        // Create a large enough pool of games to satisfy the requirements
-        let repeats = Math.ceil((numTeams * gamesPerTeam) / (2 * allPossiblePairings.length));
-        for (let i = 0; i < repeats; i++) {
-            gamePool.push(...shuffleArray(allPossiblePairings));
-        }
-        gamePool = shuffleArray(gamePool);
 
+            let gameFoundForCourt = false;
+            // Find a valid game for this court in this time slot
+            for (let i = 0; i < gamePool.length; i++) {
+                const { teamA, teamB } = gamePool[i];
 
-        const newSchedule: Match[] = [];
-        const gamesCount: { [key: string]: number } = {};
-        teamNames.forEach(name => (gamesCount[name] = 0));
-        
-        const startTime = new Date();
-        startTime.setHours(18, 45, 0, 0); // 6:45 PM
-        const courts = ['Court 1', 'Court 2'];
-        const gameDuration = 30; // 30 minutes
-        let timeSlotIndex = 0;
-
-        const totalGamesToSchedule = (numTeams * gamesPerTeam) / 2;
-
-        while(newSchedule.length < totalGamesToSchedule) {
-            const currentTime = addMinutes(startTime, timeSlotIndex * gameDuration);
-            const teamsInCurrentTimeslot = new Set<string>();
-            
-            // Try to fill both courts for the current time slot
-            for (const court of courts) {
-                if (newSchedule.length >= totalGamesToSchedule) break;
-
-                // Find a valid game for this court in this time slot
-                let gameFound = false;
-                for (let i = 0; i < gamePool.length; i++) {
-                    const { teamA, teamB } = gamePool[i];
-
-                    if (
-                        !teamsInCurrentTimeslot.has(teamA) &&
-                        !teamsInCurrentTimeslot.has(teamB) &&
-                        gamesCount[teamA] < gamesPerTeam &&
-                        gamesCount[teamB] < gamesPerTeam
-                    ) {
-                        newSchedule.push({
-                            id: crypto.randomUUID(),
-                            teamA,
-                            teamB,
-                            resultA: null,
-                            resultB: null,
-                            court: court,
-                            time: format(currentTime, 'h:mm a'),
-                        });
-                        
-                        gamesCount[teamA]++;
-                        gamesCount[teamB]++;
-                        teamsInCurrentTimeslot.add(teamA);
-                        teamsInCurrentTimeslot.add(teamB);
-                        gamePool.splice(i, 1); // Remove the scheduled game from the pool
-                        gameFound = true;
-                        break; // Move to the next court
-                    }
+                if (
+                    !teamsInCurrentTimeslot.has(teamA) &&
+                    !teamsInCurrentTimeslot.has(teamB) &&
+                    gamesCount[teamA] < gamesPerTeam &&
+                    gamesCount[teamB] < gamesPerTeam
+                ) {
+                    const match: Match = {
+                        id: crypto.randomUUID(),
+                        teamA,
+                        teamB,
+                        resultA: null,
+                        resultB: null,
+                        court: court,
+                        time: format(currentTime, 'h:mm a'),
+                    };
+                    
+                    newSchedule.push(match);
+                    gamesCount[teamA]++;
+                    gamesCount[teamB]++;
+                    teamsInCurrentTimeslot.add(teamA);
+                    teamsInCurrentTimeslot.add(teamB);
+                    gamePool.splice(i, 1); // Remove the scheduled game from the pool
+                    gameFoundForCourt = true;
+                    console.log(`  - Scheduled on ${court}: ${teamA} vs ${teamB}`);
+                    break; // Move to the next court
                 }
             }
-            
-            timeSlotIndex++;
-            
-            // Safety break to prevent infinite loops in case logic fails
-            if (timeSlotIndex > 50) { 
-                toast({ title: "Scheduler timed out", description: "Could not create a full schedule.", variant: "destructive" });
-                break;
+            if (!gameFoundForCourt) {
+                console.log(`  - Could not find a suitable match for ${court} in this time slot.`);
             }
         }
         
-        return newSchedule;
-    };
+        timeSlotIndex++;
+        
+        // Safety break to prevent infinite loops in case logic fails
+        if (timeSlotIndex > 50) { 
+            console.error("Scheduler timed out after 50 iterations. This indicates a potential logic error.");
+            toast({ title: "Scheduler timed out", description: "Could not create a full schedule.", variant: "destructive" });
+            break;
+        }
+    }
+    
+    console.log(`--- Schedule Generation Complete ---`);
+    console.log(newSchedule);
+    return newSchedule;
+};
 
   const generateBlindDrawSchedule = (playersForDraw: Player[]): Match[] => {
       const newSchedule: Match[] = [];
