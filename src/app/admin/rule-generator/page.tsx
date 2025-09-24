@@ -11,6 +11,12 @@ import { usePlayerContext } from '@/contexts/player-context';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { publishData } from '@/app/actions';
 import { generateLevelUpHandicaps } from '@/ai/flows/generate-level-up-handicaps';
+import { generatePowerUps } from '@/ai/flows/generate-power-ups';
+import { generateCosmicScrambleRules } from '@/ai/flows/generate-cosmic-scramble-rules';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
+
+type GenerationMode = 'random' | 'ai';
 
 export default function RuleGeneratorPage() {
   const { toast } = useToast();
@@ -30,6 +36,7 @@ export default function RuleGeneratorPage() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const [generationMode, setGenerationMode] = useState<GenerationMode>('random');
 
   useEffect(() => {
     setIsClient(true);
@@ -45,56 +52,71 @@ export default function RuleGeneratorPage() {
     if (isPowerUpRound) {
         return {
             ruleSet: allPowerUps,
-            buttonText: 'Get New Power-Up',
+            generateFn: generatePowerUps,
+            generateInput: { gameType: 'Power-Up Round' },
             cardTitle: 'Active Power-Up',
-            initialText: 'Click the button to get the first power-up!',
-            type: 'powerup'
+            type: 'powerup',
+            noun: 'Power-Up'
         }
     }
     if(isKingsRansom) {
         return {
             ruleSet: cosmicScrambleRules,
-            buttonText: 'Generate Cosmic Scramble',
+            generateFn: generateCosmicScrambleRules,
+            generateInput: { gameType: 'King\'s Ransom' },
             cardTitle: 'Active Scramble Rule',
-            initialText: 'Click the button to get the first Cosmic Scramble rule!',
-            type: 'powerup'
+            type: 'powerup',
+            noun: 'Scramble Rule'
         }
     }
     if (isLevelUp) {
          return {
             ruleSet: levelUpHandicaps,
-            buttonText: 'Generate New Handicaps',
+            generateFn: generateLevelUpHandicaps,
+            generateInput: { gameType: 'Level Up' },
             cardTitle: 'Level-Up Handicaps',
-            initialText: 'Click the button to generate handicaps for each level.',
-            type: 'handicap'
+            type: 'handicap',
+            noun: 'Handicaps'
          }
     }
     return null;
   }, [isPowerUpRound, isKingsRansom, isLevelUp, allPowerUps, cosmicScrambleRules, levelUpHandicaps]);
 
   const config = getRuleSetConfig();
-
-  const handleGenerateHandicaps = async () => {
+  
+  const handleAIGeneration = async () => {
+    if (!config || !config.generateFn) return;
     setIsLoading(true);
+
     try {
-      const result = await generateLevelUpHandicaps({ gameType: 'Level Up' });
-      if (result.handicaps) {
-        const sortedHandicaps = result.handicaps.sort((a,b) => a.level - b.level);
-        setLevelUpHandicaps(sortedHandicaps);
-        
-        // Also publish the new handicaps
-        const formatToPublish = gameVariant !== 'standard' ? gameVariant : gameFormat;
-        await publishData(teams, formatToPublish, schedule, activeRule, pointsToWin, sortedHandicaps);
-        
-        toast({
-          title: 'Handicaps Generated & Published!',
-          description: 'The new Level Up handicaps are now live on the public dashboard.',
-        });
-      }
+        if(config.type === 'handicap') {
+            const result = await generateLevelUpHandicaps(config.generateInput);
+            if (result.handicaps) {
+                const sortedHandicaps = result.handicaps.sort((a,b) => a.level - b.level);
+                setLevelUpHandicaps(sortedHandicaps);
+                await publishData(teams, gameFormat, schedule, activeRule, pointsToWin, sortedHandicaps);
+                toast({
+                    title: 'Handicaps Generated & Published!',
+                    description: 'The new Level Up handicaps are now live on the public dashboard.',
+                });
+            }
+        } else if (config.type === 'powerup') {
+            const result = config.noun === 'Power-Up' 
+              ? await generatePowerUps(config.generateInput)
+              : await generateCosmicScrambleRules(config.generateInput);
+              
+            if ('powerUps' in result && result.powerUps && result.powerUps.length > 0) {
+              const newRule = result.powerUps[Math.floor(Math.random() * result.powerUps.length)];
+              await publishNewRule(newRule);
+            } else if ('rules' in result && result.rules && result.rules.length > 0) {
+              const newRule = result.rules[Math.floor(Math.random() * result.rules.length)];
+              await publishNewRule(newRule);
+            }
+        }
     } catch(e) {
         toast({
-            title: 'Error Generating Handicaps',
-            description: 'Could not generate new handicaps. Please try again.',
+            title: `Error Generating ${config.noun}`,
+            description: `Could not generate new ${config.noun.toLowerCase()}. Please try again.`,
             variant: 'destructive',
         });
     } finally {
@@ -102,31 +124,16 @@ export default function RuleGeneratorPage() {
     }
   }
 
-
-  const handleGeneratePowerUp = async () => {
-    if (!config || !config.ruleSet) return;
-    setIsLoading(true);
-    
-    setTimeout(async () => {
-      const ruleSet = config.ruleSet as PowerUp[];
-      const randomIndex = Math.floor(Math.random() * ruleSet.length);
-      let selectedRule = ruleSet[randomIndex];
-
-      // Ensure the new rule is different from the current one
-      if (activeRule && selectedRule.name === activeRule.name) {
-        selectedRule = ruleSet[(randomIndex + 1) % ruleSet.length];
-      }
-      
-      setActiveRule(selectedRule);
+  const publishNewRule = async (newRule: PowerUp) => {
+    setActiveRule(newRule);
       
       toast({
-        title: isKingsRansom ? 'New Scramble Rule!' : 'New Power-Up!',
-        description: `"${selectedRule.name}" is now in play. Publishing to dashboard...`,
+        title: `New ${config?.noun} Generated!`,
+        description: `"${newRule.name}" is now in play. Publishing to dashboard...`,
       });
 
       const formatToPublish = gameVariant !== 'standard' ? gameVariant : gameFormat;
-      const result = await publishData(teams, formatToPublish, schedule, selectedRule, pointsToWin, levelUpHandicaps);
-      setIsLoading(false);
+      const result = await publishData(teams, formatToPublish, schedule, newRule, pointsToWin, levelUpHandicaps);
       
       if (result.success) {
         toast({
@@ -140,18 +147,31 @@ export default function RuleGeneratorPage() {
           variant: 'destructive',
         });
       }
+  }
 
+
+  const handleRandomFromList = async () => {
+    if (!config || !config.ruleSet || config.type !== 'powerup') return;
+    setIsLoading(true);
+    
+    // Use a timeout to make it feel a bit more intentional
+    setTimeout(async () => {
+      const ruleSet = config.ruleSet as PowerUp[];
+      const randomIndex = Math.floor(Math.random() * ruleSet.length);
+      let selectedRule = ruleSet[randomIndex];
+
+      // Ensure the new rule is different from the current one
+      if (activeRule && ruleSet.length > 1 && selectedRule.name === activeRule.name) {
+        selectedRule = ruleSet[(randomIndex + 1) % ruleSet.length];
+      }
+      
+      await publishNewRule(selectedRule);
+      setIsLoading(false);
     }, 50);
   };
   
-  const handleGenerate = () => {
-    if (!config) return;
-    if (config.type === 'handicap') {
-        handleGenerateHandicaps();
-    } else {
-        handleGeneratePowerUp();
-    }
-  }
+  const initialText = `Select a generation mode above to get started.`;
+  const showTabs = isPowerUpRound || isKingsRansom;
 
 
   return (
@@ -162,7 +182,7 @@ export default function RuleGeneratorPage() {
           <h1 className="text-4xl font-bold">Rule Generator</h1>
           {validFormat ? (
              <p className="text-muted-foreground mt-2">
-                Click the button for a new rule when needed! The public dashboard will update automatically.
+                Generate rules for tonight's special format. The public dashboard will update automatically.
             </p>
           ) : (
              <p className="text-muted-foreground mt-2">
@@ -173,15 +193,37 @@ export default function RuleGeneratorPage() {
         
         {validFormat && config ? (
         <>
+            {showTabs && (
+                <Tabs value={generationMode} onValueChange={(val) => setGenerationMode(val as GenerationMode)} className="w-full mb-8">
+                    <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="random">Random from List</TabsTrigger>
+                        <TabsTrigger value="ai">AI Generated</TabsTrigger>
+                    </TabsList>
+                </Tabs>
+            )}
+
             <div className="text-center mb-8">
-                <Button onClick={handleGenerate} disabled={isLoading || !isClient} size="lg">
-                    {isLoading ? (
-                    <RefreshCw className="mr-2 h-5 w-5 animate-spin" />
-                    ) : (
-                    <Wand2 className="mr-2 h-5 w-5" />
-                    )}
-                    {isLoading ? 'Generating...' : config.buttonText}
+              {isLevelUp ? (
+                  <Button onClick={handleAIGeneration} disabled={isLoading || !isClient} size="lg">
+                    {isLoading ? <RefreshCw className="mr-2 h-5 w-5 animate-spin" /> : <Wand2 className="mr-2 h-5 w-5" />}
+                    {isLoading ? 'Generating...' : `Generate New Handicaps`}
                 </Button>
+              ) : (
+                <>
+                  {generationMode === 'random' && (
+                    <Button onClick={handleRandomFromList} disabled={isLoading || !isClient} size="lg">
+                        {isLoading ? <RefreshCw className="mr-2 h-5 w-5 animate-spin" /> : <Wand2 className="mr-2 h-5 w-5" />}
+                        {isLoading ? 'Getting...' : `Get Random ${config.noun}`}
+                    </Button>
+                  )}
+                  {generationMode === 'ai' && (
+                    <Button onClick={handleAIGeneration} disabled={isLoading || !isClient} size="lg">
+                        {isLoading ? <RefreshCw className="mr-2 h-5 w-5 animate-spin" /> : <Wand2 className="mr-2 h-5 w-5" />}
+                        {isLoading ? 'Generating...' : `Generate with AI`}
+                    </Button>
+                  )}
+                </>
+              )}
             </div>
 
             <div className="min-h-[200px]">
@@ -198,7 +240,7 @@ export default function RuleGeneratorPage() {
                     ) : (
                         <Card className="text-center py-20 border-2 border-dashed">
                         <CardContent>
-                            <p className="text-lg text-muted-foreground">{config.initialText}</p>
+                            <p className="text-lg text-muted-foreground">{initialText}</p>
                         </CardContent>
                         </Card>
                     )
@@ -226,7 +268,7 @@ export default function RuleGeneratorPage() {
                     ) : (
                          <Card className="text-center py-20 border-2 border-dashed">
                             <CardContent>
-                                <p className="text-lg text-muted-foreground">{config.initialText}</p>
+                                <p className="text-lg text-muted-foreground">{initialText}</p>
                             </CardContent>
                         </Card>
                     )
