@@ -267,7 +267,7 @@ const getLevelHeaderStyle = (level: number | undefined) => {
 export default function PublicTeamsPage() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [schedule, setSchedule] = useState<Match[]>([]);
-  const [gameFormat, setGameFormat] = useState<CombinedGameFormat>('round-robin');
+  const [gameFormat, setGameFormat] = useState<CombinedGameFormat>('king-of-the-court');
   const [activeRule, setActiveRule] = useState<PowerUp | null>(null);
   const [pointsToWin, setPointsToWin] = useState<number>(15);
   const [levelUpHandicaps, setLevelUpHandicaps] = useState<Handicap[]>([]);
@@ -284,7 +284,7 @@ export default function PublicTeamsPage() {
           setTeams(result.data.teams || []);
           setSchedule(result.data.schedule || []);
           setActiveRule(result.data.activeRule || null);
-          setGameFormat((result.data.format || 'round-robin') as CombinedGameFormat);
+          setGameFormat((result.data.format || 'king-of-the-court') as CombinedGameFormat);
           setPointsToWin(result.data.pointsToWin || 15);
           setLevelUpHandicaps(result.data.levelUpHandicaps || []);
         } else {
@@ -404,148 +404,26 @@ export default function PublicTeamsPage() {
         <div className="mx-auto w-full max-w-none">
           {isLoading ? (
              <div className="space-y-8">
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5">
-                  {renderTeamSkeletons()}
-                </div>
-                {renderScheduleSkeletons()}
-             </div>
-          ) : teams.length > 0 || gameFormat === 'blind-draw' ? (
-            <div className="space-y-8">
-
-               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5">
-                {teams.map((team) => {
-                  const teamRecord = teamStats[team.name] ? `${teamStats[team.name].wins}-${teamStats[team.name].losses}` : '0-0';
-                  return(
-                  <Card key={team.id} className={cn("flex flex-col rounded-xl border-2 shadow-2xl transition-transform hover:scale-105 bg-card",
-                    isLevelUp ? `border-transparent` : 'border-primary'
-                  )}>
-                    <CardHeader className={cn("p-4 rounded-t-lg", isLevelUp ? getLevelHeaderStyle(team.level) : 'bg-slate-600 text-white')}>
-                        <CardTitle className="text-lg font-bold">
-                            <div className="flex items-center justify-between">
-                               <div className="flex items-center gap-3">
-                                    <Users className="h-5 w-5" />
-                                    {team.name}
-                               </div>
-                               {isLevelUp && <span className="font-semibold">{team.level}</span>}
-                            </div>
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="flex-grow p-4">
-                      <div className="space-y-3">
-                        {[...team.players]
-                          .sort((a, b) => a.name.localeCompare(b.name))
-                          .map((player) => (
-                          <div key={player.id} className="flex items-center gap-3">
-                            <Avatar className="h-10 w-10 border-2 border-white">
-                              <AvatarFallback className="bg-neutral-300 font-bold text-neutral-800">
-                                {player.name.charAt(0)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span className="text-base font-medium">{player.name}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                )})}
-              </div>
-
-               {schedule.length > 0 && !isKOTC && groupedSchedule && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {Object.entries(groupedSchedule).map(([time, matches]) => (
-                    <Card key={time} className="rounded-xl border-2 shadow-2xl">
-                      <CardHeader className="p-4 bg-muted/50 rounded-t-lg">
-                        <CardTitle className="flex items-center gap-3 text-xl font-bold">
-                          <Clock className="h-6 w-6 text-primary" />
-                          Matches at {time}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="p-0 sm:p-4">
-                        <Table>
-                          <TableBody>
-                            {matches.map((match) => {
-                                const teamAStats = teamStats[match.teamA];
-                                const teamBStats = teamStats[match.teamB];
-                                const teamARecord = teamAStats ? `${teamAStats.wins}-${teamAStats.losses}` : '';
-                                const teamBRecord = teamBStats ? `${teamBStats.wins}-${teamBStats.losses}` : '';
-
-                                return (
-                                <React.Fragment key={match.id}>
-                                    <TableRow className="border-b-0">
-                                        <TableCell colSpan={3} className="p-2 text-center">
-                                            <Badge variant="outline">{match.court}</Badge>
-                                        </TableCell>
-                                    </TableRow>
-                                    <TableRow className="text-base border-b">
-                                        <TableCell className="font-medium p-2 text-left">
-                                            <div>{match.teamA}</div>
-                                            <div className="text-muted-foreground text-sm flex items-center gap-2">
-                                              <span>{teamARecord}</span>
-                                              {isLevelUp && teamAStats && <span>Level {teamAStats.level}</span>}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="text-center font-mono whitespace-nowrap p-1">
-                                            {match.resultA !== null && match.resultB !== null
-                                                ? `${match.resultA} - ${match.resultB}`
-                                                : 'vs'}
-                                        </TableCell>
-                                        <TableCell className="font-medium p-2 text-right">
-                                            <div>{match.teamB}</div>
-                                            <div className="text-muted-foreground text-sm flex items-center justify-end gap-2">
-                                               {isLevelUp && teamBStats && <span>Level {teamBStats.level}</span>}
-                                               <span>{teamBRecord}</span>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                </React.Fragment>
-                                );
-                            })}
-                          </TableBody>
-                        </Table>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-
-              {schedule.length > 0 && isKOTC && (
                 <Card className="rounded-xl border-2 shadow-2xl">
-                  <CardHeader className="p-6 bg-muted/50 rounded-t-lg">
-                    <CardTitle className="flex items-center gap-4 text-2xl font-bold">
-                        <Calendar className="h-7 w-7 text-primary" />
-                        Continuous KOTC Schedule
-                    </CardTitle>
+                  <CardHeader className="p-6 bg-secondary/10 rounded-t-lg">
+                      <CardTitle className="flex items-center gap-4 text-2xl font-bold text-secondary-foreground">
+                          <Skeleton className="h-7 w-7 rounded-full" />
+                           <Skeleton className="h-7 w-48 rounded-md" />
+                      </CardTitle>
                   </CardHeader>
-                  <CardContent className="p-0 sm:p-4">
-                     <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="px-2">Court / Status</TableHead>
-                          <TableHead className="px-2">Team A</TableHead>
-                           <TableHead className="w-[80px] text-center px-1">Score</TableHead>
-                          <TableHead className="text-right px-2">Team B / Status</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {schedule.map((match) => (
-                          <TableRow key={match.id} className="text-base">
-                            <TableCell className="px-2"><Badge>{match.court}</Badge></TableCell>
-                            <TableCell className="font-medium px-2">{match.teamA}</TableCell>
-                            <TableCell className="text-center font-mono whitespace-nowrap px-1">
-                                {match.resultA !== null && match.resultB !== null
-                                    ? `${match.resultA} - ${match.resultB}`
-                                    : 'vs'}
-                            </TableCell>
-                            <TableCell className="font-medium text-right px-2">{match.teamB}</TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                  <CardContent className="p-6">
+                      <Skeleton className="h-6 w-3/4 mb-4 rounded-md" />
+                      <div className="space-y-2">
+                        <Skeleton className="h-4 w-full rounded-md" />
+                        <Skeleton className="h-4 w-full rounded-md" />
+                        <Skeleton className="h-4 w-5/6 rounded-md" />
+                      </div>
                   </CardContent>
                 </Card>
-              )}
-
-
+             </div>
+          ) : (
+            <div className="space-y-8">
+              
               {currentFormatDetails && <Card className="rounded-xl border-2 shadow-2xl">
                 <CardHeader className="p-6 bg-secondary/10 rounded-t-lg">
                     <CardTitle className="flex items-center gap-4 text-2xl font-bold text-secondary-foreground">
@@ -559,7 +437,7 @@ export default function PublicTeamsPage() {
                 </CardContent>
               </Card>}
 
-               {ruleIsActive && (
+              {ruleIsActive && (
                   <Card className="shadow-2xl transition-all duration-300 ease-in-out transform w-full bg-accent/20 border-accent border-2">
                       <CardHeader className="text-center pb-4">
                         <CardTitle className="text-2xl font-bold text-accent-foreground flex items-center justify-center gap-4">
@@ -574,11 +452,147 @@ export default function PublicTeamsPage() {
                   </Card>
                )}
 
-            </div>
-          ) : (
-             <div className="flex h-[60vh] flex-col items-center justify-center rounded-xl border-4 border-dashed bg-muted/50 p-12 text-center">
-              <h3 className="text-4xl font-bold tracking-tight">Teams Not Yet Published</h3>
-              <p className="mt-6 text-xl text-muted-foreground">Check back soon!</p>
+              {teams.length > 0 || gameFormat === 'blind-draw' ? (
+                <>
+                   <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5">
+                    {teams.map((team) => {
+                      const teamRecord = teamStats[team.name] ? `${teamStats[team.name].wins}-${teamStats[team.name].losses}` : '0-0';
+                      return(
+                      <Card key={team.id} className={cn("flex flex-col rounded-xl border-2 shadow-2xl transition-transform hover:scale-105 bg-card",
+                        isLevelUp ? `border-transparent` : 'border-primary'
+                      )}>
+                        <CardHeader className={cn("p-4 rounded-t-lg", isLevelUp ? getLevelHeaderStyle(team.level) : 'bg-slate-600 text-white')}>
+                            <CardTitle className="text-lg font-bold">
+                                <div className="flex items-center justify-between">
+                                   <div className="flex items-center gap-3">
+                                        <Users className="h-5 w-5" />
+                                        {team.name}
+                                   </div>
+                                   {isLevelUp && <span className="font-semibold">{team.level}</span>}
+                                </div>
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex-grow p-4">
+                          <div className="space-y-3">
+                            {[...team.players]
+                              .sort((a, b) => a.name.localeCompare(b.name))
+                              .map((player) => (
+                              <div key={player.id} className="flex items-center gap-3">
+                                <Avatar className="h-10 w-10 border-2 border-white">
+                                  <AvatarFallback className="bg-neutral-300 font-bold text-neutral-800">
+                                    {player.name.charAt(0)}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span className="text-base font-medium">{player.name}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )})}
+                  </div>
+
+                   {schedule.length > 0 && !isKOTC && groupedSchedule && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {Object.entries(groupedSchedule).map(([time, matches]) => (
+                        <Card key={time} className="rounded-xl border-2 shadow-2xl">
+                          <CardHeader className="p-4 bg-muted/50 rounded-t-lg">
+                            <CardTitle className="flex items-center gap-3 text-xl font-bold">
+                              <Clock className="h-6 w-6 text-primary" />
+                              Matches at {time}
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="p-0 sm:p-4">
+                            <Table>
+                              <TableBody>
+                                {matches.map((match) => {
+                                    const teamAStats = teamStats[match.teamA];
+                                    const teamBStats = teamStats[match.teamB];
+                                    const teamARecord = teamAStats ? `${teamAStats.wins}-${teamAStats.losses}` : '';
+                                    const teamBRecord = teamBStats ? `${teamBStats.wins}-${teamBStats.losses}` : '';
+
+                                    return (
+                                    <React.Fragment key={match.id}>
+                                        <TableRow className="border-b-0">
+                                            <TableCell colSpan={3} className="p-2 text-center">
+                                                <Badge variant="outline">{match.court}</Badge>
+                                            </TableCell>
+                                        </TableRow>
+                                        <TableRow className="text-base border-b">
+                                            <TableCell className="font-medium p-2 text-left">
+                                                <div>{match.teamA}</div>
+                                                <div className="text-muted-foreground text-sm flex items-center gap-2">
+                                                  <span>{teamARecord}</span>
+                                                  {isLevelUp && teamAStats && <span>Level {teamAStats.level}</span>}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-center font-mono whitespace-nowrap p-1">
+                                                {match.resultA !== null && match.resultB !== null
+                                                    ? `${match.resultA} - ${match.resultB}`
+                                                    : 'vs'}
+                                            </TableCell>
+                                            <TableCell className="font-medium p-2 text-right">
+                                                <div>{match.teamB}</div>
+                                                <div className="text-muted-foreground text-sm flex items-center justify-end gap-2">
+                                                   {isLevelUp && teamBStats && <span>Level {teamBStats.level}</span>}
+                                                   <span>{teamBRecord}</span>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    </React.Fragment>
+                                    );
+                                })}
+                              </TableBody>
+                            </Table>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+
+                  {schedule.length > 0 && isKOTC && (
+                    <Card className="rounded-xl border-2 shadow-2xl">
+                      <CardHeader className="p-6 bg-muted/50 rounded-t-lg">
+                        <CardTitle className="flex items-center gap-4 text-2xl font-bold">
+                            <Calendar className="h-7 w-7 text-primary" />
+                            Continuous KOTC Schedule
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-0 sm:p-4">
+                         <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="px-2">Court / Status</TableHead>
+                              <TableHead className="px-2">Team A</TableHead>
+                               <TableHead className="w-[80px] text-center px-1">Score</TableHead>
+                              <TableHead className="text-right px-2">Team B / Status</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {schedule.map((match) => (
+                              <TableRow key={match.id} className="text-base">
+                                <TableCell className="px-2"><Badge>{match.court}</Badge></TableCell>
+                                <TableCell className="font-medium px-2">{match.teamA}</TableCell>
+                                <TableCell className="text-center font-mono whitespace-nowrap px-1">
+                                    {match.resultA !== null && match.resultB !== null
+                                        ? `${match.resultA} - ${match.resultB}`
+                                        : 'vs'}
+                                </TableCell>
+                                <TableCell className="font-medium text-right px-2">{match.teamB}</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </CardContent>
+                    </Card>
+                  )}
+                </>
+              ) : (
+                 <div className="flex h-[40vh] flex-col items-center justify-center rounded-xl border-4 border-dashed bg-muted/50 p-12 text-center">
+                  <h3 className="text-4xl font-bold tracking-tight">Teams & Schedule Not Yet Published</h3>
+                  <p className="mt-6 text-xl text-muted-foreground">Check back soon!</p>
+                </div>
+              )}
             </div>
           )}
         </div>

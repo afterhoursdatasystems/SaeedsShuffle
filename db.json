@@ -1,10 +1,8 @@
 {
   "teams": [],
-  "format": "power-up-round",
+  "format": "king-of-the-court",
   "schedule": [],
-  "activeRule": {
-    "name": "Friendly Fire",
-    "description": "Your team can get a point if the opposing team has a miscommunication and two players run into each other."
-  },
-  "pointsToWin": 15
+  "activeRule": null,
+  "pointsToWin": 15,
+  "levelUpHandicaps": []
 }

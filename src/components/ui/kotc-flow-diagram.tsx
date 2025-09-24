@@ -56,5 +56,3 @@ export function KOTCFlowDiagram({
     </div>
   );
 }
-
-    
