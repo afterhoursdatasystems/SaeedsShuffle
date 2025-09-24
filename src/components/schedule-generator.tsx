@@ -31,7 +31,7 @@ export function ScheduleGenerator() {
   const { toast } = useToast();
   const [isPublishing, setIsPublishing] = React.useState(false);
 
-  const presentPlayers = players.filter(p => p.present);
+  const presentPlayers = players.filter(p => p.presence === 'Present');
   
   const generateRoundRobinSchedule = (teamsInput: string[]): Match[] => {
     const courts = ['Court 1', 'Court 2'];

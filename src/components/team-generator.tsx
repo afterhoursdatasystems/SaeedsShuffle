@@ -64,11 +64,11 @@ export function TeamGenerator() {
   const [teamSize, setTeamSize] = useState<number>(4);
   const [isPublishing, setIsPublishing] = useState(false);
 
-  const presentPlayers = useMemo(() => players.filter((p) => p.present), [players]);
+  const presentPlayers = useMemo(() => players.filter((p) => p.presence === 'Present'), [players]);
   const possibleTeamsCount = presentPlayers.length > 0 ? Math.floor(presentPlayers.length / teamSize) : 0;
   
   const { presentPlayersCount, totalPlayersCount, presentGuys, presentGals, overallGuyPercentage, unassignedPlayers } = useMemo(() => {
-    const presentPlayers = players.filter(p => p.present);
+    const presentPlayers = players.filter(p => p.presence === 'Present');
     const assignedPlayerIds = new Set(teams.flatMap(t => t.players.map(p => p.id)));
     const unassignedPlayers = presentPlayers.filter(p => !assignedPlayerIds.has(p.id));
     const presentPlayersCount = presentPlayers.length;

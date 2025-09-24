@@ -1,11 +1,13 @@
 
 
+export type PlayerPresence = 'Present' | 'Absent' | 'Pending';
+
 export type Player = {
   id: string;
   name: string;
   skill: number;
   gender: 'Guy' | 'Gal';
-  present: boolean;
+  presence: PlayerPresence;
 };
 
 export type Team = {

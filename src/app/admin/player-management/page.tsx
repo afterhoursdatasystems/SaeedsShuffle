@@ -24,7 +24,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { UserPlus, Edit, Trash2, ArrowUpDown, MoreVertical, UserX } from 'lucide-react';
+import { UserPlus, Edit, Trash2, ArrowUpDown, MoreVertical, UserX, RotateCcw } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useMemo, useState } from 'react';
 import type { Player, Team } from '@/types';
@@ -34,7 +34,7 @@ import { useToast } from '@/hooks/use-toast';
 import { publishData } from '@/app/actions';
 
 
-type SortKey = 'name' | 'team' | 'gender' | 'skill' | 'present';
+type SortKey = 'name' | 'team' | 'gender' | 'skill' | 'presence';
 
 const teamColors = [
   '#F3A6A6', '#A6C1F3', '#A6F3A6', '#F3ECA6', '#DDA0DD', '#B0E0E6', 
@@ -49,9 +49,30 @@ const getSkillColor = (skill: number) => {
   return `hsl(${hue}, 80%, 75%)`;
 };
 
+const getPresenceProps = (presence: Player['presence']) => {
+    switch (presence) {
+        case 'Present':
+            return {
+                style: { backgroundColor: '#D4EDDA', color: '#155724', borderColor: '#C3E6CB' },
+                text: 'Present',
+            };
+        case 'Absent':
+            return {
+                style: { backgroundColor: '#F8D7DA', color: '#721C24', borderColor: '#F5C6CB' },
+                text: 'Absent',
+            };
+        case 'Pending':
+        default:
+            return {
+                style: { backgroundColor: '#FFF3CD', color: '#856404', borderColor: '#FFEEBA' },
+                text: 'Pending',
+            };
+    }
+};
+
 
 export default function PlayerManagementPage() {
-  const { players, teams, setTeams, togglePlayerPresence, isLoading, deletePlayer, gameFormat, schedule, activeRule, pointsToWin, setAllPlayersAway } = usePlayerContext();
+  const { players, teams, setTeams, togglePlayerPresence, isLoading, deletePlayer, gameFormat, schedule, activeRule, pointsToWin, resetAllPlayerPresence } = usePlayerContext();
   const { toast } = useToast();
   const [sortKey, setSortKey] = useState<SortKey>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
@@ -128,8 +149,8 @@ export default function PlayerManagementPage() {
 
   const sortedPlayers = useMemo(() => {
     return [...players].sort((a, b) => {
-      let valA: string | number | boolean;
-      let valB: string | number | boolean;
+      let valA: string | number;
+      let valB: string | number;
 
       switch(sortKey) {
         case 'team':
@@ -140,13 +161,13 @@ export default function PlayerManagementPage() {
           valA = a.skill;
           valB = b.skill;
           break;
-        case 'present':
-            valA = a.present;
-            valB = b.present;
+        case 'presence':
+            valA = a.presence;
+            valB = b.presence;
             break;
         default:
-          valA = a[sortKey as keyof Omit<Player, 'id' | 'skill' | 'present'>];
-          valB = b[sortKey as keyof Omit<Player, 'id' | 'skill' | 'present'>];
+          valA = a[sortKey as 'name' | 'gender'];
+          valB = b[sortKey as 'name' | 'gender'];
       }
       
       if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
@@ -173,13 +194,11 @@ export default function PlayerManagementPage() {
 
   const handleDelete = async (playerId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (window.confirm('Are you sure you want to delete this player?')) {
-        await deletePlayer(playerId);
-    }
+    await deletePlayer(playerId);
   };
 
-  const handleSetAllAway = async () => {
-    await setAllPlayersAway();
+  const handleResetPresence = async () => {
+    await resetAllPlayerPresence();
   };
 
 
@@ -202,9 +221,9 @@ export default function PlayerManagementPage() {
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-            <Button onClick={handleSetAllAway} variant="outline" className="w-full sm:w-auto">
-                <UserX className="mr-2 h-4 w-4" />
-                Set All to Away
+            <Button onClick={handleResetPresence} variant="outline" className="w-full sm:w-auto">
+                <RotateCcw className="mr-2 h-4 w-4" />
+                Reset All to Pending
             </Button>
             <Button onClick={() => setIsAddPlayerOpen(true)} className="w-full sm:w-auto">
               <UserPlus className="mr-2 h-4 w-4" />
@@ -218,6 +237,7 @@ export default function PlayerManagementPage() {
           {sortedPlayers.map((player) => {
             const teamName = playerTeamMap.get(player.id) || 'Unassigned';
             const teamColor = teamName === 'Unassigned' ? '#EAEAEA' : teamColorMap.get(teamName);
+            const presenceProps = getPresenceProps(player.presence);
             return (
               <Card key={player.id} className="flex flex-col">
                 <CardHeader className="flex flex-row items-center justify-between p-4">
@@ -241,15 +261,8 @@ export default function PlayerManagementPage() {
                 <CardContent className="p-4 pt-0 space-y-3">
                   <div className="flex items-center justify-between" onClick={() => togglePlayerPresence(player.id)}>
                       <span className="text-muted-foreground">Presence</span>
-                      <Badge
-                        style={{
-                          backgroundColor: player.present ? '#D4EDDA' : '#F8D7DA',
-                          color: player.present ? '#155724' : '#721C24',
-                          borderColor: player.present ? '#C3E6CB' : '#F5C6CB'
-                        }}
-                        className="border"
-                      >
-                        {player.present ? 'Present' : 'Away'}
+                      <Badge style={presenceProps.style} className="border">
+                        {presenceProps.text}
                       </Badge>
                   </div>
                   <div className="flex items-center justify-between">
@@ -308,9 +321,9 @@ export default function PlayerManagementPage() {
                     </Button>
                   </TableHead>
                   <TableHead>
-                    <Button variant="ghost" onClick={() => handleSort('present')}>
+                    <Button variant="ghost" onClick={() => handleSort('presence')}>
                       Presence
-                      <span className="ml-2">{getSortIcon('present')}</span>
+                      <span className="ml-2">{getSortIcon('presence')}</span>
                     </Button>
                   </TableHead>
                   <TableHead>
@@ -338,6 +351,7 @@ export default function PlayerManagementPage() {
                 {sortedPlayers.map((player) => {
                   const teamName = playerTeamMap.get(player.id) || 'Unassigned';
                   const teamColor = teamName === 'Unassigned' ? '#EAEAEA' : teamColorMap.get(teamName);
+                  const presenceProps = getPresenceProps(player.presence);
 
                   return (
                       <TableRow 
@@ -345,15 +359,8 @@ export default function PlayerManagementPage() {
                       >
                         <TableCell className="font-medium cursor-pointer" onClick={() => togglePlayerPresence(player.id)}>{player.name}</TableCell>
                         <TableCell className="cursor-pointer" onClick={() => togglePlayerPresence(player.id)}>
-                          <Badge
-                            style={{
-                              backgroundColor: player.present ? '#D4EDDA' : '#F8D7DA',
-                              color: player.present ? '#155724' : '#721C24',
-                              borderColor: player.present ? '#C3E6CB' : '#F5C6CB'
-                            }}
-                            className="border"
-                          >
-                            {player.present ? 'Present' : 'Away'}
+                          <Badge style={presenceProps.style} className="border">
+                            {presenceProps.text}
                           </Badge>
                         </TableCell>
                         <TableCell>

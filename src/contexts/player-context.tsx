@@ -2,9 +2,9 @@
 
 'use client';
 
-import type { Player, Team, Match, GameFormat, GameVariant, PowerUp } from '@/types';
+import type { Player, Team, Match, GameFormat, GameVariant, PowerUp, PlayerPresence } from '@/types';
 import React, { createContext, useContext, useState, type ReactNode, useEffect, useCallback } from 'react';
-import { getPlayers, updatePlayerPresence, getPublishedData, updatePlayer, addPlayer, deletePlayer, publishData, setAllPlayersAway as setAllPlayersAwayAction } from '@/app/actions';
+import { getPlayers, updatePlayerPresence, getPublishedData, updatePlayer, addPlayer, deletePlayer, publishData, resetAllPlayerPresence as resetAllPlayerPresenceAction } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 
 const allPowerUps: PowerUp[] = [
@@ -56,9 +56,9 @@ interface PlayerContextType {
   players: Player[];
   setPlayers: React.Dispatch<React.SetStateAction<Player[]>>;
   togglePlayerPresence: (playerId: string) => Promise<void>;
-  setAllPlayersAway: () => Promise<void>;
+  resetAllPlayerPresence: () => Promise<void>;
   updatePlayer: (player: Player) => Promise<boolean>;
-  addPlayer: (player: Omit<Player, 'id' | 'present'>) => Promise<boolean>;
+  addPlayer: (player: Omit<Player, 'id' | 'presence'>) => Promise<boolean>;
   deletePlayer: (playerId: string) => Promise<boolean>;
   isLoading: boolean;
   teams: Team[];
@@ -191,12 +191,15 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     const player = players.find(p => p.id === playerId);
     if (!player) return;
 
-    const newPresence = !player.present;
+    const presenceOrder: PlayerPresence[] = ['Pending', 'Present', 'Absent'];
+    const currentIndex = presenceOrder.indexOf(player.presence);
+    const nextIndex = (currentIndex + 1) % presenceOrder.length;
+    const newPresence = presenceOrder[nextIndex];
 
     // Optimistically update the UI
     setPlayers(currentPlayers =>
       currentPlayers.map(p =>
-        p.id === playerId ? { ...p, present: newPresence } : p
+        p.id === playerId ? { ...p, presence: newPresence } : p
       )
     );
     
@@ -212,25 +215,25 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       });
       setPlayers(currentPlayers =>
         currentPlayers.map(p =>
-          p.id === playerId ? { ...p, present: !newPresence } : p
+          p.id === playerId ? { ...p, presence: player.presence } : p
         )
       );
     }
   };
 
-  const setAllPlayersAway = async () => {
+  const resetAllPlayerPresence = async () => {
     const originalPlayers = [...players];
     // Optimistically update the UI
     setPlayers(currentPlayers =>
-      currentPlayers.map(p => ({ ...p, present: false }))
+      currentPlayers.map(p => ({ ...p, presence: 'Pending' }))
     );
 
-    const result = await setAllPlayersAwayAction();
+    const result = await resetAllPlayerPresenceAction();
 
     if (result.success) {
       toast({
         title: "Presence Reset",
-        description: "All players have been set to 'Away'.",
+        description: "All players have been set to 'Pending'.",
       });
     } else {
       // Revert on failure
@@ -272,9 +275,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const handleAddPlayer = async (playerToAdd: Omit<Player, 'id' | 'present'>) => {
+  const handleAddPlayer = async (playerToAdd: Omit<Player, 'id' | 'presence'>) => {
     const tempId = `temp-${Date.now()}`;
-    const newPlayer: Player = { ...playerToAdd, id: tempId, present: true };
+    const newPlayer: Player = { ...playerToAdd, id: tempId, presence: 'Present' };
 
     setPlayers(current => [...current, newPlayer]);
     
@@ -392,7 +395,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     players,
     setPlayers,
     togglePlayerPresence,
-    setAllPlayersAway,
+    resetAllPlayerPresence,
     updatePlayer: handleUpdatePlayer,
     addPlayer: handleAddPlayer,
     deletePlayer: handleDeletePlayer,
