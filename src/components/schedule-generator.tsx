@@ -32,28 +32,39 @@ export function ScheduleGenerator() {
   const presentPlayers = players.filter(p => p.present);
   
   const generateRoundRobinSchedule = (teamNames: string[]): Match[] => {
-    const newSchedule: Match[] = [];
+    const matches: Match[] = [];
     const courts = ['Court 1', 'Court 2'];
-    let courtIndex = 0;
-    
+
     for (let i = 0; i < teamNames.length; i++) {
       for (let j = i + 1; j < teamNames.length; j++) {
-        newSchedule.push({
+        matches.push({
           id: crypto.randomUUID(),
           teamA: teamNames[i],
           teamB: teamNames[j],
           resultA: null,
           resultB: null,
-          court: courts[courtIndex % courts.length]
+          court: ''
         });
-        courtIndex++;
       }
     }
-    return shuffleArray(newSchedule);
+
+    const shuffledMatches = shuffleArray(matches);
+    const newSchedule: Match[] = [];
+
+    for (let i = 0; i < shuffledMatches.length; i += courts.length) {
+      for (let courtIndex = 0; courtIndex < courts.length && i + courtIndex < shuffledMatches.length; courtIndex++) {
+        const match = shuffledMatches[i + courtIndex];
+        newSchedule.push({
+          ...match,
+          court: courts[courtIndex]
+        });
+      }
+    }
+
+    return newSchedule;
   };
 
   const generateBlindDrawSchedule = (playersForDraw: Player[]): Match[] => {
-      const newSchedule: Match[] = [];
       const courts = ['Court 1', 'Court 2'];
       const teamSize = 4;
       const numMatches = Math.floor(playersForDraw.length / (teamSize * 2));
@@ -62,21 +73,34 @@ export function ScheduleGenerator() {
         toast({ title: 'Not enough players', description: `Need at least ${teamSize*2} players for a blind draw match.`, variant: 'destructive' });
         return [];
       }
-      
+
       const shuffledPlayers = shuffleArray(playersForDraw);
-      
+      const matches: Match[] = [];
+
       for(let i = 0; i < numMatches; i++) {
         const teamAPlayers = shuffledPlayers.splice(0, teamSize);
         const teamBPlayers = shuffledPlayers.splice(0, teamSize);
-        
-        newSchedule.push({
+
+        matches.push({
             id: crypto.randomUUID(),
             teamA: teamAPlayers.map(p => p.name).join(', '),
             teamB: teamBPlayers.map(p => p.name).join(', '),
             resultA: null,
             resultB: null,
-            court: courts[i % courts.length],
+            court: ''
         });
+      }
+
+      const newSchedule: Match[] = [];
+
+      for (let i = 0; i < matches.length; i += courts.length) {
+        for (let courtIndex = 0; courtIndex < courts.length && i + courtIndex < matches.length; courtIndex++) {
+          const match = matches[i + courtIndex];
+          newSchedule.push({
+            ...match,
+            court: courts[courtIndex]
+          });
+        }
       }
 
       // In a real app, you'd handle leftover players
