@@ -506,23 +506,27 @@ export default function PublicTeamsPage() {
                                             </TableCell>
                                         </TableRow>
                                         <TableRow className="text-base border-b">
-                                            <TableCell className="font-medium p-2 text-left">
-                                                <div>{match.teamA}</div>
-                                                <div className="text-muted-foreground text-sm flex items-center gap-2">
-                                                  <span>{teamARecord}</span>
-                                                  {isLevelUp && teamAStats && <span>Level {teamAStats.level}</span>}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="font-mono p-1 text-center" style={{width: '80px'}}>
-                                                {match.resultA !== null && match.resultB !== null
-                                                    ? `${match.resultA} - ${match.resultB}`
-                                                    : 'vs'}
-                                            </TableCell>
-                                            <TableCell className="font-medium p-2 text-right">
-                                                <div>{match.teamB}</div>
-                                                <div className="text-muted-foreground text-sm flex items-center justify-end gap-2">
-                                                   {isLevelUp && teamBStats && <span>Level {teamBStats.level}</span>}
-                                                   <span>{teamBRecord}</span>
+                                            <TableCell colSpan={3} className="p-2">
+                                                <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+                                                    <div className="font-medium text-left">
+                                                        <div>{match.teamA}</div>
+                                                        <div className="text-muted-foreground text-sm flex items-center gap-2">
+                                                          <span>{teamARecord}</span>
+                                                          {isLevelUp && teamAStats && <span>Level {teamAStats.level}</span>}
+                                                        </div>
+                                                    </div>
+                                                    <div className="font-mono text-center">
+                                                        {match.resultA !== null && match.resultB !== null
+                                                            ? `${match.resultA} - ${match.resultB}`
+                                                            : 'vs'}
+                                                    </div>
+                                                    <div className="font-medium text-right">
+                                                        <div>{match.teamB}</div>
+                                                        <div className="text-muted-foreground text-sm flex items-center justify-end gap-2">
+                                                           {isLevelUp && teamBStats && <span>Level {teamBStats.level}</span>}
+                                                           <span>{teamBRecord}</span>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </TableCell>
                                         </TableRow>
@@ -606,3 +610,5 @@ export default function PublicTeamsPage() {
     </div>
   );
 }
+
+    
