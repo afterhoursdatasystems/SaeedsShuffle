@@ -575,24 +575,26 @@ export default function PublicTeamsPage() {
                   )}
                 </>
               ) : (
-                 <div className="flex h-[40vh] flex-col items-center justify-center rounded-xl border-4 border-dashed bg-muted/50 p-12 text-center">
-                  <h3 className="text-4xl font-bold tracking-tight">Teams & Schedule Not Yet Published</h3>
-                  <p className="mt-6 text-xl text-muted-foreground">Check back soon!</p>
+                <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed bg-muted/50 p-8 text-center">
+                  <h3 className="text-2xl font-bold tracking-tight">Teams & Schedule Not Yet Published</h3>
+                  <p className="mt-2 text-lg text-muted-foreground">Check back soon!</p>
                 </div>
               )}
 
-              {currentFormatDetails && <Card className="rounded-xl border-2 shadow-2xl">
-                <CardHeader className="p-6 bg-secondary/10 rounded-t-lg">
+              {currentFormatDetails && (
+                <Card className="rounded-xl border-2 shadow-2xl">
+                  <CardHeader className="p-6 bg-secondary/10 rounded-t-lg">
                     <CardTitle className="flex items-center gap-4 text-2xl font-bold text-secondary-foreground">
-                        <CurrentFormatIcon className="h-7 w-7 text-secondary" />
-                        Tonight's Format
+                      <CurrentFormatIcon className="h-7 w-7 text-secondary" />
+                      Tonight's Format
                     </CardTitle>
-                </CardHeader>
-                <CardContent className="p-6">
+                  </CardHeader>
+                  <CardContent className="p-6">
                     <h3 className="font-bold text-xl mb-4">{currentFormatDetails.title}</h3>
                     <div>{currentFormatDetails.description}</div>
-                </CardContent>
-              </Card>}
+                  </CardContent>
+                </Card>
+              )}
             </div>
           )}
         </div>
