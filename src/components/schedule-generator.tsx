@@ -40,55 +40,48 @@ export function ScheduleGenerator() {
     const numTeams = teamNames.length;
     if (numTeams < 2) return [];
 
-    const totalGamesNeeded = (numTeams * gamesPerTeam) / 2;
-    if ((numTeams * gamesPerTeam) % 2 !== 0) {
-        toast({
-            title: "Scheduling Impossible",
-            description: `Cannot schedule ${gamesPerTeam} games for ${numTeams} teams. The total number of game slots must be even. Please adjust the number of games or teams.`,
-            variant: "destructive",
-            duration: 8000,
-        });
-        return [];
-    }
-    
-    // 1. Create a pool of all possible unique pairings
-    const singleRoundRobinPairings: { teamA: string; teamB: string }[] = [];
+    let time = new Date();
+    time.setHours(18, 45, 0, 0); // 6:45 PM
+    const courts = ['Court 1', 'Court 2'];
+    const gameDuration = 30; // 30 minutes per game
+
+    // 1. Create a large pool of all possible pairings
+    const pairings: { teamA: string; teamB: string }[] = [];
     for (let i = 0; i < numTeams; i++) {
         for (let j = i + 1; j < numTeams; j++) {
-            singleRoundRobinPairings.push({ teamA: teamNames[i], teamB: teamNames[j] });
+            pairings.push({ teamA: teamNames[i], teamB: teamNames[j] });
         }
     }
-    
-    // 2. Create a large enough pool of games to draw from, allowing repeats
-    let gamePool: { teamA: string; teamB: string }[] = [];
-    // Repeat the round robin pairings enough times to satisfy the game count
-    const repeats = Math.ceil(totalGamesNeeded / singleRoundRobinPairings.length) || 1;
-    for (let i = 0; i < repeats; i++) {
-      gamePool.push(...singleRoundRobinPairings);
+
+    // 2. Duplicate and shuffle the pairings to create a sufficient pool for scheduling
+    let gamePool = [];
+    // Ensure the pool is large enough for the requested number of games
+    const requiredRounds = Math.ceil((numTeams * gamesPerTeam) / numTeams);
+    for (let i = 0; i < requiredRounds; i++) {
+        gamePool.push(...shuffleArray(pairings));
     }
     gamePool = shuffleArray(gamePool);
-
-
+    
+    // 3. Schedule games
     const newSchedule: Match[] = [];
     const gamesCount: { [key: string]: number } = {};
     teamNames.forEach(name => (gamesCount[name] = 0));
+
+    let timeSlotIndex = 0;
     
-    let time = new Date();
-    time.setHours(18, 45, 0, 0);
-    const courts = ['Court 1', 'Court 2'];
-    const gameDuration = 30;
+    // Use a safety counter to prevent accidental infinite loops
+    let safetyBreak = 0;
+    const maxIterations = numTeams * gamesPerTeam * 5; 
 
-    let scheduledGames = 0;
-
-    // Loop until enough games are scheduled
-    while (scheduledGames < totalGamesNeeded) {
+    while(Object.values(gamesCount).some(count => count < gamesPerTeam) && safetyBreak < maxIterations) {
+        safetyBreak++;
+        const currentTime = addMinutes(time, timeSlotIndex * gameDuration);
         const teamsInCurrentTimeslot = new Set<string>();
-        
-        for (const court of courts) {
-            if (scheduledGames >= totalGamesNeeded) break;
 
-            // Find a valid game for this court and timeslot
-            let foundGame = false;
+        // Attempt to fill both courts for the current timeslot
+        for(const court of courts) {
+            let gameScheduledForCourt = false;
+            
             for (let i = 0; i < gamePool.length; i++) {
                 const pairing = gamePool[i];
                 const { teamA, teamB } = pairing;
@@ -99,41 +92,38 @@ export function ScheduleGenerator() {
                     !teamsInCurrentTimeslot.has(teamA) &&
                     !teamsInCurrentTimeslot.has(teamB)
                 ) {
-                    const match: Match = {
+                    newSchedule.push({
                         id: crypto.randomUUID(),
                         teamA,
                         teamB,
                         resultA: null,
                         resultB: null,
                         court: court,
-                        time: format(time, 'h:mm a'),
-                    };
-                    newSchedule.push(match);
-
+                        time: format(currentTime, 'h:mm a'),
+                    });
+                    
                     gamesCount[teamA]++;
                     gamesCount[teamB]++;
                     teamsInCurrentTimeslot.add(teamA);
                     teamsInCurrentTimeslot.add(teamB);
-                    scheduledGames++;
                     
-                    // Remove the used pairing from the pool
+                    // Remove the used pairing so it's not picked again immediately
                     gamePool.splice(i, 1);
-                    foundGame = true;
-                    break; // Move to the next court
+                    gameScheduledForCourt = true;
+                    break; // Found a game for this court, move to the next court
                 }
             }
         }
         
-        // Move to the next timeslot
-        time = addMinutes(time, gameDuration);
-        
-        // Safety break to prevent infinite loops if logic fails
-        if (newSchedule.length > 200) {
-          toast({ title: "Error", description: "Schedule generation took too long.", variant: 'destructive'});
-          break;
+        // If we filled any court in this timeslot, we can potentially start the next timeslot
+        if(teamsInCurrentTimeslot.size > 0) {
+            timeSlotIndex++;
+        } else {
+            // If we couldn't schedule any game in a full pass, break to avoid infinite loop
+            break;
         }
     }
-
+    
     return newSchedule;
 };
 
@@ -242,9 +232,7 @@ export function ScheduleGenerator() {
         case 'pool-play-bracket':
         case 'round-robin':
             newSchedule = generateRoundRobinSchedule(teams.map(t => t.name), gamesPerTeam);
-            if(newSchedule.length === 0 && (teams.length * gamesPerTeam) % 2 !== 0) {
-              // Don't toast if an impossible schedule was attempted, as the function already did.
-            } else {
+            if(newSchedule.length > 0) {
               if (gameFormat === 'round-robin') formatDescription = "Round Robin";
               else if (gameFormat === 'level-up') formatDescription = "Level Up";
               else formatDescription = "Pool Play / Bracket";
@@ -524,4 +512,5 @@ export function ScheduleGenerator() {
     
 
     
+
 

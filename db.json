@@ -1,33 +1,33 @@
 {
   "teams": [
     {
-      "id": "7c816b84-b896-4a00-9ca3-90e9a4bd3a85",
+      "id": "857e9a1d-94cc-4847-b5ca-9a5f084e4901",
       "name": "Cool Fish Commandos",
       "players": [
         {
-          "id": "7",
-          "name": "Brian Kempert",
+          "id": "11",
+          "name": "Aditya Singh",
           "gender": "Guy",
-          "skill": 8,
+          "skill": 7,
           "presence": "Present"
         },
         {
-          "id": "28",
-          "name": "Alexandra Broskey",
+          "id": "13",
+          "name": "Emily Victoria",
           "gender": "Gal",
           "skill": 6,
           "presence": "Present"
         },
         {
-          "id": "8",
-          "name": "Abby Gilpin",
+          "id": "2",
+          "name": "Melissa Roy",
           "gender": "Gal",
           "skill": 6,
           "presence": "Present"
         },
         {
-          "id": "24",
-          "name": "Jesica Bullrich",
+          "id": "19",
+          "name": "Colleen Palman",
           "gender": "Gal",
           "skill": 2,
           "presence": "Present"
@@ -36,19 +36,19 @@
       "level": 1
     },
     {
-      "id": "8a720d71-d39a-462e-8b7e-7f16970449db",
-      "name": "Soda Shop Slammers",
+      "id": "6bbd1954-ff17-4f17-aab1-170a7981d100",
+      "name": "Antiquity Attackers",
       "players": [
         {
-          "id": "26",
-          "name": "Matt Taylor",
+          "id": "14",
+          "name": "Eric Ahrens",
           "gender": "Guy",
           "skill": 7,
           "presence": "Present"
         },
         {
-          "id": "2",
-          "name": "Melissa Roy",
+          "id": "28",
+          "name": "Alexandra Broskey",
           "gender": "Gal",
           "skill": 6,
           "presence": "Present"
@@ -71,19 +71,19 @@
       "level": 1
     },
     {
-      "id": "fccf32d0-37a8-4911-a96d-6ce55e05fd07",
-      "name": "Bailey Bruisers",
+      "id": "d85d2b66-099b-4d7e-be19-fc6cb5bc97bc",
+      "name": "Peninsula Powerhouse",
       "players": [
         {
-          "id": "14",
-          "name": "Eric Ahrens",
+          "id": "7",
+          "name": "Brian Kempert",
           "gender": "Guy",
-          "skill": 7,
+          "skill": 8,
           "presence": "Present"
         },
         {
-          "id": "13",
-          "name": "Emily Victoria",
+          "id": "8",
+          "name": "Abby Gilpin",
           "gender": "Gal",
           "skill": 6,
           "presence": "Present"
@@ -106,12 +106,12 @@
       "level": 1
     },
     {
-      "id": "b6c5f079-6f83-4e0d-9e2e-7aad4fbceb97",
-      "name": "Langtree Lightning",
+      "id": "ac4e2181-7d58-45e6-9505-b2803407590a",
+      "name": "Birkdale Bombers",
       "players": [
         {
-          "id": "11",
-          "name": "Aditya Singh",
+          "id": "12",
+          "name": "Giovanni Salvatore",
           "gender": "Guy",
           "skill": 7,
           "presence": "Present"
@@ -124,29 +124,29 @@
           "presence": "Present"
         },
         {
-          "id": "19",
-          "name": "Colleen Palman",
+          "id": "24",
+          "name": "Jesica Bullrich",
           "gender": "Gal",
           "skill": 2,
           "presence": "Present"
         },
         {
-          "id": "10",
-          "name": "Jonathan Bradley",
+          "id": "1",
+          "name": "Cole Deaver",
           "gender": "Guy",
-          "skill": 5,
+          "skill": 6,
           "presence": "Present"
         }
       ],
       "level": 1
     },
     {
-      "id": "c98bf5e4-7577-4223-b80f-3dd0e4c57437",
-      "name": "Jetton Juggernauts",
+      "id": "93b81ac5-64e9-4fed-9e04-bf0b7390242f",
+      "name": "Langtree Lightning",
       "players": [
         {
-          "id": "12",
-          "name": "Giovanni Salvatore",
+          "id": "26",
+          "name": "Matt Taylor",
           "gender": "Guy",
           "skill": 7,
           "presence": "Present"
@@ -166,18 +166,109 @@
           "presence": "Present"
         },
         {
-          "id": "1",
-          "name": "Cole Deaver",
+          "id": "10",
+          "name": "Jonathan Bradley",
           "gender": "Guy",
-          "skill": 6,
+          "skill": 5,
           "presence": "Present"
         }
       ],
       "level": 1
     }
   ],
-  "format": "level-up",
-  "schedule": [],
+  "format": "pool-play-bracket",
+  "schedule": [
+    {
+      "id": "c38dc55c-d966-41dc-a27f-ba456006b4ff",
+      "teamA": "Antiquity Attackers",
+      "teamB": "Peninsula Powerhouse",
+      "resultA": null,
+      "resultB": null,
+      "court": "Court 1",
+      "time": "6:45 PM"
+    },
+    {
+      "id": "23f14327-1efb-4bc4-a79c-52caa3237904",
+      "teamA": "Cool Fish Commandos",
+      "teamB": "Langtree Lightning",
+      "resultA": null,
+      "resultB": null,
+      "court": "Court 2",
+      "time": "6:45 PM"
+    },
+    {
+      "id": "7e4fec0c-1277-41a9-b7ec-daef4fd95446",
+      "teamA": "Birkdale Bombers",
+      "teamB": "Langtree Lightning",
+      "resultA": null,
+      "resultB": null,
+      "court": "Court 1",
+      "time": "7:15 PM"
+    },
+    {
+      "id": "73ad946f-230c-44db-93fb-c958bcae6b87",
+      "teamA": "Cool Fish Commandos",
+      "teamB": "Antiquity Attackers",
+      "resultA": null,
+      "resultB": null,
+      "court": "Court 2",
+      "time": "7:15 PM"
+    },
+    {
+      "id": "b4f8af07-e31f-448a-b11d-dadfcaed94b8",
+      "teamA": "Peninsula Powerhouse",
+      "teamB": "Langtree Lightning",
+      "resultA": null,
+      "resultB": null,
+      "court": "Court 1",
+      "time": "7:45 PM"
+    },
+    {
+      "id": "b9cb5362-f05f-4931-8028-39e9fedc5583",
+      "teamA": "Cool Fish Commandos",
+      "teamB": "Birkdale Bombers",
+      "resultA": null,
+      "resultB": null,
+      "court": "Court 2",
+      "time": "7:45 PM"
+    },
+    {
+      "id": "b960ff09-82ce-4d18-8720-3f388cc91c8e",
+      "teamA": "Antiquity Attackers",
+      "teamB": "Birkdale Bombers",
+      "resultA": null,
+      "resultB": null,
+      "court": "Court 1",
+      "time": "8:15 PM"
+    },
+    {
+      "id": "c0a78d7c-227e-4d62-96e7-a27cc1ca05b3",
+      "teamA": "Cool Fish Commandos",
+      "teamB": "Peninsula Powerhouse",
+      "resultA": null,
+      "resultB": null,
+      "court": "Court 2",
+      "time": "8:15 PM"
+    },
+    {
+      "id": "9e4bde60-5200-4b9f-a05c-701f384bb9bd",
+      "teamA": "Peninsula Powerhouse",
+      "teamB": "Birkdale Bombers",
+      "resultA": null,
+      "resultB": null,
+      "court": "Court 1",
+      "time": "8:45 PM"
+    },
+    {
+      "id": "45bdf76e-7f23-4625-8353-3c71d63ba15b",
+      "teamA": "Antiquity Attackers",
+      "teamB": "Langtree Lightning",
+      "resultA": null,
+      "resultB": null,
+      "court": "Court 2",
+      "time": "8:45 PM"
+    }
+  ],
   "activeRule": null,
   "pointsToWin": 15,
   "levelUpHandicaps": [
