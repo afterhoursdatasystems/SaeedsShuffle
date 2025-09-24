@@ -513,7 +513,7 @@ export default function PublicTeamsPage() {
                                                   {isLevelUp && teamAStats && <span>Level {teamAStats.level}</span>}
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="text-center font-mono whitespace-nowrap p-1">
+                                            <TableCell className="font-mono p-1 text-center" style={{width: '80px'}}>
                                                 {match.resultA !== null && match.resultB !== null
                                                     ? `${match.resultA} - ${match.resultB}`
                                                     : 'vs'}
@@ -560,7 +560,7 @@ export default function PublicTeamsPage() {
                               <TableRow key={match.id} className="text-base">
                                 <TableCell className="px-2"><Badge>{match.court}</Badge></TableCell>
                                 <TableCell className="font-medium px-2">{match.teamA}</TableCell>
-                                <TableCell className="text-center font-mono whitespace-nowrap px-1">
+                                <TableCell className="font-mono whitespace-nowrap p-1 text-center" style={{width: '80px'}}>
                                     {match.resultA !== null && match.resultB !== null
                                         ? `${match.resultA} - ${match.resultB}`
                                         : 'vs'}
