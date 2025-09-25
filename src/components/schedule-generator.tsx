@@ -9,14 +9,17 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Save, CalendarDays, Send, Trash2 } from 'lucide-react';
-import React from 'react';
+import { Save, CalendarDays, Send, Trash2, Clock, Users } from 'lucide-react';
+import React, { useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { usePlayerContext } from '@/contexts/player-context';
 import { publishData } from '@/app/actions';
 import { addMinutes, format } from 'date-fns';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Avatar, AvatarFallback } from './ui/avatar';
+import { Separator } from './ui/separator';
+
 
 const shuffleArray = <T,>(array: T[]): T[] => {
   const newArray = [...array];
@@ -26,6 +29,26 @@ const shuffleArray = <T,>(array: T[]): T[] => {
   }
   return newArray;
 };
+
+const PlayerRoster = ({ players }: { players: Player[] }) => (
+    <div className="space-y-2 px-4 py-2">
+        {players.length > 0 ? (
+            players.sort((a,b) => a.name.localeCompare(b.name)).map(player => (
+                <div key={player.id} className="flex items-center gap-2">
+                    <Avatar className="h-6 w-6">
+                        <AvatarFallback className="bg-muted text-xs">
+                            {player.name.charAt(0)}
+                        </AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm">{player.name}</span>
+                </div>
+            ))
+        ) : (
+            <p className="text-sm text-muted-foreground">Roster not available.</p>
+        )}
+    </div>
+);
+
 
 function generateRoundRobinSchedule(
     teamNames: string[], 
@@ -37,120 +60,104 @@ function generateRoundRobinSchedule(
     console.log(`Teams: ${teamNames.length} (${teamNames.join(', ')})`);
     console.log(`Games per team: ${gamesPerTeam}`);
     console.log(`Available courts: ${courts.length}`);
-    console.log(`Start Time: ${startTimeStr}`);
-
+    
+    // Validation
     if (teamNames.length < 2) {
         throw new Error('Need at least 2 teams to generate schedule');
     }
-
+    
+    // Phase 1: Create Game Pool
     const totalGamesNeeded = Math.ceil((teamNames.length * gamesPerTeam) / 2);
     console.log(`Total games to schedule: ${totalGamesNeeded}`);
-
+    
     const allMatchups = [];
     for (let i = 0; i < teamNames.length; i++) {
         for (let j = i + 1; j < teamNames.length; j++) {
             allMatchups.push({ teamA: teamNames[i], teamB: teamNames[j] });
         }
     }
-
+    
     let gamePool = [];
     while (gamePool.length < totalGamesNeeded) {
         gamePool.push(...shuffleArray([...allMatchups]));
     }
     gamePool = gamePool.slice(0, totalGamesNeeded);
-
+    
+    // Phase 2: Schedule Games
     const schedule: Match[] = [];
     const teamGameCounts: { [key: string]: number } = {};
     teamNames.forEach(name => teamGameCounts[name] = 0);
     
-    // Parse start time
     const [hours, minutes] = startTimeStr.split(':').map(Number);
     const startTime = new Date();
     startTime.setHours(hours, minutes, 0, 0);
-
+    
     const gameDuration = 30;
     let timeSlotIndex = 0;
-
+    
     while (gamePool.length > 0) {
         const currentTime = addMinutes(startTime, timeSlotIndex * gameDuration);
         const timeSlot = format(currentTime, 'h:mm a');
         console.log(`\n--- Time Slot ${timeSlot} ---`);
-
-        const scheduledInSlot: { game: { teamA: string, teamB: string }, index: number }[] = [];
-        const teamsInSlot = new Set<string>();
-
-        let court1Game: { game: { teamA: string, teamB: string }, index: number } | null = null;
-        let court2Game: { game: { teamA: string, teamB: string }, index: number } | null = null;
-
-        // Try to find a pair of compatible games
-        for (let i = 0; i < gamePool.length; i++) {
-            const game1 = gamePool[i];
-            
-            // Tentatively pick for Court 1
-            const tempTeams = new Set([game1.teamA, game1.teamB]);
-            
-            // Search for a compatible game for Court 2
-            let foundPartner = false;
-            for (let j = i + 1; j < gamePool.length; j++) {
-                const game2 = gamePool[j];
-                if (!tempTeams.has(game2.teamA) && !tempTeams.has(game2.teamB)) {
-                    // Found a compatible pair
-                    court1Game = { game: game1, index: i };
-                    court2Game = { game: game2, index: j };
-                    foundPartner = true;
-                    break;
-                }
+        
+        // Find valid games
+        const validGamesWithIndex: {game: {teamA: string, teamB: string}, index: number}[] = [];
+        gamePool.forEach((game, index) => {
+            if (teamGameCounts[game.teamA] < gamesPerTeam && 
+                teamGameCounts[game.teamB] < gamesPerTeam) {
+                validGamesWithIndex.push({ game, index });
             }
-
-            if (foundPartner) {
-                break;
+        });
+        
+        console.log(`Found ${validGamesWithIndex.length} valid games`);
+        
+        // Select non-conflicting games
+        const selectedGames: {game: {teamA: string, teamB: string}, index: number}[] = [];
+        const usedTeams = new Set();
+        
+        for (const { game, index } of validGamesWithIndex) {
+            if (!usedTeams.has(game.teamA) && !usedTeams.has(game.teamB)) {
+                selectedGames.push({ game, index });
+                usedTeams.add(game.teamA);
+                usedTeams.add(game.teamB);
+                
+                if (selectedGames.length >= courts.length) break;
             }
         }
         
-        if (court1Game && court2Game) {
-            // Schedule the pair
-            const match1: Match = {
+        console.log(`Selected ${selectedGames.length} games for scheduling`);
+        
+        if (selectedGames.length === 0) {
+            console.log('No more games can be scheduled');
+            break;
+        }
+        
+        // Schedule selected games
+        selectedGames.forEach(({ game }, courtIndex) => {
+            const match = {
                 id: crypto.randomUUID(),
-                teamA: court1Game.game.teamA, teamB: court1Game.game.teamB, court: courts[0], time: timeSlot,
-                resultA: null, resultB: null
+                teamA: game.teamA,
+                teamB: game.teamB,
+                court: courts[courtIndex],
+                time: timeSlot,
+                resultA: null,
+                resultB: null
             };
-            schedule.push(match1);
-            console.log(`  - Scheduled on ${courts[0]}: ${court1Game.game.teamA} vs ${court1Game.game.teamB}`);
-
-            const match2: Match = {
-                id: crypto.randomUUID(),
-                teamA: court2Game.game.teamA, teamB: court2Game.game.teamB, court: courts[1], time: timeSlot,
-                resultA: null, resultB: null
-            };
-            schedule.push(match2);
-            console.log(`  - Scheduled on ${courts[1]}: ${court2Game.game.teamA} vs ${court2Game.game.teamB}`);
             
-            // Remove games from pool (higher index first)
-            gamePool.splice(court2Game.index, 1);
-            gamePool.splice(court1Game.index, 1);
-        } else if (gamePool.length > 0) {
-            // No compatible pair found, schedule a single game
-            const gameToSchedule = gamePool[0];
-            const match: Match = {
-                id: crypto.randomUUID(),
-                teamA: gameToSchedule.teamA, teamB: gameToSchedule.teamB, court: courts[0], time: timeSlot,
-                resultA: null, resultB: null
-            };
             schedule.push(match);
-            console.log(`  - Scheduled on ${courts[0]} (no pair found): ${gameToSchedule.teamA} vs ${gameToSchedule.teamB}`);
-            gamePool.splice(0, 1);
-        } else {
-             console.log('No more games could be scheduled.');
-             break;
-        }
-
-        if (schedule.length >= totalGamesNeeded) {
-             console.log('All required games have been scheduled. Exiting loop.');
-             break;
-        }
+            teamGameCounts[game.teamA]++;
+            teamGameCounts[game.teamB]++;
+            console.log(`  ${courts[courtIndex]}: ${game.teamA} vs ${game.teamB}`);
+        });
+        
+        // Remove scheduled games from pool (reverse order to maintain indices)
+        selectedGames
+            .sort((a, b) => b.index - a.index)
+            .forEach(({ index }) => gamePool.splice(index, 1));
         
         timeSlotIndex++;
         
+        // Safety valve
         if (timeSlotIndex > 100) {
             console.error('Safety break: Too many iterations');
             break;
@@ -158,7 +165,8 @@ function generateRoundRobinSchedule(
     }
     
     console.log('=== SCHEDULING COMPLETE ===');
-    console.log(schedule);
+    console.log(`Generated ${schedule.length} matches across ${timeSlotIndex} time slots`);
+    console.log('Final game counts:', teamGameCounts);
     
     return schedule;
 }
@@ -348,6 +356,25 @@ export function ScheduleGenerator() {
   
   const isKOTC = gameFormat === 'king-of-the-court';
 
+  const groupedSchedule = useMemo(() => {
+    if (isKOTC) return null;
+    
+    return schedule.reduce((acc, match) => {
+      const time = match.time;
+      if (!acc[time]) {
+        acc[time] = [];
+      }
+      acc[time].push(match);
+      return acc;
+    }, {} as Record<string, Match[]>);
+  }, [schedule, isKOTC]);
+
+  const teamMap = useMemo(() => {
+    const map = new Map<string, Team>();
+    teams.forEach(team => map.set(team.name, team));
+    return map;
+  }, [teams]);
+
   return (
     <div className="space-y-8">
        <Card>
@@ -417,51 +444,89 @@ export function ScheduleGenerator() {
              </div>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[150px]">Court / Status</TableHead>
-                    <TableHead>Team A</TableHead>
-                    <TableHead>{ isKOTC ? 'vs Team B / Status' : 'Team B'}</TableHead>
-                    <TableHead className={cn("w-[120px] text-center", isKOTC && "hidden")}>Result</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {schedule.map((match) => (
-                    <TableRow key={match.id}>
-                      <TableCell><Badge>{match.court}</Badge></TableCell>
-                      <TableCell className="font-medium">{match.teamA}</TableCell>
-                      <TableCell className="font-medium">{match.teamB}</TableCell>
-                      <TableCell className={cn(isKOTC && "hidden")}>
-                        <div className="flex items-center justify-center gap-2">
-                          <Input
-                            type="number"
-                            className="h-8 w-12 p-1 text-center"
-                            value={match.resultA ?? ''}
-                            onChange={(e) => handleResultChange(match.id, 'A', e.target.value)}
-                            aria-label={`${match.teamA} score`}
-                          />
-                          <span>-</span>
-                          <Input
-                            type="number"
-                            className="h-8 w-12 p-1 text-center"
-                            value={match.resultB ?? ''}
-                            onChange={(e) => handleResultChange(match.id, 'B', e.target.value)}
-                            aria-label={`${match.teamB} score`}
-                          />
-                        </div>
-                      </TableCell>
-                    </TableRow>
+            {isKOTC ? (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[150px]">Court / Status</TableHead>
+                        <TableHead>Team A</TableHead>
+                        <TableHead>vs Team B / Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {schedule.map((match) => (
+                        <TableRow key={match.id}>
+                          <TableCell><Badge>{match.court}</Badge></TableCell>
+                          <TableCell className="font-medium">{match.teamA}</TableCell>
+                          <TableCell className="font-medium">{match.teamB}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+            ) : groupedSchedule && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {Object.entries(groupedSchedule).map(([time, matches]) => (
+                    <Card key={time}>
+                      <CardHeader className="p-4 bg-muted/50">
+                        <CardTitle className="flex items-center gap-3 text-xl font-bold">
+                          <Clock className="h-6 w-6 text-primary" />
+                          Matches at {time}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-0 sm:p-4 space-y-2">
+                        {matches.map((match) => {
+                            const teamA = teamMap.get(match.teamA);
+                            const teamB = teamMap.get(match.teamB);
+                            return (
+                                <div key={match.id} className="text-base rounded-lg border bg-background overflow-hidden">
+                                  <div className="p-2 font-bold text-center bg-muted text-muted-foreground">{match.court}</div>
+                                  <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 w-full p-2">
+                                      <div className="font-medium text-left">
+                                          {match.teamA}
+                                      </div>
+                                      <div className="flex items-center gap-1">
+                                         <Input
+                                            type="number"
+                                            className="h-8 w-12 p-1 text-center"
+                                            value={match.resultA ?? ''}
+                                            onChange={(e) => handleResultChange(match.id, 'A', e.target.value)}
+                                            aria-label={`${match.teamA} score`}
+                                          />
+                                          <span>-</span>
+                                          <Input
+                                            type="number"
+                                            className="h-8 w-12 p-1 text-center"
+                                            value={match.resultB ?? ''}
+                                            onChange={(e) => handleResultChange(match.id, 'B', e.target.value)}
+                                            aria-label={`${match.teamB} score`}
+                                          />
+                                      </div>
+                                      <div className="font-medium text-right">
+                                          {match.teamB}
+                                      </div>
+                                  </div>
+                                  <Separator />
+                                  <div className="grid grid-cols-2">
+                                    <div>
+                                      <PlayerRoster players={teamA?.players || []} />
+                                    </div>
+                                    <div className="border-l">
+                                      <PlayerRoster players={teamB?.players || []} />
+                                    </div>
+                                  </div>
+                                </div>
+                            )
+                        })}
+                      </CardContent>
+                    </Card>
                   ))}
-                </TableBody>
-              </Table>
-            </div>
+                </div>
+            )}
           </CardContent>
         </Card>
       )}
     </div>
   );
 }
-
-    
