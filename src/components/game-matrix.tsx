@@ -51,8 +51,8 @@ export function GameMatrix({ teams, schedule }: GameMatrixProps) {
     const games = [...new Map(schedule.map(match => [`${match.time}-${match.court}`, match])).values()]
       .sort((a, b) => {
         // Sort by time, then by court
-        const timeA = new Date(`1970/01/01 ${a.time}`);
-        const timeB = new Date(`1970/01/01 ${b.time}`);
+        const timeA = new Date(`1970/01/01 ${a.time.replace(/([AP]M)/, ' $1')}`);
+        const timeB = new Date(`1970/01/01 ${b.time.replace(/([AP]M)/, ' $1')}`);
         if (timeA.getTime() < timeB.getTime()) return -1;
         if (timeA.getTime() > timeB.getTime()) return 1;
         if (a.court < b.court) return -1;
@@ -102,9 +102,9 @@ export function GameMatrix({ teams, schedule }: GameMatrixProps) {
                 Team names show which teams pairs played for each game. Empty cells mean the pair doesn't play that game.
             </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
             <div className="overflow-x-auto">
-            <Table className="min-w-full border">
+            <Table className="min-w-full border-t">
                 <TableHeader>
                 <TableRow>
                     <TableHead className="sticky left-0 bg-background z-10 w-[200px] border-r">Pair Name</TableHead>
