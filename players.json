@@ -4,14 +4,14 @@
     "name": "Cole Deaver",
     "gender": "Guy",
     "skill": 6,
-    "presence": "Present"
+    "presence": "Pending"
   },
   {
     "id": "2",
     "name": "Melissa Roy",
     "gender": "Gal",
     "skill": 6,
-    "presence": "Present"
+    "presence": "Pending"
   },
   {
     "id": "3",
@@ -25,28 +25,28 @@
     "name": "Kyle Novak",
     "gender": "Gal",
     "skill": 9,
-    "presence": "Present"
+    "presence": "Pending"
   },
   {
     "id": "5",
     "name": "Nicole Malone",
     "gender": "Gal",
     "skill": 5,
-    "presence": "Present"
+    "presence": "Pending"
   },
   {
     "id": "6",
     "name": "Heidi Kempert",
     "gender": "Gal",
     "skill": 4,
-    "presence": "Present"
+    "presence": "Pending"
   },
   {
     "id": "7",
     "name": "Brian Kempert",
     "gender": "Guy",
     "skill": 8,
-    "presence": "Present"
+    "presence": "Pending"
   },
   {
     "id": "8",
@@ -67,21 +67,21 @@
     "name": "Jonathan Bradley",
     "gender": "Guy",
     "skill": 5,
-    "presence": "Present"
+    "presence": "Pending"
   },
   {
     "id": "11",
     "name": "Aditya Singh",
     "gender": "Guy",
     "skill": 7,
-    "presence": "Present"
+    "presence": "Pending"
   },
   {
     "id": "12",
     "name": "Giovanni Salvatore",
     "gender": "Guy",
     "skill": 7,
-    "presence": "Present"
+    "presence": "Pending"
   },
   {
     "id": "13",
@@ -95,104 +95,104 @@
     "name": "Eric Ahrens",
     "gender": "Guy",
     "skill": 7,
-    "presence": "Present"
+    "presence": "Pending"
   },
   {
     "id": "15",
     "name": "Stephen Jaqua",
     "gender": "Guy",
     "skill": 4,
-    "presence": "Present"
+    "presence": "Pending"
   },
   {
     "id": "16",
     "name": "Lindsey Bowers",
     "gender": "Gal",
     "skill": 7,
-    "presence": "Present"
+    "presence": "Pending"
   },
   {
     "id": "17",
     "name": "Shaylyn Murphy",
     "gender": "Gal",
     "skill": 8,
-    "presence": "Present"
+    "presence": "Pending"
   },
   {
     "id": "18",
     "name": "William Van Meter",
     "gender": "Guy",
     "skill": 3,
-    "presence": "Present"
+    "presence": "Pending"
   },
   {
     "id": "19",
     "name": "Colleen Palman",
     "gender": "Gal",
     "skill": 2,
-    "presence": "Present"
+    "presence": "Pending"
   },
   {
     "id": "20",
     "name": "Rachel Nystrom",
     "gender": "Gal",
     "skill": 8,
-    "presence": "Present"
+    "presence": "Pending"
   },
   {
     "id": "21",
     "name": "Pat Sobotka",
     "gender": "Guy",
     "skill": 6,
-    "presence": "Present"
+    "presence": "Pending"
   },
   {
     "id": "22",
     "name": "Jasona Jones",
     "gender": "Gal",
     "skill": 1,
-    "presence": "Present"
+    "presence": "Pending"
   },
   {
     "id": "23",
     "name": "Joy Swasy",
     "gender": "Gal",
     "skill": 6,
-    "presence": "Present"
+    "presence": "Pending"
   },
   {
     "id": "24",
     "name": "Matt Schrader",
     "gender": "Guy",
     "skill": 9,
-    "presence": "Present"
+    "presence": "Pending"
   },
   {
     "id": "25",
     "name": "Lauren Hopkins",
     "gender": "Gal",
     "skill": 6,
-    "presence": "Present"
+    "presence": "Pending"
   },
   {
     "id": "26",
     "name": "Matt Taylor",
     "gender": "Guy",
     "skill": 7,
-    "presence": "Present"
+    "presence": "Pending"
   },
   {
     "id": "27",
     "name": "Alaina McCoy",
     "gender": "Gal",
     "skill": 4,
-    "presence": "Present"
+    "presence": "Pending"
   },
   {
     "id": "28",
     "name": "Alexandra Broskey",
     "gender": "Gal",
     "skill": 6,
-    "presence": "Present"
+    "presence": "Pending"
   }
 ]
