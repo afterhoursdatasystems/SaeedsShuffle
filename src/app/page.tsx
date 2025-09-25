@@ -4,7 +4,7 @@
 import React from 'react';
 import { useEffect, useState, useMemo } from 'react';
 import { getPublishedData } from '@/app/actions';
-import type { Team, GameFormat, GameVariant, Match, PowerUp, Handicap } from '@/types';
+import type { Team, GameFormat, GameVariant, Match, PowerUp, Handicap, Player } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Volleyball, Users, Trophy, BookOpen, Crown, Gem, ShieldQuestion, KeyRound, Zap, Calendar, Shuffle, Wand2, Clock, TrendingUp } from 'lucide-react';
@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { KOTCFlowDiagram } from '@/components/ui/kotc-flow-diagram';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 type CombinedGameFormat = GameFormat | GameVariant;
 
@@ -263,6 +264,25 @@ const getLevelHeaderStyle = (level: number | undefined) => {
     }
 };
 
+const PlayerRoster = ({ players }: { players: Player[] }) => (
+    <div className="grid grid-cols-2 gap-x-4 gap-y-2 px-4 py-2">
+        {players.length > 0 ? (
+            players.sort((a,b) => a.name.localeCompare(b.name)).map(player => (
+                <div key={player.id} className="flex items-center gap-2">
+                    <Avatar className="h-6 w-6">
+                        <AvatarFallback className="bg-muted text-xs">
+                            {player.name.charAt(0)}
+                        </AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm">{player.name}</span>
+                </div>
+            ))
+        ) : (
+            <p className="text-sm text-muted-foreground col-span-2">Roster not available.</p>
+        )}
+    </div>
+);
+
 
 export default function PublicTeamsPage() {
   const [teams, setTeams] = useState<Team[]>([]);
@@ -345,6 +365,13 @@ export default function PublicTeamsPage() {
       return acc;
     }, {} as Record<string, Match[]>);
   }, [schedule, isKOTC]);
+
+  const teamMap = useMemo(() => {
+    const map = new Map<string, Team>();
+    teams.forEach(team => map.set(team.name, team));
+    return map;
+  }, [teams]);
+
 
   const renderTeamSkeletons = () => (
     Array.from({ length: 4 }).map((_, index) => (
@@ -490,24 +517,19 @@ export default function PublicTeamsPage() {
                             </CardTitle>
                           </CardHeader>
                           <CardContent className="p-0 sm:p-4">
-                            <Table>
-                              <TableBody>
+                            <Accordion type="single" collapsible className="w-full">
                                 {matches.map((match) => {
+                                    const teamA = teamMap.get(match.teamA);
+                                    const teamB = teamMap.get(match.teamB);
                                     const teamAStats = teamStats[match.teamA];
                                     const teamBStats = teamStats[match.teamB];
                                     const teamARecord = teamAStats ? `${teamAStats.wins}-${teamAStats.losses}` : '';
                                     const teamBRecord = teamBStats ? `${teamBStats.wins}-${teamBStats.losses}` : '';
 
                                     return (
-                                    <React.Fragment key={match.id}>
-                                        <TableRow className="border-b-0">
-                                            <TableCell colSpan={3} className="p-2 text-center">
-                                                <Badge variant="outline">{match.court}</Badge>
-                                            </TableCell>
-                                        </TableRow>
-                                        <TableRow className="text-base border-b">
-                                            <TableCell colSpan={3} className="p-2">
-                                                <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+                                        <AccordionItem value={match.id} key={match.id}>
+                                            <AccordionTrigger className="p-2 text-base hover:no-underline">
+                                                <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 w-full">
                                                     <div className="font-medium text-left">
                                                         <div>{match.teamA}</div>
                                                         <div className="text-muted-foreground text-sm flex items-center gap-2">
@@ -515,7 +537,7 @@ export default function PublicTeamsPage() {
                                                           {isLevelUp && teamAStats && <span>Level {teamAStats.level}</span>}
                                                         </div>
                                                     </div>
-                                                    <div className="font-mono text-center">
+                                                    <div className="font-mono text-center px-2">
                                                         {match.resultA !== null && match.resultB !== null
                                                             ? `${match.resultA} - ${match.resultB}`
                                                             : 'vs'}
@@ -528,13 +550,23 @@ export default function PublicTeamsPage() {
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    </React.Fragment>
+                                            </AccordionTrigger>
+                                            <AccordionContent>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div>
+                                                        <h4 className="font-semibold mb-2 text-center">{match.teamA}</h4>
+                                                        <PlayerRoster players={teamA?.players || []} />
+                                                    </div>
+                                                    <div className="border-l">
+                                                        <h4 className="font-semibold mb-2 text-center">{match.teamB}</h4>
+                                                        <PlayerRoster players={teamB?.players || []} />
+                                                    </div>
+                                                </div>
+                                            </AccordionContent>
+                                        </AccordionItem>
                                     );
                                 })}
-                              </TableBody>
-                            </Table>
+                              </Accordion>
                           </CardContent>
                         </Card>
                       ))}
@@ -564,7 +596,7 @@ export default function PublicTeamsPage() {
                               <TableRow key={match.id} className="text-base">
                                 <TableCell className="px-2"><Badge>{match.court}</Badge></TableCell>
                                 <TableCell className="font-medium px-2">{match.teamA}</TableCell>
-                                <TableCell className="font-mono whitespace-nowrap p-1 text-center" style={{width: '80px'}}>
+                                <TableCell className="font-mono whitespace-nowrap text-center p-1 w-[80px]">
                                     {match.resultA !== null && match.resultB !== null
                                         ? `${match.resultA} - ${match.resultB}`
                                         : 'vs'}
@@ -610,5 +642,7 @@ export default function PublicTeamsPage() {
     </div>
   );
 }
+
+    
 
     
