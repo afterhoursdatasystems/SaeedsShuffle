@@ -16,7 +16,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { Separator } from './ui/separator';
-import { Input } from './ui/input';
+import { GameMatrix } from './game-matrix';
 
 
 const shuffleArray = <T,>(array: T[]): T[] => {
@@ -62,49 +62,46 @@ function generateRoundRobinSchedule(
     if (teamNames.length < 2) {
         return [];
     }
-
+    
     // --- Phase 1: Create a fair game pool ---
     const totalGamesNeeded = Math.ceil((teamNames.length * gamesPerTeam) / 2);
     console.log(`Total games to schedule: ${totalGamesNeeded}`);
 
-    const allPossibleMatchups = [];
+    let gamePool: { teamA: string; teamB: string }[] = [];
+    const allPossibleMatchups: { teamA: string; teamB: string }[] = [];
     for (let i = 0; i < teamNames.length; i++) {
         for (let j = i + 1; j < teamNames.length; j++) {
             allPossibleMatchups.push({ teamA: teamNames[i], teamB: teamNames[j] });
         }
     }
 
-    let gamePool: { teamA: string, teamB: string }[] = [];
-    const poolGameCounts: { [key: string]: number } = {};
-    teamNames.forEach(name => poolGameCounts[name] = 0);
+    const teamPlayCounts: { [key: string]: number } = {};
+    teamNames.forEach(name => teamPlayCounts[name] = 0);
     
-    let matchupCycle = shuffleArray(allPossibleMatchups);
-    
-    // Iteratively build the game pool to ensure fair distribution
-    while (gamePool.length < totalGamesNeeded) {
-        if (matchupCycle.length === 0) {
-           // Reset and shuffle if we've run through all unique matchups
-           matchupCycle = shuffleArray(allPossibleMatchups);
+    let shuffledMatchups = shuffleArray(allPossibleMatchups);
+    let attempts = 0;
+    while (gamePool.length < totalGamesNeeded && attempts < allPossibleMatchups.length * 5) {
+        if (shuffledMatchups.length === 0) {
+            shuffledMatchups = shuffleArray(allPossibleMatchups);
         }
         
-        const candidateGame = matchupCycle.shift();
-        if (!candidateGame) {
-            // This should not happen if logic is correct, but as a safeguard
-            console.error("Ran out of candidate games unexpectedly.");
-            break;
-        }
-
+        const candidateGame = shuffledMatchups.shift()!;
         const { teamA, teamB } = candidateGame;
-        
-        // Add the game to the pool if both teams still need more games
-        if (poolGameCounts[teamA] < gamesPerTeam && poolGameCounts[teamB] < gamesPerTeam) {
+
+        if (teamPlayCounts[teamA] < gamesPerTeam && teamPlayCounts[teamB] < gamesPerTeam) {
             gamePool.push(candidateGame);
-            poolGameCounts[teamA]++;
-            poolGameCounts[teamB]++;
+            teamPlayCounts[teamA]++;
+            teamPlayCounts[teamB]++;
+        } else {
+             shuffledMatchups.push(candidateGame);
         }
+        attempts++;
     }
 
-    console.log('Final pool game counts:', poolGameCounts);
+    console.log('Final pool game counts:', teamPlayCounts);
+    
+    // --- Phase 1B: Shuffle the generated pool ---
+    gamePool = shuffleArray(gamePool);
 
 
     // --- Phase 2: Schedule games from the pool ---
@@ -150,11 +147,9 @@ function generateRoundRobinSchedule(
         }
         
         if (foundPair) {
-            // Remove the scheduled games from the pool, sorting indices descending to avoid shifting issues
             scheduledGameIndices.sort((a,b) => b-a).forEach(idx => gamePool.splice(idx, 1));
             scheduledInThisSlot = 2;
         } else if (gamePool.length > 0) {
-            // If no pair was found, schedule just the first game
             const singleGame = gamePool[0];
             console.log(`Could not find a pair. Scheduling single game: ${singleGame.teamA} vs ${singleGame.teamB}`);
             schedule.push({ id: crypto.randomUUID(), court: courts[0], time: timeSlot, resultA: null, resultB: null, ...singleGame });
@@ -169,13 +164,12 @@ function generateRoundRobinSchedule(
         } else {
              unschedulableGameCounter++;
              console.warn("No games could be scheduled in this slot. Games remaining: ", gamePool.length);
-             if (unschedulableGameCounter > 5) {
+             if (unschedulableGameCounter > 5 || gamePool.length === 0) {
                 console.error("Breaking due to too many unschedulable slots. Remaining pool:", gamePool);
                 break;
              }
         }
         
-        // Safety valve
         if (timeSlotIndex > 100) {
             console.error('Safety break: Too many iterations');
             break;
@@ -481,24 +475,24 @@ export function ScheduleGenerator() {
           <CardContent>
             {isKOTC ? (
                 <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-[150px]">Court / Status</TableHead>
-                        <TableHead>Team A</TableHead>
-                        <TableHead>vs Team B / Status</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
+                  <table className="w-full">
+                    <thead>
+                      <tr>
+                        <th className="p-2 text-left">Court / Status</th>
+                        <th className="p-2 text-left">Team A</th>
+                        <th className="p-2 text-left">vs Team B / Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
                       {schedule.map((match) => (
-                        <TableRow key={match.id}>
-                          <TableCell><Badge>{match.court}</Badge></TableCell>
-                          <TableCell className="font-medium">{match.teamA}</TableCell>
-                          <TableCell className="font-medium">{match.teamB}</TableCell>
-                        </TableRow>
+                        <tr key={match.id} className="border-b">
+                          <td className="p-2"><Badge>{match.court}</Badge></td>
+                          <td className="p-2 font-medium">{match.teamA}</td>
+                          <td className="p-2 font-medium">{match.teamB}</td>
+                        </tr>
                       ))}
-                    </TableBody>
-                  </Table>
+                    </tbody>
+                  </table>
                 </div>
             ) : groupedSchedule && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -522,17 +516,17 @@ export function ScheduleGenerator() {
                                           {match.teamA}
                                       </div>
                                       <div className="flex items-center gap-1">
-                                         <Input
+                                         <input
                                             type="number"
-                                            className="h-8 w-12 p-1 text-center"
+                                            className="h-8 w-12 p-1 text-center border rounded-md"
                                             value={match.resultA ?? ''}
                                             onChange={(e) => handleResultChange(match.id, 'A', e.target.value)}
                                             aria-label={`${match.teamA} score`}
                                           />
                                           <span>-</span>
-                                          <Input
+                                          <input
                                             type="number"
-                                            className="h-8 w-12 p-1 text-center"
+                                            className="h-8 w-12 p-1 text-center border rounded-md"
                                             value={match.resultB ?? ''}
                                             onChange={(e) => handleResultChange(match.id, 'B', e.target.value)}
                                             aria-label={`${match.teamB} score`}
@@ -561,6 +555,9 @@ export function ScheduleGenerator() {
             )}
           </CardContent>
         </Card>
+      )}
+      {schedule.length > 0 && !isKOTC && (
+        <GameMatrix teams={teams} schedule={schedule} />
       )}
     </div>
   );
