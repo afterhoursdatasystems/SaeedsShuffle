@@ -47,12 +47,14 @@ const getContrastColor = (hexcolor: string) => {
 
 export function GameMatrix({ teams, schedule }: GameMatrixProps) {
   const { games, teamGameMap, teamGameCounts } = useMemo(() => {
-    // Unique games identified by time and court
+    // Unique games identified by time and court, then sorted.
     const games = [...new Map(schedule.map(match => [`${match.time}-${match.court}`, match])).values()]
       .sort((a, b) => {
         // Sort by time, then by court
-        if (a.time < b.time) return -1;
-        if (a.time > b.time) return 1;
+        const timeA = new Date(`1970/01/01 ${a.time}`);
+        const timeB = new Date(`1970/01/01 ${b.time}`);
+        if (timeA.getTime() < timeB.getTime()) return -1;
+        if (timeA.getTime() > timeB.getTime()) return 1;
         if (a.court < b.court) return -1;
         if (a.court > b.court) return 1;
         return 0;
