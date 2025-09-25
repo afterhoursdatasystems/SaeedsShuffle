@@ -5,7 +5,6 @@
 import type { Match, Player, Team } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
@@ -14,7 +13,7 @@ import React, { useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { usePlayerContext } from '@/contexts/player-context';
 import { publishData } from '@/app/actions';
-import { addMinutes, format } from 'date-fns';
+import { addMinutes, format, parse } from 'date-fns';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback } from './ui/avatar';
@@ -55,7 +54,7 @@ function generateRoundRobinSchedule(
     gamesPerTeam: number, 
     startTimeStr: string,
     courts = ['Court 1', 'Court 2']
-) {
+): Match[] {
     console.log('=== TOURNAMENT SCHEDULER START ===');
     console.log(`Teams: ${teamNames.length} (${teamNames.join(', ')})`);
     console.log(`Games per team: ${gamesPerTeam}`);
@@ -63,26 +62,58 @@ function generateRoundRobinSchedule(
     
     // Validation
     if (teamNames.length < 2) {
-        throw new Error('Need at least 2 teams to generate schedule');
+        // throw new Error('Need at least 2 teams to generate schedule');
+        return [];
     }
     
     // Phase 1: Create Game Pool
-    const totalGamesNeeded = Math.ceil((teamNames.length * gamesPerTeam) / 2);
-    console.log(`Total games to schedule: ${totalGamesNeeded}`);
-    
-    const allMatchups = [];
+    // Generate all possible unique matchups
+    const allMatchups: { teamA: string, teamB: string }[] = [];
     for (let i = 0; i < teamNames.length; i++) {
         for (let j = i + 1; j < teamNames.length; j++) {
             allMatchups.push({ teamA: teamNames[i], teamB: teamNames[j] });
         }
     }
-    
-    let gamePool = [];
-    while (gamePool.length < totalGamesNeeded) {
-        gamePool.push(...shuffleArray([...allMatchups]));
+
+    // Determine how many times the full round-robin set needs to be played
+    const numMatchups = allMatchups.length;
+    let requiredRounds = 0;
+    if (numMatchups > 0) {
+        // Calculate the number of games if each team played every other team once
+        const gamesInOneRound = teamNames.length - 1;
+        // Adjust for pairs of teams playing
+        const actualGamesPerTeamInRound = (teamNames.length % 2 === 0) ? gamesInOneRound : gamesInOneRound;
+        requiredRounds = gamesPerTeam / actualGamesPerTeamInRound;
     }
-    gamePool = gamePool.slice(0, totalGamesNeeded);
+
+    let gamePool: { teamA: string, teamB: string }[] = [];
+    for (let i = 0; i < gamesPerTeam; i++) {
+        gamePool.push(...allMatchups);
+    }
     
+    // This logic is tricky. A simpler way is to calculate total games and ensure distribution.
+    const totalGamesToSchedule = Math.ceil((teamNames.length * gamesPerTeam) / 2);
+    console.log(`Total games to schedule: ${totalGamesToSchedule}`);
+
+    gamePool = [];
+    let teamPlayCounts: { [key: string]: number } = {};
+    teamNames.forEach(name => teamPlayCounts[name] = 0);
+
+    let matchupsCopy = [...allMatchups];
+    while(gamePool.length < totalGamesToSchedule) {
+        let game = matchupsCopy.shift();
+        if(!game) { // exhausted all unique matchups, start again
+            matchupsCopy = shuffleArray([...allMatchups]);
+            game = matchupsCopy.shift()!;
+        }
+        if (teamPlayCounts[game.teamA] < gamesPerTeam && teamPlayCounts[game.teamB] < gamesPerTeam) {
+            gamePool.push(game);
+            teamPlayCounts[game.teamA]++;
+            teamPlayCounts[game.teamB]++;
+        }
+    }
+
+
     // Phase 2: Schedule Games
     const schedule: Match[] = [];
     const teamGameCounts: { [key: string]: number } = {};
@@ -100,60 +131,45 @@ function generateRoundRobinSchedule(
         const timeSlot = format(currentTime, 'h:mm a');
         console.log(`\n--- Time Slot ${timeSlot} ---`);
         
-        // Find valid games
-        const validGamesWithIndex: {game: {teamA: string, teamB: string}, index: number}[] = [];
-        gamePool.forEach((game, index) => {
-            if (teamGameCounts[game.teamA] < gamesPerTeam && 
-                teamGameCounts[game.teamB] < gamesPerTeam) {
-                validGamesWithIndex.push({ game, index });
-            }
-        });
-        
-        console.log(`Found ${validGamesWithIndex.length} valid games`);
-        
-        // Select non-conflicting games
-        const selectedGames: {game: {teamA: string, teamB: string}, index: number}[] = [];
-        const usedTeams = new Set();
-        
-        for (const { game, index } of validGamesWithIndex) {
-            if (!usedTeams.has(game.teamA) && !usedTeams.has(game.teamB)) {
-                selectedGames.push({ game, index });
-                usedTeams.add(game.teamA);
-                usedTeams.add(game.teamB);
-                
-                if (selectedGames.length >= courts.length) break;
+        let scheduledInSlot = 0;
+        const teamsScheduledThisSlot = new Set<string>();
+
+        // Attempt to schedule up to `courts.length` games
+        for(let c = 0; c < courts.length; c++) {
+            let gameScheduledForCourt = false;
+            for (let i = 0; i < gamePool.length; i++) {
+                const game = gamePool[i];
+                if (!teamsScheduledThisSlot.has(game.teamA) && !teamsScheduledThisSlot.has(game.teamB)) {
+                    
+                    const match = {
+                        id: crypto.randomUUID(),
+                        teamA: game.teamA,
+                        teamB: game.teamB,
+                        court: courts[c],
+                        time: timeSlot,
+                        resultA: null,
+                        resultB: null
+                    };
+                    schedule.push(match);
+
+                    console.log(`  ${courts[c]}: ${game.teamA} vs ${game.teamB}`);
+
+                    // Mark teams and game as scheduled for this slot
+                    teamsScheduledThisSlot.add(game.teamA);
+                    teamsScheduledThisSlot.add(game.teamB);
+                    gamePool.splice(i, 1); // Remove from pool
+                    
+                    gameScheduledForCourt = true;
+                    scheduledInSlot++;
+                    break; // Move to the next court
+                }
             }
         }
         
-        console.log(`Selected ${selectedGames.length} games for scheduling`);
-        
-        if (selectedGames.length === 0) {
-            console.log('No more games can be scheduled');
-            break;
+        if (scheduledInSlot === 0) {
+            console.log('No more games can be scheduled, ending.');
+            break; // End if no games can be scheduled
         }
-        
-        // Schedule selected games
-        selectedGames.forEach(({ game }, courtIndex) => {
-            const match = {
-                id: crypto.randomUUID(),
-                teamA: game.teamA,
-                teamB: game.teamB,
-                court: courts[courtIndex],
-                time: timeSlot,
-                resultA: null,
-                resultB: null
-            };
-            
-            schedule.push(match);
-            teamGameCounts[game.teamA]++;
-            teamGameCounts[game.teamB]++;
-            console.log(`  ${courts[courtIndex]}: ${game.teamA} vs ${game.teamB}`);
-        });
-        
-        // Remove scheduled games from pool (reverse order to maintain indices)
-        selectedGames
-            .sort((a, b) => b.index - a.index)
-            .forEach(({ index }) => gamePool.splice(index, 1));
         
         timeSlotIndex++;
         
@@ -166,7 +182,15 @@ function generateRoundRobinSchedule(
     
     console.log('=== SCHEDULING COMPLETE ===');
     console.log(`Generated ${schedule.length} matches across ${timeSlotIndex} time slots`);
-    console.log('Final game counts:', teamGameCounts);
+    
+    // Final count verification
+    const finalCounts: { [key: string]: number } = {};
+    teamNames.forEach(t => finalCounts[t] = 0);
+    schedule.forEach(m => {
+        finalCounts[m.teamA]++;
+        finalCounts[m.teamB]++;
+    })
+    console.log('Final game counts:', finalCounts);
     
     return schedule;
 }
@@ -179,6 +203,20 @@ export function ScheduleGenerator() {
   const [startTime, setStartTime] = React.useState('18:45');
 
   const presentPlayers = players.filter(p => p.presence === 'Present');
+
+  const timeOptions = useMemo(() => {
+    const options = [];
+    const startHour = 18; // 6 PM
+    const endHour = 22; // 10 PM
+    for (let h = startHour; h <= endHour; h++) {
+      for (let m = 0; m < 60; m += 15) {
+        const hour = String(h).padStart(2, '0');
+        const minute = String(m).padStart(2, '0');
+        options.push(`${hour}:${minute}`);
+      }
+    }
+    return options;
+  }, []);
   
   const generateKOTCSchedule = (teamNames: string[]): Match[] => {
     if (teamNames.length < 2) return [];
@@ -389,13 +427,19 @@ export function ScheduleGenerator() {
         <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:flex items-end gap-4">
             <div className="space-y-2">
                 <Label htmlFor="start-time">Start Time</Label>
-                <Input 
-                    id="start-time"
-                    type="time" 
-                    value={startTime}
-                    onChange={(e) => setStartTime(e.target.value)}
-                    className="max-w-xs"
-                />
+                 <Select value={startTime} onValueChange={setStartTime}>
+                    <SelectTrigger className="max-w-xs" id="start-time">
+                        <SelectValue placeholder="Select a start time" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {timeOptions.map(time => {
+                             const displayTime = format(parse(time, 'HH:mm', new Date()), 'h:mm a');
+                             return (
+                                <SelectItem key={time} value={time}>{displayTime}</SelectItem>
+                             );
+                        })}
+                    </SelectContent>
+                </Select>
             </div>
             <div className="space-y-2 flex-grow">
                 <Label htmlFor="games-per-team">Games Per Team</Label>
@@ -530,3 +574,5 @@ export function ScheduleGenerator() {
     </div>
   );
 }
+
+    
