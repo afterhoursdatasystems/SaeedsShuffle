@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import type { Match, Player, Team } from '@/types';
@@ -13,6 +14,7 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 import { usePlayerContext } from '@/contexts/player-context';
 import { publishData } from '@/app/actions';
+import { addMinutes, format } from 'date-fns';
 
 const shuffleArray = <T,>(array: T[]): T[] => {
   const newArray = [...array];
@@ -23,90 +25,128 @@ const shuffleArray = <T,>(array: T[]): T[] => {
   return newArray;
 };
 
+function generateRoundRobinSchedule(teamNames: string[], gamesPerTeam: number, courts = ['Court 1', 'Court 2']) {
+    console.log('=== TOURNAMENT SCHEDULER START ===');
+    console.log(`Teams: ${teamNames.length} (${teamNames.join(', ')})`);
+    console.log(`Games per team: ${gamesPerTeam}`);
+    console.log(`Available courts: ${courts.length}`);
+    
+    // Validation
+    if (teamNames.length < 2) {
+        throw new Error('Need at least 2 teams to generate schedule');
+    }
+    
+    // Phase 1: Create Game Pool
+    const totalGamesNeeded = Math.ceil((teamNames.length * gamesPerTeam) / 2);
+    console.log(`Total games to schedule: ${totalGamesNeeded}`);
+    
+    const allMatchups = [];
+    for (let i = 0; i < teamNames.length; i++) {
+        for (let j = i + 1; j < teamNames.length; j++) {
+            allMatchups.push({ teamA: teamNames[i], teamB: teamNames[j] });
+        }
+    }
+    
+    let gamePool = [];
+    while (gamePool.length < totalGamesNeeded) {
+        gamePool.push(...shuffleArray([...allMatchups]));
+    }
+    gamePool = gamePool.slice(0, totalGamesNeeded);
+    
+    // Phase 2: Schedule Games
+    const schedule = [];
+    const teamGameCounts: { [key: string]: number } = {};
+    teamNames.forEach(name => teamGameCounts[name] = 0);
+    
+    const startTime = new Date();
+    startTime.setHours(18, 45, 0, 0);
+    const gameDuration = 30;
+    let timeSlotIndex = 0;
+    
+    while (gamePool.length > 0) {
+        const currentTime = addMinutes(startTime, timeSlotIndex * gameDuration);
+        const timeSlot = format(currentTime, 'h:mm a');
+        console.log(`\n--- Time Slot ${timeSlot} ---`);
+        
+        // Find valid games
+        const validGamesWithIndex: { game: { teamA: string; teamB: string; }; index: number; }[] = [];
+        gamePool.forEach((game, index) => {
+            if (teamGameCounts[game.teamA] < gamesPerTeam && 
+                teamGameCounts[game.teamB] < gamesPerTeam) {
+                validGamesWithIndex.push({ game, index });
+            }
+        });
+        
+        console.log(`Found ${validGamesWithIndex.length} valid games`);
+        
+        // Select non-conflicting games
+        const selectedGames: { game: { teamA: string; teamB: string; }; index: number; }[] = [];
+        const usedTeams = new Set();
+        
+        for (const { game, index } of validGamesWithIndex) {
+            if (!usedTeams.has(game.teamA) && !usedTeams.has(game.teamB)) {
+                selectedGames.push({ game, index });
+                usedTeams.add(game.teamA);
+                usedTeams.add(game.teamB);
+                
+                if (selectedGames.length >= courts.length) break;
+            }
+        }
+        
+        console.log(`Selected ${selectedGames.length} games for scheduling`);
+        
+        if (selectedGames.length === 0) {
+            console.log('No more games can be scheduled');
+            break;
+        }
+        
+        // Schedule selected games
+        selectedGames.forEach(({ game }, courtIndex) => {
+            const match: Match = {
+                id: crypto.randomUUID(),
+                teamA: game.teamA,
+                teamB: game.teamB,
+                court: courts[courtIndex],
+                time: timeSlot,
+                resultA: null,
+                resultB: null
+            };
+            
+            schedule.push(match);
+            teamGameCounts[game.teamA]++;
+            teamGameCounts[game.teamB]++;
+            console.log(`  ${courts[courtIndex]}: ${game.teamA} vs ${game.teamB}`);
+        });
+        
+        // Remove scheduled games from pool (reverse order to maintain indices)
+        selectedGames
+            .sort((a, b) => b.index - a.index)
+            .forEach(({ index }) => gamePool.splice(index, 1));
+        
+        timeSlotIndex++;
+        
+        // Safety valve
+        if (timeSlotIndex > 100) {
+            console.error('Safety break: Too many iterations');
+            break;
+        }
+    }
+    
+    console.log('=== SCHEDULING COMPLETE ===');
+    console.log(`Generated ${schedule.length} matches across ${timeSlotIndex} time slots`);
+    console.log('Final game counts:', teamGameCounts);
+    
+    return schedule;
+}
+
 
 export function ScheduleGenerator() {
-  const { teams, schedule, setSchedule, gameFormat, gameVariant, players, activeRule, pointsToWin } = usePlayerContext();
+  const { teams, schedule, setSchedule, gameFormat, gameVariant, players, activeRule, pointsToWin, gamesPerTeam } = usePlayerContext();
   const { toast } = useToast();
   const [isPublishing, setIsPublishing] = React.useState(false);
 
-  const presentPlayers = players.filter(p => p.present);
+  const presentPlayers = players.filter(p => p.presence === 'Present');
   
-  const generateRoundRobinSchedule = (teamNames: string[]): Match[] => {
-    const matches: Match[] = [];
-    const courts = ['Court 1', 'Court 2'];
-
-    for (let i = 0; i < teamNames.length; i++) {
-      for (let j = i + 1; j < teamNames.length; j++) {
-        matches.push({
-          id: crypto.randomUUID(),
-          teamA: teamNames[i],
-          teamB: teamNames[j],
-          resultA: null,
-          resultB: null,
-          court: ''
-        });
-      }
-    }
-
-    const shuffledMatches = shuffleArray(matches);
-    const newSchedule: Match[] = [];
-
-    for (let i = 0; i < shuffledMatches.length; i += courts.length) {
-      for (let courtIndex = 0; courtIndex < courts.length && i + courtIndex < shuffledMatches.length; courtIndex++) {
-        const match = shuffledMatches[i + courtIndex];
-        newSchedule.push({
-          ...match,
-          court: courts[courtIndex]
-        });
-      }
-    }
-
-    return newSchedule;
-  };
-
-  const generateBlindDrawSchedule = (playersForDraw: Player[]): Match[] => {
-      const courts = ['Court 1', 'Court 2'];
-      const teamSize = 4;
-      const numMatches = Math.floor(playersForDraw.length / (teamSize * 2));
-
-      if(numMatches < 1) {
-        toast({ title: 'Not enough players', description: `Need at least ${teamSize*2} players for a blind draw match.`, variant: 'destructive' });
-        return [];
-      }
-
-      const shuffledPlayers = shuffleArray(playersForDraw);
-      const matches: Match[] = [];
-
-      for(let i = 0; i < numMatches; i++) {
-        const teamAPlayers = shuffledPlayers.splice(0, teamSize);
-        const teamBPlayers = shuffledPlayers.splice(0, teamSize);
-
-        matches.push({
-            id: crypto.randomUUID(),
-            teamA: teamAPlayers.map(p => p.name).join(', '),
-            teamB: teamBPlayers.map(p => p.name).join(', '),
-            resultA: null,
-            resultB: null,
-            court: ''
-        });
-      }
-
-      const newSchedule: Match[] = [];
-
-      for (let i = 0; i < matches.length; i += courts.length) {
-        for (let courtIndex = 0; courtIndex < courts.length && i + courtIndex < matches.length; courtIndex++) {
-          const match = matches[i + courtIndex];
-          newSchedule.push({
-            ...match,
-            court: courts[courtIndex]
-          });
-        }
-      }
-
-      // In a real app, you'd handle leftover players
-      return newSchedule;
-  };
-
   const generateKOTCSchedule = (teamNames: string[]): Match[] => {
     if (teamNames.length < 2) return [];
     
@@ -120,6 +160,7 @@ export function ScheduleGenerator() {
         resultA: null,
         resultB: null,
         court: 'King Court',
+        time: '6:45 PM'
     };
 
     let newSchedule: Match[] = [kingCourtMatch];
@@ -132,6 +173,7 @@ export function ScheduleGenerator() {
             resultA: null,
             resultB: null,
             court: 'Challenger Court',
+            time: '6:45 PM'
         };
         newSchedule.push(challengerCourtMatch);
     }
@@ -144,6 +186,7 @@ export function ScheduleGenerator() {
             resultA: null,
             resultB: null,
             court: 'Challenger Line',
+            time: 'N/A'
         });
     });
 
@@ -166,8 +209,11 @@ export function ScheduleGenerator() {
     switch(gameFormat) {
         case 'pool-play-bracket':
         case 'round-robin':
-            newSchedule = generateRoundRobinSchedule(teams.map(t => t.name));
-            formatDescription = gameFormat === 'round-robin' ? "Round Robin" : "Pool Play / Bracket";
+        case 'level-up':
+            newSchedule = generateRoundRobinSchedule(teams.map(t => t.name), gamesPerTeam);
+            if (gameFormat === 'round-robin') formatDescription = "Round Robin";
+            else if (gameFormat === 'level-up') formatDescription = "Level Up";
+            else formatDescription = "Pool Play / Bracket";
             break;
         case 'king-of-the-court':
             newSchedule = generateKOTCSchedule(teams.map(t => t.name));
@@ -179,7 +225,8 @@ export function ScheduleGenerator() {
             }
             break;
         case 'blind-draw':
-            newSchedule = generateBlindDrawSchedule(presentPlayers);
+            // Blind draw logic would be different and might not use generateRoundRobinSchedule
+            toast({ title: 'Blind Draw schedule not implemented yet.' });
             formatDescription = 'Blind Draw';
             break;
         default:
@@ -261,6 +308,8 @@ export function ScheduleGenerator() {
   };
   
   const handleSaveAllResults = () => {
+    // Here you would typically send the results to your backend/DB
+    // For this prototype, we just toast
     toast({ title: "Results saved", description: "All match results have been updated." });
   };
   
