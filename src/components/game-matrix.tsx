@@ -20,19 +20,11 @@ interface GameMatrixProps {
   schedule: Match[];
 }
 
-// Function to generate a random color based on a string
-const stringToColor = (str: string) => {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-        hash = str.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    let color = '#';
-    for (let i = 0; i < 3; i++) {
-        const value = (hash >> (i * 8)) & 0xFF;
-        color += ('00' + value.toString(16)).substr(-2);
-    }
-    return color;
-}
+const pastelColors = [
+  '#F3A6A6', '#A6C1F3', '#A6F3A6', '#F3ECA6', '#DDA0DD', '#B0E0E6', 
+  '#FFDAB9', '#E6E6FA', '#F08080', '#98FB98', '#ADD8E6', '#FFA07A', 
+  '#B2FFFF', '#FFB6C1', '#C1FFC1', '#FFFFB2', '#E0B2FF'
+];
 
 // Function to get a good contrast color (black or white)
 const getContrastColor = (hexcolor: string) => {
@@ -86,8 +78,8 @@ export function GameMatrix({ teams, schedule }: GameMatrixProps) {
 
   const opponentColorMap = useMemo(() => {
       const map = new Map<string, {backgroundColor: string, color: string}>();
-      teams.forEach(team => {
-          const bgColor = stringToColor(team.name);
+      teams.forEach((team, index) => {
+          const bgColor = pastelColors[index % pastelColors.length];
           const textColor = getContrastColor(bgColor);
           map.set(team.name, {backgroundColor: bgColor, color: textColor});
       });
@@ -129,7 +121,7 @@ export function GameMatrix({ teams, schedule }: GameMatrixProps) {
                         return (
                         <TableCell key={game.id} className="text-center p-1">
                             {opponent ? (
-                            <Badge style={style} className="w-full text-center justify-center block whitespace-normal">
+                            <Badge style={style} className="w-full text-center justify-center block whitespace-normal h-10">
                                 {opponent}
                             </Badge>
                             ) : (
