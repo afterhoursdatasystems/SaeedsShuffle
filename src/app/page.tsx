@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { KOTCFlowDiagram } from '@/components/ui/kotc-flow-diagram';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Separator } from '@/components/ui/separator';
 
 type CombinedGameFormat = GameFormat | GameVariant;
 
@@ -265,7 +265,7 @@ const getLevelHeaderStyle = (level: number | undefined) => {
 };
 
 const PlayerRoster = ({ players }: { players: Player[] }) => (
-    <div className="grid grid-cols-2 gap-x-4 gap-y-2 px-4 py-2">
+    <div className="space-y-2 px-4 py-2">
         {players.length > 0 ? (
             players.sort((a,b) => a.name.localeCompare(b.name)).map(player => (
                 <div key={player.id} className="flex items-center gap-2">
@@ -278,7 +278,7 @@ const PlayerRoster = ({ players }: { players: Player[] }) => (
                 </div>
             ))
         ) : (
-            <p className="text-sm text-muted-foreground col-span-2">Roster not available.</p>
+            <p className="text-sm text-muted-foreground">Roster not available.</p>
         )}
     </div>
 );
@@ -516,9 +516,8 @@ export default function PublicTeamsPage() {
                               Matches at {time}
                             </CardTitle>
                           </CardHeader>
-                          <CardContent className="p-0 sm:p-4">
-                            <Accordion type="single" collapsible className="w-full">
-                                {matches.map((match) => {
+                          <CardContent className="p-0 sm:p-4 space-y-2">
+                                {matches.map((match, index) => {
                                     const teamA = teamMap.get(match.teamA);
                                     const teamB = teamMap.get(match.teamB);
                                     const teamAStats = teamStats[match.teamA];
@@ -527,8 +526,8 @@ export default function PublicTeamsPage() {
                                     const teamBRecord = teamBStats ? `${teamBStats.wins}-${teamBStats.losses}` : '';
 
                                     return (
-                                        <AccordionItem value={match.id} key={match.id}>
-                                            <AccordionTrigger className="p-2 text-base hover:no-underline">
+                                        <React.Fragment key={match.id}>
+                                            <div className="p-2 text-base rounded-lg border bg-background">
                                                 <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 w-full">
                                                     <div className="font-medium text-left">
                                                         <div>{match.teamA}</div>
@@ -550,23 +549,20 @@ export default function PublicTeamsPage() {
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </AccordionTrigger>
-                                            <AccordionContent>
+                                                <Separator className="my-2" />
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div>
-                                                        <h4 className="font-semibold mb-2 text-center">{match.teamA}</h4>
                                                         <PlayerRoster players={teamA?.players || []} />
                                                     </div>
                                                     <div className="border-l">
-                                                        <h4 className="font-semibold mb-2 text-center">{match.teamB}</h4>
                                                         <PlayerRoster players={teamB?.players || []} />
                                                     </div>
                                                 </div>
-                                            </AccordionContent>
-                                        </AccordionItem>
+                                            </div>
+                                            {index < matches.length - 1 && <Separator />}
+                                        </React.Fragment>
                                     );
                                 })}
-                              </Accordion>
                           </CardContent>
                         </Card>
                       ))}
@@ -596,7 +592,7 @@ export default function PublicTeamsPage() {
                               <TableRow key={match.id} className="text-base">
                                 <TableCell className="px-2"><Badge>{match.court}</Badge></TableCell>
                                 <TableCell className="font-medium px-2">{match.teamA}</TableCell>
-                                <TableCell className="font-mono whitespace-nowrap text-center p-1 w-[80px]">
+                                <TableCell className="text-center font-mono whitespace-nowrap p-1 w-[80px]">
                                     {match.resultA !== null && match.resultB !== null
                                         ? `${match.resultA} - ${match.resultB}`
                                         : 'vs'}
@@ -642,6 +638,8 @@ export default function PublicTeamsPage() {
     </div>
   );
 }
+
+    
 
     
 
