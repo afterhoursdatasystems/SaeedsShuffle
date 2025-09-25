@@ -527,8 +527,9 @@ export default function PublicTeamsPage() {
 
                                     return (
                                         <React.Fragment key={match.id}>
-                                            <div className="p-2 text-base rounded-lg border bg-background">
-                                                <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 w-full">
+                                            <div className="text-base rounded-lg border bg-background overflow-hidden">
+                                                <div className="p-2 font-bold text-center bg-muted text-muted-foreground">{match.court}</div>
+                                                <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 w-full p-2">
                                                     <div className="font-medium text-left">
                                                         <div>{match.teamA}</div>
                                                         <div className="text-muted-foreground text-sm flex items-center gap-2">
@@ -549,8 +550,8 @@ export default function PublicTeamsPage() {
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <Separator className="my-2" />
-                                                <div className="grid grid-cols-2 gap-4">
+                                                <Separator />
+                                                <div className="grid grid-cols-2">
                                                     <div>
                                                         <PlayerRoster players={teamA?.players || []} />
                                                     </div>
@@ -638,9 +639,3 @@ export default function PublicTeamsPage() {
     </div>
   );
 }
-
-    
-
-    
-
-    
