@@ -212,7 +212,143 @@
     }
   ],
   "format": "level-up",
-  "schedule": [],
+  "schedule": [
+    {
+      "id": "94b970cf-47d6-4fe0-ac9a-480b1c10c755",
+      "teamA": "Cool Fish Commandos",
+      "teamB": "Birkdale Bombers",
+      "court": "Court 1",
+      "time": "6:45 PM",
+      "resultA": null,
+      "resultB": null
+    },
+    {
+      "id": "a4100342-861c-4e8c-98a2-5581a680418e",
+      "teamA": "Langtree Lightning",
+      "teamB": "Soda Shop Slammers",
+      "court": "Court 2",
+      "time": "6:45 PM",
+      "resultA": null,
+      "resultB": null
+    },
+    {
+      "id": "068ad49f-83c5-4706-949d-940e69c06087",
+      "teamA": "Soda Shop Slammers",
+      "teamB": "Birkdale Bombers",
+      "court": "Court 1",
+      "time": "7:15 PM",
+      "resultA": null,
+      "resultB": null
+    },
+    {
+      "id": "6177c594-f8f9-4920-a272-9160f3aaae14",
+      "teamA": "Langtree Lightning",
+      "teamB": "Cool Fish Commandos",
+      "court": "Court 2",
+      "time": "7:15 PM",
+      "resultA": null,
+      "resultB": null
+    },
+    {
+      "id": "8ca861e4-23e6-4947-8972-ce6636d544b9",
+      "teamA": "Langtree Lightning",
+      "teamB": "Antiquity Attackers",
+      "court": "Court 1",
+      "time": "7:45 PM",
+      "resultA": null,
+      "resultB": null
+    },
+    {
+      "id": "ce7d6a37-06c2-417e-9dcd-5d6160753660",
+      "teamA": "Soda Shop Slammers",
+      "teamB": "Cool Fish Commandos",
+      "court": "Court 2",
+      "time": "7:45 PM",
+      "resultA": null,
+      "resultB": null
+    },
+    {
+      "id": "9fb98f72-1121-4e08-93ed-8641a0174801",
+      "teamA": "Antiquity Attackers",
+      "teamB": "Birkdale Bombers",
+      "court": "Court 1",
+      "time": "8:15 PM",
+      "resultA": null,
+      "resultB": null
+    },
+    {
+      "id": "879a2c13-dad6-4a12-8ecc-0d805cec63e5",
+      "teamA": "Langtree Lightning",
+      "teamB": "Toast Titans",
+      "court": "Court 2",
+      "time": "8:15 PM",
+      "resultA": null,
+      "resultB": null
+    },
+    {
+      "id": "d75b5751-a66f-48ed-adf3-81cc9a38f34d",
+      "teamA": "Langtree Lightning",
+      "teamB": "Birkdale Bombers",
+      "court": "Court 1",
+      "time": "8:45 PM",
+      "resultA": null,
+      "resultB": null
+    },
+    {
+      "id": "6b321630-66e9-4b48-80ba-4ef36b37f301",
+      "teamA": "Soda Shop Slammers",
+      "teamB": "Antiquity Attackers",
+      "court": "Court 2",
+      "time": "8:45 PM",
+      "resultA": null,
+      "resultB": null
+    },
+    {
+      "id": "41593042-fd77-4bdf-bd24-569c4bb7fc47",
+      "teamA": "Cool Fish Commandos",
+      "teamB": "Antiquity Attackers",
+      "court": "Court 1",
+      "time": "9:15 PM",
+      "resultA": null,
+      "resultB": null
+    },
+    {
+      "id": "89d256af-3190-4930-9713-b60ca7b6ec61",
+      "teamA": "Toast Titans",
+      "teamB": "Birkdale Bombers",
+      "court": "Court 2",
+      "time": "9:15 PM",
+      "resultA": null,
+      "resultB": null
+    },
+    {
+      "id": "411608ec-76c2-4837-bbe1-30e07f546c2b",
+      "teamA": "Cool Fish Commandos",
+      "teamB": "Toast Titans",
+      "court": "Court 1",
+      "time": "9:45 PM",
+      "resultA": null,
+      "resultB": null
+    },
+    {
+      "id": "54b37cec-aa14-4cc6-b777-3ffbac90a98e",
+      "teamA": "Soda Shop Slammers",
+      "teamB": "Toast Titans",
+      "court": "Court 1",
+      "time": "10:15 PM",
+      "resultA": null,
+      "resultB": null
+    },
+    {
+      "id": "b0e506c5-59f2-45b7-b5da-b9c28a744da8",
+      "teamA": "Antiquity Attackers",
+      "teamB": "Toast Titans",
+      "court": "Court 1",
+      "time": "10:45 PM",
+      "resultA": null,
+      "resultB": null
+    }
+  ],
   "activeRule": null,
   "pointsToWin": 15,
   "levelUpHandicaps": [
