@@ -110,7 +110,7 @@ export function GameMatrix({ teams, schedule }: GameMatrixProps) {
                 <TableRow>
                     <TableHead className="sticky left-0 bg-background z-10 w-[200px] border-r">Pair Name</TableHead>
                     {games.map((game, index) => (
-                    <TableHead key={game.id} className="text-center whitespace-nowrap">
+                    <TableHead key={game.id} className="text-center">
                         <div>Game {index + 1}</div>
                         <div>{game.time}</div>
                         <div>{game.court}</div>
@@ -129,7 +129,7 @@ export function GameMatrix({ teams, schedule }: GameMatrixProps) {
                         return (
                         <TableCell key={game.id} className="text-center p-1">
                             {opponent ? (
-                            <Badge style={style} className="w-full text-center justify-center block truncate">
+                            <Badge style={style} className="w-full text-center justify-center block whitespace-normal">
                                 {opponent}
                             </Badge>
                             ) : (
