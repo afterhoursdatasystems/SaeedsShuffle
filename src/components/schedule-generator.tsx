@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils';
 import { usePlayerContext } from '@/contexts/player-context';
 import { publishData } from '@/app/actions';
 import { addMinutes, format } from 'date-fns';
+import { Label } from '@/components/ui/label';
 
 const shuffleArray = <T,>(array: T[]): T[] => {
   const newArray = [...array];
@@ -52,6 +53,7 @@ function generateRoundRobinSchedule(teamNames: string[], gamesPerTeam: number, c
         gamePool.push(...shuffleArray([...allMatchups]));
     }
     gamePool = gamePool.slice(0, totalGamesNeeded);
+    console.log(`Created a game pool with ${gamePool.length} potential matches.`);
     
     // Phase 2: Schedule Games
     const schedule = [];
@@ -68,60 +70,48 @@ function generateRoundRobinSchedule(teamNames: string[], gamesPerTeam: number, c
         const timeSlot = format(currentTime, 'h:mm a');
         console.log(`\n--- Time Slot ${timeSlot} ---`);
         
-        // Find valid games
-        const validGamesWithIndex: { game: { teamA: string; teamB: string; }; index: number; }[] = [];
-        gamePool.forEach((game, index) => {
-            if (teamGameCounts[game.teamA] < gamesPerTeam && 
-                teamGameCounts[game.teamB] < gamesPerTeam) {
-                validGamesWithIndex.push({ game, index });
+        let scheduledInSlot = 0;
+
+        for (let i = 0; i < courts.length; i++) {
+            let bestGameForCourt: { game: { teamA: string; teamB: string }, index: number } | null = null;
+            let teamsInSlot = new Set(schedule.slice(schedule.length - scheduledInSlot).flatMap(m => [m.teamA, m.teamB]));
+            
+            for (let j = 0; j < gamePool.length; j++) {
+                const { teamA, teamB } = gamePool[j];
+                if (!teamsInSlot.has(teamA) && !teamsInSlot.has(teamB) && teamGameCounts[teamA] < gamesPerTeam && teamGameCounts[teamB] < gamesPerTeam) {
+                    bestGameForCourt = { game: gamePool[j], index: j };
+                    break; 
+                }
             }
-        });
-        
-        console.log(`Found ${validGamesWithIndex.length} valid games`);
-        
-        // Select non-conflicting games
-        const selectedGames: { game: { teamA: string; teamB: string; }; index: number; }[] = [];
-        const usedTeams = new Set();
-        
-        for (const { game, index } of validGamesWithIndex) {
-            if (!usedTeams.has(game.teamA) && !usedTeams.has(game.teamB)) {
-                selectedGames.push({ game, index });
-                usedTeams.add(game.teamA);
-                usedTeams.add(game.teamB);
+
+            if (bestGameForCourt) {
+                const { game, index } = bestGameForCourt;
+                const match: Match = {
+                    id: crypto.randomUUID(),
+                    teamA: game.teamA,
+                    teamB: game.teamB,
+                    court: courts[i],
+                    time: timeSlot,
+                    resultA: null,
+                    resultB: null
+                };
+
+                schedule.push(match);
+                teamGameCounts[game.teamA]++;
+                teamGameCounts[game.teamB]++;
+                console.log(`  - Scheduled on ${courts[i]}: ${game.teamA} vs ${game.teamB}`);
                 
-                if (selectedGames.length >= courts.length) break;
+                gamePool.splice(index, 1);
+                scheduledInSlot++;
+            } else {
+                 console.log(`  - Could not find a suitable match for ${courts[i]} in this time slot.`);
             }
         }
         
-        console.log(`Selected ${selectedGames.length} games for scheduling`);
-        
-        if (selectedGames.length === 0) {
-            console.log('No more games can be scheduled');
+        if (scheduledInSlot === 0) {
+            console.log('No more games could be scheduled with the remaining teams and constraints.');
             break;
         }
-        
-        // Schedule selected games
-        selectedGames.forEach(({ game }, courtIndex) => {
-            const match: Match = {
-                id: crypto.randomUUID(),
-                teamA: game.teamA,
-                teamB: game.teamB,
-                court: courts[courtIndex],
-                time: timeSlot,
-                resultA: null,
-                resultB: null
-            };
-            
-            schedule.push(match);
-            teamGameCounts[game.teamA]++;
-            teamGameCounts[game.teamB]++;
-            console.log(`  ${courts[courtIndex]}: ${game.teamA} vs ${game.teamB}`);
-        });
-        
-        // Remove scheduled games from pool (reverse order to maintain indices)
-        selectedGames
-            .sort((a, b) => b.index - a.index)
-            .forEach(({ index }) => gamePool.splice(index, 1));
         
         timeSlotIndex++;
         
@@ -141,7 +131,7 @@ function generateRoundRobinSchedule(teamNames: string[], gamesPerTeam: number, c
 
 
 export function ScheduleGenerator() {
-  const { teams, schedule, setSchedule, gameFormat, gameVariant, players, activeRule, pointsToWin, gamesPerTeam } = usePlayerContext();
+  const { teams, schedule, setSchedule, gameFormat, gameVariant, players, activeRule, pointsToWin, gamesPerTeam, setGamesPerTeam } = usePlayerContext();
   const { toast } = useToast();
   const [isPublishing, setIsPublishing] = React.useState(false);
 
@@ -332,18 +322,31 @@ export function ScheduleGenerator() {
                 <CardTitle>Schedule Generation</CardTitle>
                 <CardDescription>Generate the match schedule for the chosen game format.</CardDescription>
               </div>
-               <div className="flex gap-2 w-full sm:w-auto">
-                 <Button onClick={handleGenerateSchedule} className="w-full sm:w-auto">
-                  <CalendarDays className="mr-2 h-4 w-4" />
-                  Generate Schedule
+           </div>
+        </CardHeader>
+        <CardContent className="flex flex-col sm:flex-row items-end gap-4">
+            <div className="space-y-2 flex-grow">
+                <Label htmlFor="games-per-team">Games Per Team</Label>
+                <Input
+                    id="games-per-team"
+                    type="number"
+                    value={gamesPerTeam}
+                    onChange={(e) => setGamesPerTeam(Number(e.target.value))}
+                    className="max-w-xs"
+                    min="1"
+                />
+            </div>
+            <div className="flex gap-2 w-full sm:w-auto">
+                <Button onClick={handleGenerateSchedule} className="w-full sm:w-auto">
+                <CalendarDays className="mr-2 h-4 w-4" />
+                Generate Schedule
                 </Button>
                 <Button onClick={handleClearSchedule} variant="outline" className="w-full sm:w-auto">
                     <Trash2 className="mr-2 h-4 w-4" />
                     Clear Schedule
                 </Button>
-              </div>
-           </div>
-        </CardHeader>
+            </div>
+        </CardContent>
        </Card>
 
       {schedule.length > 0 && (
