@@ -78,25 +78,26 @@ function generateRoundRobinSchedule(
     const teamPlayCounts: { [key: string]: number } = {};
     teamNames.forEach(name => teamPlayCounts[name] = 0);
     
-    let shuffledMatchups = shuffleArray(allPossibleMatchups);
-    let attempts = 0;
-    while (gamePool.length < totalGamesNeeded && attempts < allPossibleMatchups.length * 5) {
-        if (shuffledMatchups.length === 0) {
-            shuffledMatchups = shuffleArray(allPossibleMatchups);
-        }
-        
-        const candidateGame = shuffledMatchups.shift()!;
-        const { teamA, teamB } = candidateGame;
+    // Iteratively build the game pool to ensure fairness
+    let poolAttempts = 0;
+    while(gamePool.length < totalGamesNeeded && poolAttempts < 1000) {
+      let shuffledMatchups = shuffleArray(allPossibleMatchups);
+      for(const candidateGame of shuffledMatchups) {
+        if(gamePool.length >= totalGamesNeeded) break;
 
-        if (teamPlayCounts[teamA] < gamesPerTeam && teamPlayCounts[teamB] < gamesPerTeam) {
-            gamePool.push(candidateGame);
-            teamPlayCounts[teamA]++;
-            teamPlayCounts[teamB]++;
-        } else {
-             shuffledMatchups.push(candidateGame);
+        const { teamA, teamB } = candidateGame;
+        if(teamPlayCounts[teamA] < gamesPerTeam && teamPlayCounts[teamB] < gamesPerTeam) {
+           const isAlreadyInPool = gamePool.some(g => (g.teamA === teamA && g.teamB === teamB) || (g.teamA === teamB && g.teamB === teamA));
+           if (!isAlreadyInPool) { // Avoid adding duplicate matchups if gamesPerTeam is low
+              gamePool.push(candidateGame);
+              teamPlayCounts[teamA]++;
+              teamPlayCounts[teamB]++;
+           }
         }
-        attempts++;
+      }
+      poolAttempts++;
     }
+
 
     console.log('Final pool game counts:', teamPlayCounts);
     
