@@ -21,9 +21,9 @@ interface GameMatrixProps {
 }
 
 const pastelColors = [
-  '#F3A6A6', '#A6C1F3', '#A6F3A6', '#F3ECA6', '#DDA0DD', '#B0E0E6', 
-  '#FFDAB9', '#E6E6FA', '#F08080', '#98FB98', '#ADD8E6', '#FFA07A', 
-  '#B2FFFF', '#FFB6C1', '#C1FFC1', '#FFFFB2', '#E0B2FF'
+  '#fde2e4', '#dfe7fd', '#defdeb', '#fdf7de', '#e9d5e3', '#d4eaf5',
+  '#ffe5d9', '#f0e6f2', '#fad4d4', '#d4f0d4', '#d1e6ef', '#ffdbc5',
+  '#d9ffff', '#ffd9e2', '#e2ffd9', '#ffffd9', '#e9d9ff'
 ];
 
 // Function to get a good contrast color (black or white)
@@ -121,7 +121,7 @@ export function GameMatrix({ teams, schedule }: GameMatrixProps) {
                         return (
                         <TableCell key={game.id} className="text-center p-1">
                             {opponent ? (
-                            <Badge style={style} className="w-full text-center justify-center block whitespace-normal h-10">
+                            <Badge style={style} className="w-full text-center justify-center block whitespace-normal h-10 rounded-md">
                                 {opponent}
                             </Badge>
                             ) : (
