@@ -1,9 +1,329 @@
 {
-  "teams": [],
-  "format": "level-up",
-  "schedule": [],
+  "teams": [
+    {
+      "id": "c0d6bd9a-22de-4dda-9743-090a9465ff8a",
+      "name": "Ares",
+      "players": [
+        {
+          "id": "25",
+          "name": "Lauren Hopkins",
+          "gender": "Gal",
+          "skill": 6,
+          "presence": "Present"
+        },
+        {
+          "id": "24",
+          "name": "Matt Schrader",
+          "gender": "Guy",
+          "skill": 9,
+          "presence": "Present"
+        },
+        {
+          "id": "2",
+          "name": "Melissa Roy",
+          "gender": "Gal",
+          "skill": 6,
+          "presence": "Present"
+        },
+        {
+          "id": "9",
+          "name": "Miranda Griego",
+          "gender": "Gal",
+          "skill": 3,
+          "presence": "Present"
+        }
+      ],
+      "level": 1
+    },
+    {
+      "id": "c707a5f8-f46c-4ffc-b765-223902e6f6df",
+      "name": "Heimdall",
+      "players": [
+        {
+          "id": "11",
+          "name": "Aditya Singh",
+          "gender": "Guy",
+          "skill": 7,
+          "presence": "Present"
+        },
+        {
+          "id": "19",
+          "name": "Colleen Palman",
+          "gender": "Gal",
+          "skill": 2,
+          "presence": "Present"
+        },
+        {
+          "id": "13",
+          "name": "Emily Victoria",
+          "gender": "Gal",
+          "skill": 6,
+          "presence": "Present"
+        },
+        {
+          "id": "20",
+          "name": "Rachel Nystrom",
+          "gender": "Gal",
+          "skill": 8,
+          "presence": "Present"
+        }
+      ],
+      "level": 1
+    },
+    {
+      "id": "5e445f62-28d7-4ca3-9655-8e08fa9973f6",
+      "name": "Aphrodite",
+      "players": [
+        {
+          "id": "27",
+          "name": "Alaina McCoy",
+          "gender": "Gal",
+          "skill": 4,
+          "presence": "Present"
+        },
+        {
+          "id": "14",
+          "name": "Eric Ahrens",
+          "gender": "Guy",
+          "skill": 7,
+          "presence": "Present"
+        },
+        {
+          "id": "5",
+          "name": "Nicole Malone",
+          "gender": "Gal",
+          "skill": 5,
+          "presence": "Present"
+        },
+        {
+          "id": "17",
+          "name": "Shaylyn Murphy",
+          "gender": "Gal",
+          "skill": 8,
+          "presence": "Present"
+        }
+      ],
+      "level": 1
+    },
+    {
+      "id": "2c817128-a0b7-461b-b875-4b555cd53891",
+      "name": "Zeus",
+      "players": [
+        {
+          "id": "10",
+          "name": "Jonathan Bradley",
+          "gender": "Guy",
+          "skill": 5,
+          "presence": "Present"
+        },
+        {
+          "id": "23",
+          "name": "Joy Swasy",
+          "gender": "Gal",
+          "skill": 6,
+          "presence": "Present"
+        },
+        {
+          "id": "16",
+          "name": "Lindsey Bowers",
+          "gender": "Gal",
+          "skill": 7,
+          "presence": "Present"
+        },
+        {
+          "id": "26",
+          "name": "Matt Taylor",
+          "gender": "Guy",
+          "skill": 7,
+          "presence": "Present"
+        }
+      ],
+      "level": 1
+    },
+    {
+      "id": "28e9f8d5-5bb5-4042-86d6-7ba85fc1eafb",
+      "name": "Hermes",
+      "players": [
+        {
+          "id": "28",
+          "name": "Alexandra Broskey",
+          "gender": "Gal",
+          "skill": 6,
+          "presence": "Present"
+        },
+        {
+          "id": "1",
+          "name": "Cole Deaver",
+          "gender": "Guy",
+          "skill": 6,
+          "presence": "Present"
+        },
+        {
+          "id": "12",
+          "name": "Giovanni Salvatore",
+          "gender": "Guy",
+          "skill": 7,
+          "presence": "Present"
+        },
+        {
+          "id": "3",
+          "name": "Kristin Drinka",
+          "gender": "Gal",
+          "skill": 7,
+          "presence": "Present"
+        }
+      ],
+      "level": 1
+    },
+    {
+      "id": "0760abaf-af75-413a-9af1-7465cf049127",
+      "name": "Tyr",
+      "players": [
+        {
+          "id": "7",
+          "name": "Brian Kempert",
+          "gender": "Guy",
+          "skill": 8,
+          "presence": "Present"
+        },
+        {
+          "id": "6",
+          "name": "Heidi Kempert",
+          "gender": "Gal",
+          "skill": 4,
+          "presence": "Present"
+        },
+        {
+          "id": "4",
+          "name": "Kyle Novak",
+          "gender": "Gal",
+          "skill": 9,
+          "presence": "Present"
+        },
+        {
+          "id": "21",
+          "name": "Pat Sobotka",
+          "gender": "Guy",
+          "skill": 6,
+          "presence": "Present"
+        }
+      ],
+      "level": 1
+    }
+  ],
+  "format": "pool-play-bracket",
+  "schedule": [
+    {
+      "id": "96dd3ba8-0c76-452e-b373-62b1620ae1e3",
+      "court": "Court 1",
+      "time": "1:00 PM",
+      "resultA": null,
+      "resultB": null,
+      "teamA": "Zeus",
+      "teamB": "Tyr"
+    },
+    {
+      "id": "c5056325-084e-4502-a032-0fe6392e37c9",
+      "court": "Court 2",
+      "time": "1:00 PM",
+      "resultA": null,
+      "resultB": null,
+      "teamA": "Heimdall",
+      "teamB": "Hermes"
+    },
+    {
+      "id": "af48fe3d-59ae-4f55-95ef-bd14a8e4b4a9",
+      "court": "Court 1",
+      "time": "1:30 PM",
+      "resultA": null,
+      "resultB": null,
+      "teamA": "Ares",
+      "teamB": "Tyr"
+    },
+    {
+      "id": "5c561f43-538f-42f1-b5a2-d14dde2b37f2",
+      "court": "Court 2",
+      "time": "1:30 PM",
+      "resultA": null,
+      "resultB": null,
+      "teamA": "Heimdall",
+      "teamB": "Aphrodite"
+    },
+    {
+      "id": "7f900877-322c-4cd0-8939-ea69e06e9a38",
+      "court": "Court 1",
+      "time": "2:00 PM",
+      "resultA": null,
+      "resultB": null,
+      "teamA": "Ares",
+      "teamB": "Hermes"
+    },
+    {
+      "id": "612d687a-2562-4467-b752-85a5816eeb90",
+      "court": "Court 2",
+      "time": "2:00 PM",
+      "resultA": null,
+      "resultB": null,
+      "teamA": "Aphrodite",
+      "teamB": "Tyr"
+    },
+    {
+      "id": "926c3f5b-f907-4300-a41d-447102b03e1b",
+      "court": "Court 1",
+      "time": "2:30 PM",
+      "resultA": null,
+      "resultB": null,
+      "teamA": "Ares",
+      "teamB": "Zeus"
+    },
+    {
+      "id": "0c2a4f93-ca95-417d-ac48-8fcc6280bf3a",
+      "court": "Court 2",
+      "time": "2:30 PM",
+      "resultA": null,
+      "resultB": null,
+      "teamA": "Aphrodite",
+      "teamB": "Hermes"
+    },
+    {
+      "id": "d2985b80-a069-4135-8d4b-1e2ced817e5f",
+      "court": "Court 1",
+      "time": "3:00 PM",
+      "resultA": null,
+      "resultB": null,
+      "teamA": "Heimdall",
+      "teamB": "Zeus"
+    },
+    {
+      "id": "92ee8f1c-6b15-41af-aa6b-9ce4cbe36c96",
+      "court": "Court 2",
+      "time": "3:00 PM",
+      "resultA": null,
+      "resultB": null,
+      "teamA": "Ares",
+      "teamB": "Aphrodite"
+    },
+    {
+      "id": "83a40d53-3b5a-482c-b966-147d2e09722f",
+      "court": "Court 1",
+      "time": "3:30 PM",
+      "resultA": null,
+      "resultB": null,
+      "teamA": "Zeus",
+      "teamB": "Hermes"
+    },
+    {
+      "id": "b5990607-404d-49d5-a9d1-35998606aac3",
+      "court": "Court 2",
+      "time": "3:30 PM",
+      "resultA": null,
+      "resultB": null,
+      "teamA": "Heimdall",
+      "teamB": "Tyr"
+    }
+  ],
   "activeRule": null,
-  "pointsToWin": 15,
+  "pointsToWin": 25,
   "levelUpHandicaps": [
     {
       "level": 2,

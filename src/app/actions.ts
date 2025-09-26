@@ -116,6 +116,23 @@ export async function addPlayer(player: Omit<Player, 'id' | 'presence'>): Promis
     }
 }
 
+export async function importPlayers(newPlayers: Omit<Player, 'id' | 'presence'>[]): Promise<{ success: boolean; data?: Player[]; error?: string }> {
+    try {
+        const existingPlayers = await readPlayersDb();
+        const playersToAdd: Player[] = newPlayers.map(p => ({
+            ...p,
+            id: new Date().toISOString() + Math.random(), // Simple unique ID
+            presence: 'Pending',
+        }));
+        const updatedPlayers = [...existingPlayers, ...playersToAdd];
+        await writePlayersDb(updatedPlayers);
+        return { success: true, data: updatedPlayers };
+    } catch (error) {
+        console.error('Import Players Error:', error);
+        return { success: false, error: 'Failed to import players.' };
+    }
+}
+
 export async function updatePlayer(updatedPlayer: Player): Promise<{ success: boolean; data?: Player[]; error?: string }> {
     try {
         const players = await readPlayersDb();
@@ -149,6 +166,23 @@ export async function deletePlayer(playerId: string): Promise<{ success: boolean
     } catch (error) {
         console.error('Delete Player Error:', error);
         return { success: false, error: 'Failed to delete player.' };
+    }
+}
+
+export async function deleteAllPlayers(): Promise<{ success: boolean; error?: string }> {
+    try {
+        // Clear players.json
+        await writePlayersDb([]);
+        
+        // Clear players from teams in db.json
+        const dbData = await readDb();
+        const updatedTeams = dbData.teams.map(team => ({ ...team, players: [] }));
+        await writeDb({ ...dbData, teams: updatedTeams });
+
+        return { success: true };
+    } catch (error) {
+        console.error('Delete All Players Error:', error);
+        return { success: false, error: 'Failed to delete all players.' };
     }
 }
 

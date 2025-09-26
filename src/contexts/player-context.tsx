@@ -4,7 +4,7 @@
 
 import type { Player, Team, Match, GameFormat, GameVariant, PowerUp, PlayerPresence, Handicap } from '@/types';
 import React, { createContext, useContext, useState, type ReactNode, useEffect, useCallback } from 'react';
-import { getPlayers, updatePlayerPresence, getPublishedData, updatePlayer, addPlayer, deletePlayer, publishData, resetAllPlayerPresence as resetAllPlayerPresenceAction } from '@/app/actions';
+import { getPlayers, updatePlayerPresence, getPublishedData, updatePlayer, addPlayer, deletePlayer, publishData, resetAllPlayerPresence as resetAllPlayerPresenceAction, deleteAllPlayers as deleteAllPlayersAction, importPlayers as importPlayersAction } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 
 const allPowerUps: PowerUp[] = [
@@ -67,6 +67,8 @@ interface PlayerContextType {
   updatePlayer: (player: Player) => Promise<boolean>;
   addPlayer: (player: Omit<Player, 'id' | 'presence'>) => Promise<boolean>;
   deletePlayer: (playerId: string) => Promise<boolean>;
+  deleteAllPlayers: () => Promise<boolean>;
+  importPlayers: (players: Omit<Player, 'id' | 'presence'>[]) => Promise<boolean>;
   isLoading: boolean;
   teams: Team[];
   setTeams: React.Dispatch<React.SetStateAction<Team[]>>;
@@ -315,6 +317,27 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         return false;
     }
   };
+  
+    const handleImportPlayers = async (playersToImport: Omit<Player, 'id' | 'presence'>[]) => {
+    const result = await importPlayersAction(playersToImport);
+
+    if (result.success && result.data) {
+      setPlayers(result.data);
+      toast({
+        title: "Import Successful",
+        description: `${playersToImport.length} players have been added to the roster.`
+      });
+      return true;
+    } else {
+      toast({
+        title: "Import Failed",
+        description: result.error || "Could not import players.",
+        variant: "destructive"
+      });
+      return false;
+    }
+  };
+
 
   const handleDeletePlayer = async (playerId: string) => {
     const originalPlayers = players;
@@ -346,6 +369,28 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         return false;
     }
   };
+  
+    const handleDeleteAllPlayers = async () => {
+    const result = await deleteAllPlayersAction();
+
+    if (result.success) {
+      setPlayers([]);
+      setTeams(current => current.map(team => ({ ...team, players: [] })));
+      toast({
+        title: "All Players Deleted",
+        description: "The player roster has been cleared."
+      });
+      return true;
+    } else {
+      toast({
+        title: "Deletion Failed",
+        description: result.error || "Could not delete all players.",
+        variant: "destructive"
+      });
+      return false;
+    }
+  };
+
 
   const publishSettings = useCallback(async () => {
     let finalFormat: GameFormat | GameVariant = gameFormat;
@@ -419,6 +464,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     updatePlayer: handleUpdatePlayer,
     addPlayer: handleAddPlayer,
     deletePlayer: handleDeletePlayer,
+    deleteAllPlayers: handleDeleteAllPlayers,
+    importPlayers: handleImportPlayers,
     isLoading,
     teams,
     setTeams,
