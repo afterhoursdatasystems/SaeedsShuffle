@@ -21,16 +21,24 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 
 
 const teamNames = [
-  'Asgard Aces',
-  'Valhalla Vikings',
-  'Midgard Serpents',
-  'Jotunheim Giants',
-  'Fenrir\'s Fury',
-  'Odin\'s Ravens',
-  'Thor\'s Hammers',
-  'Loki\'s Tricksters',
-  'Bifrost Blazers',
-  'Yggdrasil Wyrms'
+  'Odin',
+  'Thor',
+  'Loki',
+  'Frigg',
+  'Freya',
+  'Heimdall',
+  'Baldur',
+  'Tyr',
+  'Zeus',
+  'Hera',
+  'Poseidon',
+  'Hades',
+  'Apollo',
+  'Artemis',
+  'Ares',
+  'Aphrodite',
+  'Athena',
+  'Hermes'
 ];
 
 const shuffleArray = <T,>(array: T[]): T[] => {
