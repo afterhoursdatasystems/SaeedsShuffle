@@ -470,6 +470,11 @@ export default function PublicTeamsPage() {
 
   const ruleIsActive = (gameFormat === 'power-up-round' || gameFormat === 'king-s-ransom') && activeRule;
   const activeRuleTitle = gameFormat === 'king-s-ransom' ? 'Active Cosmic Scramble' : 'Active Power-Up';
+  
+  const getRankByName = (teamName: string) => {
+    const rank = standings.findIndex(s => s.teamName === teamName);
+    return rank !== -1 ? rank + 1 : null;
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
@@ -626,6 +631,8 @@ export default function PublicTeamsPage() {
                                     const teamBStats = teamStats[match.teamB];
                                     const teamARecord = teamAStats ? `${teamAStats.wins}-${teamAStats.losses}` : '';
                                     const teamBRecord = teamBStats ? `${teamBStats.wins}-${teamBStats.losses}` : '';
+                                    const teamARank = getRankByName(match.teamA);
+                                    const teamBRank = getRankByName(match.teamB);
 
                                     return (
                                         <React.Fragment key={match.id}>
@@ -635,6 +642,7 @@ export default function PublicTeamsPage() {
                                                     <div className="font-medium text-left">
                                                         <div>{match.teamA}</div>
                                                         <div className="text-muted-foreground text-sm flex items-center gap-2">
+                                                          {gameFormat === 'pool-play-bracket' && teamARank && <span>#{teamARank}</span>}
                                                           {gameFormat !== 'level-up' && <span>{teamARecord}</span>}
                                                           {isLevelUp && teamAStats && <span>Level {teamAStats.level}</span>}
                                                         </div>
@@ -649,6 +657,7 @@ export default function PublicTeamsPage() {
                                                         <div className="text-muted-foreground text-sm flex items-center justify-end gap-2">
                                                            {isLevelUp && teamBStats && <span>Level {teamBStats.level}</span>}
                                                            {gameFormat !== 'level-up' && <span>{teamBRecord}</span>}
+                                                           {gameFormat === 'pool-play-bracket' && teamBRank && <span>#{teamBRank}</span>}
                                                         </div>
                                                     </div>
                                                 </div>
