@@ -371,8 +371,8 @@ export default function PublicTeamsPage() {
         stats[teamName].pointDifferential = stats[teamName].pointsFor - stats[teamName].pointsAgainst;
     }
 
-    const standings = Object.entries(stats)
-        .map(([teamName, teamData]) => ({ teamName, ...teamData }))
+    const standings = teams
+        .map(team => ({ teamName: team.name, ...stats[team.name], teamData: team }))
         .sort((a, b) => {
             if (b.wins !== a.wins) {
                 return b.wins - a.wins;
@@ -526,23 +526,24 @@ export default function PublicTeamsPage() {
               {teams.length > 0 || gameFormat === 'blind-draw' ? (
                 <>
                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5">
-                    {teams.map((team) => {
-                      const stats = teamStats[team.name];
-                      const teamRecord = stats ? `${stats.wins}-${stats.losses}` : '0-0';
+                    {standings.map((s, index) => {
+                      const team = s.teamData;
+                      const teamRecord = `${s.wins}-${s.losses}`;
                       return(
                       <Card key={team.id} className={cn("flex flex-col rounded-xl border-2 shadow-2xl transition-transform hover:scale-105 bg-card",
                         isLevelUp ? `border-transparent` : 'border-primary'
                       )}>
-                        <CardHeader className={cn("p-4 rounded-t-lg", isLevelUp ? getLevelHeaderStyle(team.level) : 'bg-slate-600 text-white')}>
+                        <CardHeader className={cn("p-4 rounded-t-lg", isLevelUp ? getLevelHeaderStyle(s.level) : 'bg-slate-600 text-white')}>
                             <CardTitle className="text-lg font-bold">
                                 <div className="flex items-center justify-between">
                                    <div className="flex items-center gap-3">
                                         <Users className="h-5 w-5" />
                                         {team.name}
+                                        {gameFormat === 'pool-play-bracket' && <Badge variant="secondary" className="text-sm">{teamRecord}</Badge>}
                                    </div>
                                     <div className="flex items-center gap-3">
-                                      {isLevelUp && <span className="font-semibold">{team.level}</span>}
-                                      {gameFormat === 'pool-play-bracket' && <Badge variant="secondary" className="text-base">{teamRecord}</Badge>}
+                                      {isLevelUp && <span className="font-semibold">{s.level}</span>}
+                                      {gameFormat === 'pool-play-bracket' && <span className="font-bold text-2xl">#{index + 1}</span>}
                                     </div>
                                 </div>
                             </CardTitle>
@@ -694,7 +695,7 @@ export default function PublicTeamsPage() {
                           <TableBody>
                             {schedule.map((match) => (
                               <TableRow key={match.id} className="text-base">
-                                <TableCell className="px-2"><Badge>{match.court}</Badge></TableCell>
+                                <TableCell className="px-2"><Badge>{match.court}</TableCell>
                                 <TableCell className="font-medium px-2">{match.teamA}</TableCell>
                                 <TableCell className="text-center font-mono whitespace-nowrap p-1 w-[80px]">
                                     {match.resultA !== null && match.resultB !== null
@@ -742,9 +743,3 @@ export default function PublicTeamsPage() {
     </div>
   );
 }
-
-    
-
-    
-
-
