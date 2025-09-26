@@ -59,9 +59,17 @@ function generateRoundRobinSchedule(
     if (teamNames.length < 2) {
         return [];
     }
-
+    
+    // --- Phase 1: Create a fair game pool ---
     const totalGamesNeeded = Math.ceil((teamNames.length * gamesPerTeam) / 2);
     let gamePool: { teamA: string; teamB: string }[] = [];
+    const teamPlayCounts: { [key: string]: number } = {};
+    const matchups: { [key: string]: string[] } = {};
+
+    teamNames.forEach(name => {
+        teamPlayCounts[name] = 0;
+        matchups[name] = [];
+    });
     
     // Create a list of all possible unique matchups
     let allPossibleMatchups: { teamA: string; teamB: string }[] = [];
@@ -70,22 +78,29 @@ function generateRoundRobinSchedule(
             allPossibleMatchups.push({ teamA: teamNames[i], teamB: teamNames[j] });
         }
     }
+    
+    // --- Pass 1: Fill the pool with unique matchups first ---
+    let shuffledUniqueGames = shuffleArray(allPossibleMatchups);
+    for (const matchup of shuffledUniqueGames) {
+        if (gamePool.length >= totalGamesNeeded) break;
+        const { teamA, teamB } = matchup;
+        if (teamPlayCounts[teamA] < gamesPerTeam && teamPlayCounts[teamB] < gamesPerTeam) {
+            gamePool.push(matchup);
+            teamPlayCounts[teamA]++;
+            teamPlayCounts[teamB]++;
+            matchups[teamA].push(teamB);
+            matchups[teamB].push(teamA);
+        }
+    }
 
-    let teamPlayCounts: { [key: string]: number };
-    let matchups: { [key: string]: string[] };
+    // --- Pass 2 (Backfill): Allow repeat matchups ONLY if necessary to meet quotas ---
+    let fillIterations = 0;
+    while (gamePool.length < totalGamesNeeded && fillIterations < 50) {
+        const teamsNeedingGames = teamNames.filter(name => teamPlayCounts[name] < gamesPerTeam);
+        if (teamsNeedingGames.length < 2) break;
 
-    // --- Pass 1: Prioritize unique matchups ---
-    const fillPool = () => {
-        gamePool = [];
-        teamPlayCounts = {};
-        matchups = {};
-        teamNames.forEach(name => {
-            teamPlayCounts[name] = 0;
-            matchups[name] = [];
-        });
-
-        const shuffledUniqueGames = shuffleArray(allPossibleMatchups);
-        for (const matchup of shuffledUniqueGames) {
+        const shuffledAllPossible = shuffleArray(allPossibleMatchups);
+        for (const matchup of shuffledAllPossible) {
             if (gamePool.length >= totalGamesNeeded) break;
             const { teamA, teamB } = matchup;
             if (teamPlayCounts[teamA] < gamesPerTeam && teamPlayCounts[teamB] < gamesPerTeam) {
@@ -96,31 +111,13 @@ function generateRoundRobinSchedule(
                 matchups[teamB].push(teamA);
             }
         }
-        
-        // --- Pass 2 (Backfill): Allow repeat matchups only if necessary to meet quotas ---
-        let fillIterations = 0;
-        while (gamePool.length < totalGamesNeeded && fillIterations < 50) {
-            const teamsNeedingGames = teamNames.filter(name => teamPlayCounts[name] < gamesPerTeam);
-            if(teamsNeedingGames.length < 2) break;
-
-            const shuffledAllPossible = shuffleArray(allPossibleMatchups);
-            for (const matchup of shuffledAllPossible) {
-                if (gamePool.length >= totalGamesNeeded) break;
-                const { teamA, teamB } = matchup;
-                 if (teamPlayCounts[teamA] < gamesPerTeam && teamPlayCounts[teamB] < gamesPerTeam) {
-                     gamePool.push(matchup);
-                     teamPlayCounts[teamA]++;
-                     teamPlayCounts[teamB]++;
-                     matchups[teamA].push(teamB);
-                     matchups[teamB].push(teamA);
-                }
-            }
-            fillIterations++;
-        }
+        fillIterations++;
     }
 
-    fillPool();
-    
+    console.log('Final game counts:', teamPlayCounts);
+    console.log(`--- SCHEDULING COMPLETE: ${gamePool.length} matches generated. ---`);
+
+
     // --- Phase 2: Schedule games from the pool ---
     const schedule: Match[] = [];
     const startTime = parse(startTimeStr, 'HH:mm', new Date());
@@ -185,9 +182,6 @@ function generateRoundRobinSchedule(
         }
     }
 
-    console.log('Final game counts:', teamPlayCounts);
-    console.log(`--- SCHEDULING COMPLETE: ${schedule.length} matches generated. ---`);
-    
     console.log(`--- Analyzing Generated Schedule ---`);
     teamNames.forEach(teamName => {
         const teamSchedule = schedule.filter(m => m.teamA === teamName || m.teamB === teamName);
@@ -204,7 +198,8 @@ function generateRoundRobinSchedule(
 }
 
 const isScheduleValid = (schedule: Match[], teams: Team[], gamesPerTeam: number): boolean => {
-    if (schedule.length === 0) return false;
+    if (schedule.length === 0 && teams.length > 0) return false;
+    if(teams.length === 0) return true;
 
     const teamNames = teams.map(t => t.name);
     const gameCounts: { [key: string]: number } = {};
@@ -230,16 +225,19 @@ const isScheduleValid = (schedule: Match[], teams: Team[], gamesPerTeam: number)
         }
     }
     
-    // 2. Check for duplicate matchups
-    for (const teamName of teamNames) {
-        const opponentCounts: { [key: string]: number } = {};
-        for (const opponent of matchups[teamName]) {
-            opponentCounts[opponent] = (opponentCounts[opponent] || 0) + 1;
-        }
-        for (const opponent in opponentCounts) {
-            if (opponentCounts[opponent] > 1) {
-                 console.warn(`Validation failed: ${teamName} plays ${opponent} ${opponentCounts[opponent]} times.`);
-                 return false;
+    // 2. Check for duplicate matchups if it should be a pure round-robin
+    const uniqueGamesPossible = (teamNames.length * (teamNames.length - 1)) / 2;
+    if (schedule.length <= uniqueGamesPossible) {
+        for (const teamName of teamNames) {
+            const opponentCounts: { [key: string]: number } = {};
+            for (const opponent of matchups[teamName]) {
+                opponentCounts[opponent] = (opponentCounts[opponent] || 0) + 1;
+            }
+            for (const opponent in opponentCounts) {
+                if (opponentCounts[opponent] > 1) {
+                    console.warn(`Validation failed: ${teamName} plays ${opponent} ${opponentCounts[opponent]} times.`);
+                    return false;
+                }
             }
         }
     }
@@ -351,6 +349,7 @@ export function ScheduleGenerator() {
                     description: 'Could not generate a fair schedule. Please try again or adjust settings.',
                     variant: 'destructive',
                 });
+                return; // Return here to avoid setting a bad schedule
             }
 
             if (gameFormat === 'round-robin') formatDescription = "Round Robin";
