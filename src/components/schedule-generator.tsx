@@ -192,7 +192,7 @@ export function ScheduleGenerator() {
 
   const timeOptions = useMemo(() => {
     const options = [];
-    const startHour = 18; // 6 PM
+    const startHour = 13; // 1 PM
     const endHour = 22; // 10 PM
     for (let h = startHour; h <= endHour; h++) {
       for (let m = 0; m < 60; m += 15) {
