@@ -21,10 +21,16 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 
 
 const teamNames = [
-  'Birkdale Bombers', 'Cool Fish Commandos', 'Jetton Juggernauts',
-  'Peninsula Powerhouse', 'Soda Shop Slammers',
-  'Langtree Lightning', 'Bailey Bruisers', 'Antiquity Attackers',
-  'Summit Strikers', 'Toast Titans'
+  'Asgard Aces',
+  'Valhalla Vikings',
+  'Midgard Serpents',
+  'Jotunheim Giants',
+  'Fenrir\'s Fury',
+  'Odin\'s Ravens',
+  'Thor\'s Hammers',
+  'Loki\'s Tricksters',
+  'Bifrost Blazers',
+  'Yggdrasil Wyrms'
 ];
 
 const shuffleArray = <T,>(array: T[]): T[] => {
