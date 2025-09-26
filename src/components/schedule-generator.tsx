@@ -54,10 +54,7 @@ function generateRoundRobinSchedule(
     startTimeStr: string,
     courts = ['Court 1', 'Court 2']
 ): Match[] {
-    console.log('--- TOURNAMENT SCHEDULER START ---');
-    console.log(`Teams: ${teamNames.length} (${teamNames.join(', ')})`);
-    console.log(`Games per team: ${gamesPerTeam}`);
-    console.log(`Available courts: ${courts.length}`);
+    console.log(`--- SCHEDULER START: ${teamNames.length} teams, ${gamesPerTeam} games each, ${courts.length} courts ---`);
 
     if (teamNames.length < 2) {
         return [];
@@ -112,21 +109,27 @@ function generateRoundRobinSchedule(
         }
 
         // If we've exhausted all unique matchups, we might need to add duplicates to meet the game quota
-        if (!gameAddedInThisRound) {
+        if (!gameAddedInThisRound && gamePool.length < totalGamesNeeded) {
             // Sort teams by who has played the fewest games
              const teamsByPlayCount = shuffleArray(teamNames).sort((a,b) => teamPlayCounts[a] - teamPlayCounts[b]);
-             const teamA = teamsByPlayCount[0];
-
-             if (teamPlayCounts[teamA] < gamesPerTeam) {
-                 // Find an opponent for teamA that also needs a game
-                 const possibleOpponents = shuffleArray(teamNames.filter(t => t !== teamA && teamPlayCounts[t] < gamesPerTeam));
-                 if (possibleOpponents.length > 0) {
-                     const teamB = possibleOpponents[0];
-                     gamePool.push({ teamA, teamB });
-                     teamPlayCounts[teamA]++;
-                     teamPlayCounts[teamB]++;
-                     matchups[teamA].push(teamB);
-                     matchups[teamB].push(teamA);
+             
+             for (const teamA of teamsByPlayCount) {
+                 if (teamPlayCounts[teamA] < gamesPerTeam) {
+                     // Find an opponent for teamA that also needs a game and hasn't been played, if possible
+                     const possibleOpponents = shuffleArray(teamNames.filter(t => 
+                        t !== teamA && 
+                        teamPlayCounts[t] < gamesPerTeam
+                     ));
+                     
+                     if (possibleOpponents.length > 0) {
+                         const teamB = possibleOpponents[0];
+                         gamePool.push({ teamA, teamB });
+                         teamPlayCounts[teamA]++;
+                         teamPlayCounts[teamB]++;
+                         matchups[teamA].push(teamB);
+                         matchups[teamB].push(teamA);
+                         break; // Move to next iteration of the while loop
+                     }
                  }
              }
         }
@@ -134,8 +137,6 @@ function generateRoundRobinSchedule(
         poolFillIterations++;
     }
 
-
-    console.log('Final pool game counts:', teamPlayCounts);
     gamePool = shuffleArray(gamePool);
     
     // --- Phase 2: Schedule games from the pool ---
@@ -206,9 +207,8 @@ function generateRoundRobinSchedule(
         }
     }
 
-
-    console.log('--- SCHEDULING COMPLETE ---');
-    console.log(`Generated ${schedule.length} matches.`);
+    console.log('Final game counts:', teamPlayCounts);
+    console.log(`--- SCHEDULING COMPLETE: ${schedule.length} matches generated. ---`);
     return schedule;
 }
 
@@ -597,3 +597,4 @@ export function ScheduleGenerator() {
     
 
     
+
