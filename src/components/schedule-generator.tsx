@@ -79,26 +79,28 @@ function generateRoundRobinSchedule(
         }
     }
     
-    let poolFillIterations = 0;
-    const maxIterations = teamNames.length * gamesPerTeam * 5; 
-
-    // Loop until the game pool is the exact size needed
-    while (gamePool.length < totalGamesNeeded && poolFillIterations < maxIterations) {
-        
-        // Always work from a shuffled list of possibilities to ensure variance
-        const shuffledPossibleMatchups = shuffleArray(allPossibleMatchups);
-
-        // First pass: Try to add only unique matchups
-        for (const matchup of shuffledPossibleMatchups) {
-             const { teamA, teamB } = matchup;
-             const aPlaysBCount = matchups[teamA].filter(opp => opp === teamB).length;
-
-             if (
-                gamePool.length < totalGamesNeeded &&
-                teamPlayCounts[teamA] < gamesPerTeam && 
-                teamPlayCounts[teamB] < gamesPerTeam &&
-                aPlaysBCount === 0 // Strictly enforce unique matchups first
-            ) {
+    // 1st Pass: Add unique matchups until quotas are met or unique games run out
+    const shuffledUniqueGames = shuffleArray(allPossibleMatchups);
+    for (const matchup of shuffledUniqueGames) {
+        if (gamePool.length >= totalGamesNeeded) break;
+        const { teamA, teamB } = matchup;
+        if (teamPlayCounts[teamA] < gamesPerTeam && teamPlayCounts[teamB] < gamesPerTeam) {
+            gamePool.push(matchup);
+            teamPlayCounts[teamA]++;
+            teamPlayCounts[teamB]++;
+            matchups[teamA].push(teamB);
+            matchups[teamB].push(teamA);
+        }
+    }
+    
+    // 2nd Pass (if needed): Allow repeat matchups to fill remaining game slots
+    let fillIterations = 0;
+    while (gamePool.length < totalGamesNeeded && fillIterations < 50) {
+        const shuffledAllGames = shuffleArray(allPossibleMatchups);
+        for (const matchup of shuffledAllGames) {
+             if (gamePool.length >= totalGamesNeeded) break;
+            const { teamA, teamB } = matchup;
+            if (teamPlayCounts[teamA] < gamesPerTeam && teamPlayCounts[teamB] < gamesPerTeam) {
                  gamePool.push(matchup);
                  teamPlayCounts[teamA]++;
                  teamPlayCounts[teamB]++;
@@ -106,27 +108,9 @@ function generateRoundRobinSchedule(
                  matchups[teamB].push(teamA);
             }
         }
-
-        // Second pass: If still not full, allow repeats to meet the quota
-        if (gamePool.length < totalGamesNeeded) {
-             for (const matchup of shuffledPossibleMatchups) {
-                const { teamA, teamB } = matchup;
-                if (
-                    gamePool.length < totalGamesNeeded &&
-                    teamPlayCounts[teamA] < gamesPerTeam && 
-                    teamPlayCounts[teamB] < gamesPerTeam
-                ) {
-                    gamePool.push(matchup);
-                    teamPlayCounts[teamA]++;
-                    teamPlayCounts[teamB]++;
-                    matchups[teamA].push(teamB);
-                    matchups[teamB].push(teamA);
-                }
-            }
-        }
-        
-        poolFillIterations++;
+        fillIterations++;
     }
+
 
     
     // --- Phase 2: Schedule games from the pool ---
@@ -595,3 +579,4 @@ export function ScheduleGenerator() {
     </div>
   );
 }
+
