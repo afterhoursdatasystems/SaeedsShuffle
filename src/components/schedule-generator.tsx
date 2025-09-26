@@ -102,7 +102,7 @@ function generateRoundRobinSchedule(
             ) {
                  gamePool.push(matchup);
                  teamPlayCounts[teamA]++;
-                 teamPlaycounts[teamB]++;
+                 teamPlayCounts[teamB]++;
                  matchups[teamA].push(teamB);
                  matchups[teamB].push(teamA);
                  gameAddedInThisRound = true;
