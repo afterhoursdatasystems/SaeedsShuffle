@@ -78,8 +78,7 @@ function generateRoundRobinSchedule(
             allPossibleMatchups.push({ teamA: teamNames[i], teamB: teamNames[j] });
         }
     }
-    allPossibleMatchups = shuffleArray(allPossibleMatchups);
-
+    
     let poolFillIterations = 0;
     const maxIterations = teamNames.length * gamesPerTeam * 5; 
 
@@ -87,57 +86,50 @@ function generateRoundRobinSchedule(
     while (gamePool.length < totalGamesNeeded && poolFillIterations < maxIterations) {
         let gameAddedInThisRound = false;
         
-        // Iterate through all possible matchups to find a valid game
-        for (const matchup of allPossibleMatchups) {
+        // Always work from a shuffled list of possibilities to ensure variance
+        const shuffledPossibleMatchups = shuffleArray(allPossibleMatchups);
+
+        // First pass: Try to add only unique matchups
+        for (const matchup of shuffledPossibleMatchups) {
              const { teamA, teamB } = matchup;
-            
-            // Check if both teams still need games
-            if(teamPlayCounts[teamA] < gamesPerTeam && teamPlayCounts[teamB] < gamesPerTeam) {
-                // Check if this specific matchup would exceed the fairness rule (e.g. playing the same team too many times)
-                const aPlaysBCount = matchups[teamA].filter(opp => opp === teamB).length;
-                
-                // Heuristic: for now, we will aim for unique matchups in pool play
-                if (aPlaysBCount === 0) {
-                     gamePool.push(matchup);
-                     teamPlayCounts[teamA]++;
-                     teamPlayCounts[teamB]++;
-                     matchups[teamA].push(teamB);
-                     matchups[teamB].push(teamA);
-                     gameAddedInThisRound = true;
-                }
+             const aPlaysBCount = matchups[teamA].filter(opp => opp === teamB).length;
+
+             if (
+                gamePool.length < totalGamesNeeded &&
+                teamPlayCounts[teamA] < gamesPerTeam && 
+                teamPlayCounts[teamB] < gamesPerTeam &&
+                aPlaysBCount === 0 // Strictly enforce unique matchups first
+            ) {
+                 gamePool.push(matchup);
+                 teamPlayCounts[teamA]++;
+                 teamPlaycounts[teamB]++;
+                 matchups[teamA].push(teamB);
+                 matchups[teamB].push(teamA);
+                 gameAddedInThisRound = true;
             }
         }
 
-        // If we've exhausted all unique matchups, we might need to add duplicates to meet the game quota
-        if (!gameAddedInThisRound && gamePool.length < totalGamesNeeded) {
-            // Sort teams by who has played the fewest games
-             const teamsByPlayCount = shuffleArray(teamNames).sort((a,b) => teamPlayCounts[a] - teamPlayCounts[b]);
-             
-             for (const teamA of teamsByPlayCount) {
-                 if (teamPlayCounts[teamA] < gamesPerTeam) {
-                     // Find an opponent for teamA that also needs a game and hasn't been played, if possible
-                     const possibleOpponents = shuffleArray(teamNames.filter(t => 
-                        t !== teamA && 
-                        teamPlayCounts[t] < gamesPerTeam
-                     ));
-                     
-                     if (possibleOpponents.length > 0) {
-                         const teamB = possibleOpponents[0];
-                         gamePool.push({ teamA, teamB });
-                         teamPlayCounts[teamA]++;
-                         teamPlayCounts[teamB]++;
-                         matchups[teamA].push(teamB);
-                         matchups[teamB].push(teamA);
-                         break; // Move to next iteration of the while loop
-                     }
-                 }
-             }
+        // Second pass: If still not full, allow repeats to meet the quota
+        if (gamePool.length < totalGamesNeeded) {
+             for (const matchup of shuffledPossibleMatchups) {
+                const { teamA, teamB } = matchup;
+                if (
+                    gamePool.length < totalGamesNeeded &&
+                    teamPlayCounts[teamA] < gamesPerTeam && 
+                    teamPlayCounts[teamB] < gamesPerTeam
+                ) {
+                    gamePool.push(matchup);
+                    teamPlayCounts[teamA]++;
+                    teamPlayCounts[teamB]++;
+                    matchups[teamA].push(teamB);
+                    matchups[teamB].push(teamA);
+                }
+            }
         }
         
         poolFillIterations++;
     }
 
-    gamePool = shuffleArray(gamePool);
     
     // --- Phase 2: Schedule games from the pool ---
     const schedule: Match[] = [];
@@ -242,7 +234,8 @@ export function ScheduleGenerator() {
             const hourString = String(h).padStart(2, '0');
             const minuteString = String(m).padStart(2, '0');
             const timeValue = `${hourString}:${minuteString}`;
-            options.push(timeValue);
+            const displayTime = format(parse(timeValue, 'HH:mm', new Date()), 'h:mm a');
+            options.push({ value: timeValue, label: displayTime });
         }
     }
     return options;
@@ -462,12 +455,9 @@ export function ScheduleGenerator() {
                         <SelectValue placeholder="Select a start time" />
                     </SelectTrigger>
                     <SelectContent>
-                        {timeOptions.map(time => {
-                             const displayTime = format(parse(time, 'HH:mm', new Date()), 'h:mm a');
-                             return (
-                                <SelectItem key={time} value={time}>{displayTime}</SelectItem>
-                             );
-                        })}
+                        {timeOptions.map(time => (
+                           <SelectItem key={time.value} value={time.value}>{time.label}</SelectItem>
+                        ))}
                     </SelectContent>
                 </Select>
             </div>
@@ -607,9 +597,3 @@ export function ScheduleGenerator() {
     </div>
   );
 }
-
-    
-
-    
-
-
