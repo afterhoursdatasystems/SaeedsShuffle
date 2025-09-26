@@ -209,6 +209,20 @@ function generateRoundRobinSchedule(
 
     console.log('Final game counts:', teamPlayCounts);
     console.log(`--- SCHEDULING COMPLETE: ${schedule.length} matches generated. ---`);
+    
+    // --- Phase 3: Log detailed analysis ---
+    console.log(`--- Analyzing Generated Schedule ---`);
+    teamNames.forEach(teamName => {
+        const teamSchedule = schedule.filter(m => m.teamA === teamName || m.teamB === teamName);
+        console.log(`Schedule for ${teamName} (${teamSchedule.length} games):`);
+        teamSchedule.forEach(match => {
+            const opponent = match.teamA === teamName ? match.teamB : match.teamA;
+            console.log(`- ${match.time} on ${match.court} vs ${opponent}`);
+        });
+    });
+    console.log(`--- Analysis Complete ---`);
+
+
     return schedule;
 }
 
@@ -597,4 +611,5 @@ export function ScheduleGenerator() {
     
 
     
+
 
