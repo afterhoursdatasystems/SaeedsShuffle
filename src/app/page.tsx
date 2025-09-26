@@ -583,6 +583,8 @@ export default function PublicTeamsPage() {
                                           <TableHead>Team</TableHead>
                                           <TableHead className="text-center">Wins</TableHead>
                                           <TableHead className="text-center">Losses</TableHead>
+                                          <TableHead className="text-center">Points For</TableHead>
+                                          <TableHead className="text-center">Points Against</TableHead>
                                           <TableHead className="text-center">Point Diff.</TableHead>
                                       </TableRow>
                                   </TableHeader>
@@ -593,6 +595,8 @@ export default function PublicTeamsPage() {
                                               <TableCell className="font-medium">{s.teamName}</TableCell>
                                               <TableCell className="text-center">{s.wins}</TableCell>
                                               <TableCell className="text-center">{s.losses}</TableCell>
+                                              <TableCell className="text-center">{s.pointsFor}</TableCell>
+                                              <TableCell className="text-center">{s.pointsAgainst}</TableCell>
                                               <TableCell className={cn("text-center font-bold", s.pointDifferential > 0 ? 'text-green-600' : 'text-red-600')}>
                                                   {s.pointDifferential > 0 ? `+${s.pointDifferential}` : s.pointDifferential}
                                               </TableCell>
@@ -742,4 +746,5 @@ export default function PublicTeamsPage() {
     
 
     
+
 
