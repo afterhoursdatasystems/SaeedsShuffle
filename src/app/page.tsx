@@ -349,6 +349,29 @@ export default function PublicTeamsPage() {
 
     return stats;
   }, [teams, schedule]);
+
+  const firstGameTime = useMemo(() => {
+    if (!schedule || schedule.length === 0) {
+      return '6:45 PM'; // Default if no schedule
+    }
+
+    const validTimes = schedule
+      .map(match => match.time)
+      .filter(time => time && time !== 'N/A' && time.includes(':'));
+
+    if (validTimes.length === 0) {
+      return '6:45 PM';
+    }
+
+    // Parse and sort times
+    const sortedTimes = validTimes.sort((a, b) => {
+      const timeA = new Date(`1970/01/01 ${a.replace(/([AP]M)/, ' $1')}`);
+      const timeB = new Date(`1970/01/01 ${b.replace(/([AP]M)/, ' $1')}`);
+      return timeA.getTime() - timeB.getTime();
+    });
+
+    return sortedTimes[0] || '6:45 PM';
+  }, [schedule]);
   
   const isKOTC = ['king-of-the-court', 'monarch-of-the-court', 'king-s-ransom', 'power-up-round', 'standard'].includes(gameFormat);
   const isLevelUp = gameFormat === 'level-up';
@@ -423,7 +446,7 @@ export default function PublicTeamsPage() {
           <Volleyball className="h-10 w-10 text-primary" />
           <div>
             <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Saeed's Shuffle</h1>
-            <p className="text-md text-muted-foreground sm:text-lg flex items-center gap-2"><Clock className="h-5 w-5" />Games start at 6:45 PM</p>
+            <p className="text-md text-muted-foreground sm:text-lg flex items-center gap-2"><Clock className="h-5 w-5" />Games start at {firstGameTime}</p>
           </div>
         </div>
       </header>
@@ -639,5 +662,7 @@ export default function PublicTeamsPage() {
     </div>
   );
 }
+
+    
 
     
