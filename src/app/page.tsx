@@ -537,7 +537,7 @@ export default function PublicTeamsPage() {
                                    <div className="flex items-center gap-3">
                                         <Users className="h-5 w-5" />
                                         {team.name}
-                                        {gameFormat === 'pool-play-bracket' && <span className="ml-2 font-normal text-sm opacity-80">({teamRecord})</span>}
+                                        {gameFormat === 'pool-play-bracket' && <span className="ml-2 font-normal text-base opacity-90">{teamRecord}</span>}
                                    </div>
                                     <div className="flex items-center gap-3">
                                       {isLevelUp && <span className="font-semibold">{s.level}</span>}
