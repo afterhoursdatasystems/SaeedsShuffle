@@ -26,7 +26,6 @@ type TeamStats = {
   level: number;
 };
 
-
 const KOTCBaseRules = ({ pointsToWin, teamCount }: { pointsToWin: number; teamCount: number }) => (
     <>
         <p className="mb-4">A high-energy, continuous-play format designed to maximize playtime and interaction. All games are rally-scoring, straight up to {pointsToWin} points.</p>
@@ -742,4 +741,3 @@ export default function PublicTeamsPage() {
     </div>
   );
 }
-    
