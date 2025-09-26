@@ -104,6 +104,7 @@ function generateRoundRobinSchedule(
             }
             passes++;
         }
+        console.log("Pool after pass 1:", pool.length, "games. Counts:", teamPlayCounts);
 
         // Pass 2 (Backfill): If still not enough games, allow repeats to meet quotas
         passes = 0; // Reset for backfill
@@ -272,9 +273,10 @@ const isScheduleValid = (schedule: Match[], teams: Team[], gamesPerTeam: number)
         if (teamSchedule.length >= 4) {
              let consecutiveGames = 1;
              for (let i = 0; i < teamSchedule.length - 1; i++) {
-                const diff = timeStringToMinutes(teamSchedule[i+1].time) - timeStringToMinutes(teamSchedule[i].time);
-                // 30 minutes in milliseconds is 1800000. Allow for a small buffer.
-                if (diff > 0 && diff < 1800000 * 1.5) {
+                const time1 = timeStringToMinutes(teamSchedule[i].time);
+                const time2 = timeStringToMinutes(teamSchedule[i+1].time);
+
+                if (time2 - time1 < 1800000 * 1.5) { // less than 45 mins apart
                     consecutiveGames++;
                 } else {
                     consecutiveGames = 1; // Reset if there's a break
@@ -477,7 +479,7 @@ export function ScheduleGenerator() {
   };
 
   const handleResultChange = (matchId: string, team: 'A' | 'B', value: string) => {
-    setSchedule(schedule.map(m => {
+    setSchedule(currentSchedule => currentSchedule.map(m => {
       if (m.id === matchId) {
         return team === 'A' ? { ...m, resultA: value === '' ? null : parseInt(value) } : { ...m, resultB: value === '' ? null : parseInt(value) };
       }
@@ -518,7 +520,14 @@ export function ScheduleGenerator() {
   const groupedSchedule = useMemo(() => {
     if (isKOTC) return null;
     
-    return schedule.reduce((acc, match) => {
+    const sortedSchedule = [...schedule].sort((a,b) => {
+        const timeA = parse(a.time, 'h:mm a', new Date()).getTime();
+        const timeB = parse(b.time, 'h:mm a', new Date()).getTime();
+        if (timeA !== timeB) return timeA - timeB;
+        return a.court.localeCompare(b.court);
+    });
+
+    return sortedSchedule.reduce((acc, match) => {
       const time = match.time;
       if (!acc[time]) {
         acc[time] = [];
@@ -695,6 +704,7 @@ export function ScheduleGenerator() {
     </div>
   );
 }
+
 
 
 

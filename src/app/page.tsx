@@ -18,6 +18,16 @@ import { Separator } from '@/components/ui/separator';
 
 type CombinedGameFormat = GameFormat | GameVariant;
 
+type TeamStats = {
+  wins: number;
+  losses: number;
+  pointsFor: number;
+  pointsAgainst: number;
+  pointDifferential: number;
+  level: number;
+};
+
+
 const KOTCBaseRules = ({ pointsToWin, teamCount }: { pointsToWin: number; teamCount: number }) => (
     <>
         <p className="mb-4">A high-energy, continuous-play format designed to maximize playtime and interaction. All games are rally-scoring, straight up to {pointsToWin} points.</p>
@@ -328,16 +338,25 @@ export default function PublicTeamsPage() {
   
   const formatDetails = useMemo(() => getFormatDetails(pointsToWin, teams.length, levelUpHandicaps), [pointsToWin, teams.length, levelUpHandicaps]);
 
-  const teamStats = useMemo(() => {
-    const stats: { [teamName: string]: { wins: number; losses: number; level: number } } = {};
+  const { teamStats, standings } = useMemo(() => {
+    const stats: { [teamName: string]: TeamStats } = {};
 
     teams.forEach(team => {
-      stats[team.name] = { wins: 0, losses: 0, level: team.level || 1 };
+      stats[team.name] = { wins: 0, losses: 0, pointsFor: 0, pointsAgainst: 0, pointDifferential: 0, level: team.level || 1 };
     });
 
     schedule.forEach(match => {
       const { teamA, teamB, resultA, resultB } = match;
       if (resultA !== null && resultB !== null) {
+        if (stats[teamA]) {
+          stats[teamA].pointsFor += resultA;
+          stats[teamA].pointsAgainst += resultB;
+        }
+        if (stats[teamB]) {
+          stats[teamB].pointsFor += resultB;
+          stats[teamB].pointsAgainst += resultA;
+        }
+
         if (resultA > resultB) {
           if (stats[teamA]) stats[teamA].wins++;
           if (stats[teamB]) stats[teamB].losses++;
@@ -347,8 +366,22 @@ export default function PublicTeamsPage() {
         }
       }
     });
+    
+    for (const teamName in stats) {
+        stats[teamName].pointDifferential = stats[teamName].pointsFor - stats[teamName].pointsAgainst;
+    }
 
-    return stats;
+    const standings = Object.entries(stats)
+        .map(([teamName, teamData]) => ({ teamName, ...teamData }))
+        .sort((a, b) => {
+            if (b.wins !== a.wins) {
+                return b.wins - a.wins;
+            }
+            return b.pointDifferential - a.pointDifferential;
+        });
+
+
+    return { teamStats: stats, standings };
   }, [teams, schedule]);
 
   const firstGameTime = useMemo(() => {
@@ -494,7 +527,8 @@ export default function PublicTeamsPage() {
                 <>
                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5">
                     {teams.map((team) => {
-                      const teamRecord = teamStats[team.name] ? `${teamStats[team.name].wins}-${teamStats[team.name].losses}` : '0-0';
+                      const stats = teamStats[team.name];
+                      const teamRecord = stats ? `${stats.wins}-${stats.losses}` : '0-0';
                       return(
                       <Card key={team.id} className={cn("flex flex-col rounded-xl border-2 shadow-2xl transition-transform hover:scale-105 bg-card",
                         isLevelUp ? `border-transparent` : 'border-primary'
@@ -506,7 +540,10 @@ export default function PublicTeamsPage() {
                                         <Users className="h-5 w-5" />
                                         {team.name}
                                    </div>
-                                   {isLevelUp && <span className="font-semibold">{team.level}</span>}
+                                    <div className="flex items-center gap-3">
+                                      {isLevelUp && <span className="font-semibold">{team.level}</span>}
+                                      {gameFormat === 'pool-play-bracket' && <Badge variant="secondary" className="text-base">{teamRecord}</Badge>}
+                                    </div>
                                 </div>
                             </CardTitle>
                         </CardHeader>
@@ -529,6 +566,44 @@ export default function PublicTeamsPage() {
                       </Card>
                     )})}
                   </div>
+
+                  {gameFormat === 'pool-play-bracket' && standings.length > 0 && (
+                      <Card className="rounded-xl border-2 shadow-2xl">
+                          <CardHeader className="p-4 bg-muted/50 rounded-t-lg">
+                              <CardTitle className="flex items-center gap-3 text-xl font-bold">
+                                  <Trophy className="h-6 w-6 text-primary" />
+                                  Pool Play Standings
+                              </CardTitle>
+                          </CardHeader>
+                          <CardContent className="p-0">
+                              <Table>
+                                  <TableHeader>
+                                      <TableRow>
+                                          <TableHead className="w-[50px] text-center">Rank</TableHead>
+                                          <TableHead>Team</TableHead>
+                                          <TableHead className="text-center">Wins</TableHead>
+                                          <TableHead className="text-center">Losses</TableHead>
+                                          <TableHead className="text-center">Point Diff.</TableHead>
+                                      </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                      {standings.map((s, index) => (
+                                          <TableRow key={s.teamName}>
+                                              <TableCell className="font-bold text-center">{index + 1}</TableCell>
+                                              <TableCell className="font-medium">{s.teamName}</TableCell>
+                                              <TableCell className="text-center">{s.wins}</TableCell>
+                                              <TableCell className="text-center">{s.losses}</TableCell>
+                                              <TableCell className={cn("text-center font-bold", s.pointDifferential > 0 ? 'text-green-600' : 'text-red-600')}>
+                                                  {s.pointDifferential > 0 ? `+${s.pointDifferential}` : s.pointDifferential}
+                                              </TableCell>
+                                          </TableRow>
+                                      ))}
+                                  </TableBody>
+                              </Table>
+                          </CardContent>
+                      </Card>
+                  )}
+
 
                    {schedule.length > 0 && !isKOTC && groupedSchedule && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -557,7 +632,7 @@ export default function PublicTeamsPage() {
                                                     <div className="font-medium text-left">
                                                         <div>{match.teamA}</div>
                                                         <div className="text-muted-foreground text-sm flex items-center gap-2">
-                                                          <span>{teamARecord}</span>
+                                                          {gameFormat !== 'level-up' && <span>{teamARecord}</span>}
                                                           {isLevelUp && teamAStats && <span>Level {teamAStats.level}</span>}
                                                         </div>
                                                     </div>
@@ -570,7 +645,7 @@ export default function PublicTeamsPage() {
                                                         <div>{match.teamB}</div>
                                                         <div className="text-muted-foreground text-sm flex items-center justify-end gap-2">
                                                            {isLevelUp && teamBStats && <span>Level {teamBStats.level}</span>}
-                                                           <span>{teamBRecord}</span>
+                                                           {gameFormat !== 'level-up' && <span>{teamBRecord}</span>}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -667,3 +742,4 @@ export default function PublicTeamsPage() {
     
 
     
+
