@@ -26,6 +26,7 @@ type TeamStats = {
   level: number;
 };
 
+
 const KOTCBaseRules = ({ pointsToWin, teamCount }: { pointsToWin: number; teamCount: number }) => (
     <>
         <p className="mb-4">A high-energy, continuous-play format designed to maximize playtime and interaction. All games are rally-scoring, straight up to {pointsToWin} points.</p>
@@ -98,7 +99,6 @@ const KOTCBaseRules = ({ pointsToWin, teamCount }: { pointsToWin: number; teamCo
         )}
       </>
 );
-
 
 const getFormatDetails = (pointsToWin: number, teamCount: number, handicaps: Handicap[]): Record<CombinedGameFormat, { title: string; description: React.ReactNode; icon: React.ElementType }> => ({
   'king-of-the-court': {
@@ -537,7 +537,7 @@ export default function PublicTeamsPage() {
                                    <div className="flex items-center gap-3">
                                         <Users className="h-5 w-5" />
                                         {team.name}
-                                        {gameFormat === 'pool-play-bracket' && <Badge variant="secondary" className="text-sm">{teamRecord}</Badge>}
+                                        {gameFormat === 'pool-play-bracket' && <Badge variant="outline" className="text-sm bg-background/20 text-white">{teamRecord}</Badge>}
                                    </div>
                                     <div className="flex items-center gap-3">
                                       {isLevelUp && <span className="font-semibold">{s.level}</span>}
@@ -693,7 +693,7 @@ export default function PublicTeamsPage() {
                           <TableBody>
                             {schedule.map((match) => (
                               <TableRow key={match.id} className="text-base">
-                                <TableCell className="px-2"><Badge>{match.court}</TableCell>
+                                <TableCell className="px-2"><Badge>{match.court}</Badge></TableCell>
                                 <TableCell className="font-medium px-2">{match.teamA}</TableCell>
                                 <TableCell className="text-center font-mono whitespace-nowrap p-1 w-[80px]">
                                     {match.resultA !== null && match.resultB !== null
