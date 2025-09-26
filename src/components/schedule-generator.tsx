@@ -84,7 +84,6 @@ function generateRoundRobinSchedule(
 
     // Loop until the game pool is the exact size needed
     while (gamePool.length < totalGamesNeeded && poolFillIterations < maxIterations) {
-        let gameAddedInThisRound = false;
         
         // Always work from a shuffled list of possibilities to ensure variance
         const shuffledPossibleMatchups = shuffleArray(allPossibleMatchups);
@@ -105,7 +104,6 @@ function generateRoundRobinSchedule(
                  teamPlayCounts[teamB]++;
                  matchups[teamA].push(teamB);
                  matchups[teamB].push(teamA);
-                 gameAddedInThisRound = true;
             }
         }
 
