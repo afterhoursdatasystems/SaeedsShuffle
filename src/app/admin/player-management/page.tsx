@@ -35,7 +35,7 @@ import { EditPlayerDialog } from '@/components/edit-player-dialog';
 import { AddPlayerDialog } from '@/components/add-player-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { publishData } from '@/app/actions';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 
 type SortKey = 'name' | 'team' | 'gender' | 'skill' | 'presence';
