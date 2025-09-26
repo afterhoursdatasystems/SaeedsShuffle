@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React from 'react';
@@ -25,7 +26,6 @@ type TeamStats = {
   pointDifferential: number;
   level: number;
 };
-
 
 const KOTCBaseRules = ({ pointsToWin, teamCount }: { pointsToWin: number; teamCount: number }) => (
     <>
@@ -537,7 +537,7 @@ export default function PublicTeamsPage() {
                                    <div className="flex items-center gap-3">
                                         <Users className="h-5 w-5" />
                                         {team.name}
-                                        {gameFormat === 'pool-play-bracket' && <Badge variant="outline" className="text-sm bg-background/20 text-white">{teamRecord}</Badge>}
+                                        {gameFormat === 'pool-play-bracket' && <span className="ml-2 font-normal text-sm opacity-80">({teamRecord})</span>}
                                    </div>
                                     <div className="flex items-center gap-3">
                                       {isLevelUp && <span className="font-semibold">{s.level}</span>}
