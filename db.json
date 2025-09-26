@@ -289,8 +289,8 @@
       "id": "4ab83eae-88d1-456a-9c99-2499805338ce",
       "court": "Court 1",
       "time": "4:00 PM",
-      "resultA": null,
-      "resultB": null,
+      "resultA": 20,
+      "resultB": 15,
       "teamA": "Loki",
       "teamB": "Zeus"
     },
@@ -298,8 +298,8 @@
       "id": "c5f5557a-bfd1-4862-8b2b-b55531981237",
       "court": "Court 2",
       "time": "4:00 PM",
-      "resultA": null,
-      "resultB": null,
+      "resultA": 20,
+      "resultB": 15,
       "teamA": "Thor",
       "teamB": "Aphrodite"
     },
@@ -307,8 +307,8 @@
       "id": "3387b30b-e37e-479f-9480-7f681aa501ac",
       "court": "Court 1",
       "time": "4:30 PM",
-      "resultA": null,
-      "resultB": null,
+      "resultA": 20,
+      "resultB": 15,
       "teamA": "Loki",
       "teamB": "Heimdall"
     },
@@ -316,8 +316,8 @@
       "id": "fbd4dd74-dc05-4e99-88ea-d20221cc91c9",
       "court": "Court 2",
       "time": "4:30 PM",
-      "resultA": null,
-      "resultB": null,
+      "resultA": 20,
+      "resultB": 15,
       "teamA": "Zeus",
       "teamB": "Tyr"
     }

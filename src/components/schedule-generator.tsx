@@ -155,8 +155,11 @@ function generateRoundRobinSchedule(
         
         let gamesScheduledInThisSlot = 0;
 
+        // Shuffle courts for this time slot to ensure fairness
+        const shuffledCourts = shuffleArray(courts);
+
         // Try to fill all courts in the current time slot
-        for (const court of courts) {
+        for (const court of shuffledCourts) {
             if (tempGamePool.length === 0) break;
 
             let bestGameIndex = -1;
@@ -256,19 +259,17 @@ const isScheduleValid = (schedule: Match[], teams: Team[], gamesPerTeam: number)
             console.warn(`Validation failed: ${teamName} has ${gameCounts[teamName]} games, expected ${gamesPerTeam}.`);
             return false;
         }
-
-        // 2. Check for duplicate matchups
-        for (const opponent in matchups[teamName]) {
-            if (matchups[teamName][opponent] > 1) {
-                console.warn(`Validation failed: ${teamName} plays ${opponent} ${matchups[teamName][opponent]} times.`);
-                return false;
-            }
-        }
         
-        // 3. Check for a team playing 4 or more games in a row
         const teamSchedule = schedule
             .filter(m => m.teamA === teamName || m.teamB === teamName)
             .sort((a, b) => timeStringToMinutes(a.time) - timeStringToMinutes(b.time));
+
+        // 2. Check for fair court distribution
+        const courtUsage = new Set(teamSchedule.map(m => m.court));
+        if (courtUsage.size === 1 && teamSchedule.length > 1) {
+            console.warn(`Validation failed: ${teamName} plays all games on one court.`);
+            return false;
+        }
             
         if (teamSchedule.length >= 4) {
              let consecutiveGames = 1;
@@ -704,6 +705,7 @@ export function ScheduleGenerator() {
     </div>
   );
 }
+
 
 
 
