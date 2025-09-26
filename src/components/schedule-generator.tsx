@@ -58,80 +58,91 @@ function generateRoundRobinSchedule(
     
     if (teamNames.length < 2) return [];
 
-    // --- 1. Create a balanced pool of games ---
-    const totalGamesNeeded = Math.ceil((teamNames.length * gamesPerTeam) / 2);
     let gamePool: { teamA: string; teamB: string }[] = [];
+    const totalGamesNeeded = Math.ceil((teamNames.length * gamesPerTeam) / 2);
     
-    const teamPlayCounts: { [key: string]: number } = {};
-    const matchups: { [key: string]: string[] } = {};
-    teamNames.forEach(name => {
-        teamPlayCounts[name] = 0;
-        matchups[name] = [];
-    });
+    // --- Create a balanced pool of games ---
+    const buildGamePool = (): { teamA: string; teamB: string }[] => {
+        let pool: { teamA: string; teamB: string }[] = [];
+        const teamPlayCounts: { [key: string]: number } = {};
+        const matchups: { [key: string]: string[] } = {};
+        teamNames.forEach(name => {
+            teamPlayCounts[name] = 0;
+            matchups[name] = [];
+        });
 
-    let allPossibleMatchups: { teamA: string; teamB: string }[] = [];
-    for (let i = 0; i < teamNames.length; i++) {
-        for (let j = i + 1; j < teamNames.length; j++) {
-            allPossibleMatchups.push({ teamA: teamNames[i], teamB: teamNames[j] });
+        let allPossibleMatchups: { teamA: string; teamB: string }[] = [];
+        for (let i = 0; i < teamNames.length; i++) {
+            for (let j = i + 1; j < teamNames.length; j++) {
+                allPossibleMatchups.push({ teamA: teamNames[i], teamB: teamNames[j] });
+            }
         }
-    }
-    
-    // Pass 1: Prioritize unique matchups
-    let availableGames = shuffleArray(allPossibleMatchups);
-    for (const matchup of availableGames) {
-        if (gamePool.length >= totalGamesNeeded) break;
-        const { teamA, teamB } = matchup;
-
-        if (teamPlayCounts[teamA] < gamesPerTeam && teamPlayCounts[teamB] < gamesPerTeam) {
-            gamePool.push(matchup);
-            teamPlayCounts[teamA]++;
-            teamPlayCounts[teamB]++;
-            matchups[teamA].push(teamB);
-            matchups[teamB].push(teamA);
-        }
-    }
-
-    // Pass 2 (Backfill): If needed, allow repeats to meet quotas
-    let fillIterations = 0;
-    while(gamePool.length < totalGamesNeeded && fillIterations < 50) {
-        let gameAdded = false;
-        let potentialGames = shuffleArray(allPossibleMatchups);
-        for (const matchup of potentialGames) {
+        
+        // Pass 1: Prioritize unique matchups
+        let availableGames = shuffleArray(allPossibleMatchups);
+        for (const matchup of availableGames) {
+            if (pool.length >= totalGamesNeeded) break;
             const { teamA, teamB } = matchup;
+
             if (teamPlayCounts[teamA] < gamesPerTeam && teamPlayCounts[teamB] < gamesPerTeam) {
-                gamePool.push(matchup);
+                pool.push(matchup);
                 teamPlayCounts[teamA]++;
                 teamPlayCounts[teamB]++;
                 matchups[teamA].push(teamB);
                 matchups[teamB].push(teamA);
-                gameAdded = true;
-                break;
             }
         }
-        if (!gameAdded) break; // Stop if no game could be added in a full pass
-        fillIterations++;
-    }
 
+        // Pass 2 (Backfill): If needed, allow repeats to meet quotas
+        let fillIterations = 0;
+        const maxFillIterations = 50; 
+        while(pool.length < totalGamesNeeded && fillIterations < maxFillIterations) {
+            let gameAdded = false;
+            let potentialGames = shuffleArray(allPossibleMatchups); // Reshuffle to try different combinations
 
-    console.log('Final game counts:', teamPlayCounts);
+            for (const matchup of potentialGames) {
+                 if (pool.length >= totalGamesNeeded) break;
+                const { teamA, teamB } = matchup;
+                if (teamPlayCounts[teamA] < gamesPerTeam && teamPlayCounts[teamB] < gamesPerTeam) {
+                    pool.push(matchup);
+                    teamPlayCounts[teamA]++;
+                    teamPlayCounts[teamB]++;
+                    matchups[teamA].push(teamB);
+                    matchups[teamB].push(teamA);
+                    gameAdded = true;
+                }
+            }
+            if (!gameAdded) break; // Stop if no game could be added in a full pass
+            fillIterations++;
+        }
+        console.log('Final game counts:', teamPlayCounts);
+        return pool;
+    };
+    
+    gamePool = buildGamePool();
     console.log(`--- SCHEDULING COMPLETE: ${gamePool.length} matches generated. ---`);
+
 
     // --- 2. Schedule the games into time slots ---
     const schedule: Match[] = [];
     const startTime = parse(startTimeStr, 'HH:mm', new Date());
-    const gameDuration = 30;
+    const gameDuration = 30; // in minutes
     let timeSlotIndex = 0;
 
-    const teamLastPlayTime: { [team: string]: number } = {};
-    teamNames.forEach(t => teamLastPlayTime[t] = -1);
+    const teamLastPlayTimeSlot: { [team: string]: number } = {};
+    teamNames.forEach(t => teamLastPlayTimeSlot[t] = -1);
 
     let tempGamePool = [...gamePool];
+    let schedulingAttempts = 0;
 
-    while (tempGamePool.length > 0) {
+    while (tempGamePool.length > 0 && schedulingAttempts < 500) {
         const currentTime = addMinutes(startTime, timeSlotIndex * gameDuration);
         const currentTimeSlotStr = format(currentTime, 'h:mm a');
         let teamsPlayingInThisSlot: string[] = [];
+        
+        let gamesScheduledInThisSlot = 0;
 
+        // Try to fill all courts in the current time slot
         for (const court of courts) {
             if (tempGamePool.length === 0) break;
 
@@ -142,11 +153,12 @@ function generateRoundRobinSchedule(
             for (let i = 0; i < tempGamePool.length; i++) {
                 const game = tempGamePool[i];
                 if (teamsPlayingInThisSlot.includes(game.teamA) || teamsPlayingInThisSlot.includes(game.teamB)) {
-                    continue;
+                    continue; // One of the teams is already playing in this time slot
                 }
-
-                const teamARest = timeSlotIndex - teamLastPlayTime[game.teamA];
-                const teamBRest = timeSlotIndex - teamLastPlayTime[game.teamB];
+                
+                // Prioritize games with teams that have rested the longest
+                const teamARest = timeSlotIndex - (teamLastPlayTimeSlot[game.teamA] ?? -1);
+                const teamBRest = timeSlotIndex - (teamLastPlayTimeSlot[game.teamB] ?? -1);
                 const score = teamARest + teamBRest;
 
                 if (score > bestGameScore) {
@@ -169,23 +181,14 @@ function generateRoundRobinSchedule(
                 });
 
                 teamsPlayingInThisSlot.push(teamA, teamB);
-                teamLastPlayTime[teamA] = timeSlotIndex;
-                teamLastPlayTime[teamB] = timeSlotIndex;
+                teamLastPlayTimeSlot[teamA] = timeSlotIndex;
+                teamLastPlayTimeSlot[teamB] = timeSlotIndex;
+                gamesScheduledInThisSlot++;
             }
         }
         
-        if (teamsPlayingInThisSlot.length === 0 && tempGamePool.length > 0) {
-            // This can happen if all remaining games involve teams that have already played each other recently.
-            // Or if remaining teams can't form a game without conflicting in a time slot.
-            // We must advance the time slot to allow for a break.
-        }
-
-
         timeSlotIndex++;
-        if (timeSlotIndex > 100) {
-            console.error("Scheduling loop exceeded max iterations.");
-            break;
-        }
+        schedulingAttempts++;
     }
 
 
@@ -206,30 +209,12 @@ function generateRoundRobinSchedule(
 
 const isScheduleValid = (schedule: Match[], teams: Team[], gamesPerTeam: number): boolean => {
     if (teams.length === 0) return true;
-    if (schedule.length === 0) return false;
+    if (schedule.length === 0 && (teams.length > 0 && gamesPerTeam > 0)) return false;
 
     const teamNames = teams.map(t => t.name);
     const gameCounts: { [key: string]: number } = {};
     const matchups: { [key: string]: { [opponent: string]: number } } = {};
     
-    const timeSlots: Record<string, string[]> = {};
-    const teamTimeSlots: Record<string, number[]> = {};
-    const timeStringToMinutes = (timeStr: string): number => parse(timeStr, 'h:mm a', new Date()).getTime();
-    
-    schedule.forEach((match, index) => {
-        const timeKey = match.time;
-        if (!timeSlots[timeKey]) {
-            timeSlots[timeKey] = [];
-        }
-        timeSlots[timeKey].push(match.teamA, match.teamB);
-        
-        const timeInMinutes = timeStringToMinutes(match.time);
-        if (!teamTimeSlots[match.teamA]) teamTimeSlots[match.teamA] = [];
-        if (!teamTimeSlots[match.teamB]) teamTimeSlots[match.teamB] = [];
-        teamTimeSlots[match.teamA].push(timeInMinutes);
-        teamTimeSlots[match.teamB].push(timeInMinutes);
-    });
-
     teamNames.forEach(name => {
         gameCounts[name] = 0;
         matchups[name] = {};
@@ -247,6 +232,8 @@ const isScheduleValid = (schedule: Match[], teams: Team[], gamesPerTeam: number)
         }
     }
     
+    const timeStringToMinutes = (timeStr: string): number => parse(timeStr, 'h:mm a', new Date()).getTime();
+
     for (const teamName of teamNames) {
         // 1. Check if every team has the correct number of games
         if (gameCounts[teamName] !== gamesPerTeam) {
@@ -262,15 +249,25 @@ const isScheduleValid = (schedule: Match[], teams: Team[], gamesPerTeam: number)
             }
         }
         
-        // 3. Check for back-to-back games
-        const playedTimes = teamTimeSlots[teamName].sort((a,b) => a - b);
-        for (let i = 0; i < playedTimes.length - 1; i++) {
-            const diff = playedTimes[i+1] - playedTimes[i];
-            // Difference should be more than 30 minutes (1800000ms)
-            if (diff < 1800000) { 
-                 console.warn(`Validation failed: ${teamName} has a back-to-back game.`);
-                 return false;
-            }
+        const teamSchedule = schedule.filter(m => m.teamA === teamName || m.teamB === teamName);
+        const playedTimes = teamSchedule.map(m => timeStringToMinutes(m.time)).sort((a,b) => a - b);
+        
+        // 3. Check for a team playing all their games in a row
+        if (playedTimes.length >= 4) {
+             let consecutiveGames = 1;
+             for (let i = 0; i < playedTimes.length -1; i++) {
+                const diff = playedTimes[i+1] - playedTimes[i];
+                // 30 minutes in milliseconds is 1800000. Allow for a small buffer.
+                if (diff > 0 && diff < 1800000 * 1.5) {
+                    consecutiveGames++;
+                } else {
+                    consecutiveGames = 1; // Reset if there's a break
+                }
+                if (consecutiveGames >= 4) {
+                    console.warn(`Validation failed: ${teamName} has 4 or more games in a row.`);
+                    return false;
+                }
+             }
         }
     }
     
@@ -374,7 +371,7 @@ export function ScheduleGenerator() {
         if (retries === MAX_RETRIES) {
             toast({
                 title: 'Scheduling Failed',
-                description: 'Could not generate a fair schedule after 50 attempts. Please try again or adjust settings.',
+                description: `Could not generate a fair schedule after ${MAX_RETRIES} attempts. Please try again or adjust settings.`,
                 variant: 'destructive',
             });
             return;
@@ -668,5 +665,6 @@ export function ScheduleGenerator() {
     </div>
   );
 }
+
 
 
