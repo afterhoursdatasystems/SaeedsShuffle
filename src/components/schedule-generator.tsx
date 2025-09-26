@@ -59,19 +59,14 @@ function generateRoundRobinSchedule(
     if (teamNames.length < 2) {
         return [];
     }
-    
-    // --- Phase 1: Create a fair game pool ---
-    const totalGamesNeeded = Math.ceil((teamNames.length * gamesPerTeam) / 2);
-    let gamePool: { teamA: string; teamB: string }[] = [];
+
     const teamPlayCounts: { [key: string]: number } = {};
     const matchups: { [key: string]: string[] } = {};
-
     teamNames.forEach(name => {
         teamPlayCounts[name] = 0;
         matchups[name] = [];
     });
-    
-    // Create a list of all possible unique matchups
+
     let allPossibleMatchups: { teamA: string; teamB: string }[] = [];
     for (let i = 0; i < teamNames.length; i++) {
         for (let j = i + 1; j < teamNames.length; j++) {
@@ -79,7 +74,10 @@ function generateRoundRobinSchedule(
         }
     }
     
-    // --- Pass 1: Fill the pool with unique matchups first ---
+    const totalGamesNeeded = Math.ceil((teamNames.length * gamesPerTeam) / 2);
+    let gamePool: { teamA: string; teamB: string }[] = [];
+
+    // --- Pass 1: Prioritize unique matchups ---
     let shuffledUniqueGames = shuffleArray(allPossibleMatchups);
     for (const matchup of shuffledUniqueGames) {
         if (gamePool.length >= totalGamesNeeded) break;
@@ -92,62 +90,74 @@ function generateRoundRobinSchedule(
             matchups[teamB].push(teamA);
         }
     }
-
-    // --- Pass 2 (Backfill): Allow repeat matchups ONLY if necessary to meet quotas ---
+    
+    // --- Pass 2 (Backfill): If needed, allow repeats to meet quotas ---
     let fillIterations = 0;
     while (gamePool.length < totalGamesNeeded && fillIterations < 50) {
+        let gameAdded = false;
+        // Find teams that still need games
         const teamsNeedingGames = teamNames.filter(name => teamPlayCounts[name] < gamesPerTeam);
-        if (teamsNeedingGames.length < 2) break;
 
-        const shuffledAllPossible = shuffleArray(allPossibleMatchups);
-        for (const matchup of shuffledAllPossible) {
-            if (gamePool.length >= totalGamesNeeded) break;
+        if (teamsNeedingGames.length < 2) break; // Not enough teams to form a game
+
+        // Try to find a matchup between teams that need games
+        let potentialMatchups = shuffleArray(allPossibleMatchups);
+        for(const matchup of potentialMatchups) {
             const { teamA, teamB } = matchup;
-            if (teamPlayCounts[teamA] < gamesPerTeam && teamPlayCounts[teamB] < gamesPerTeam) {
-                gamePool.push(matchup);
+            if(teamPlayCounts[teamA] < gamesPerTeam && teamPlayCounts[teamB] < gamesPerTeam) {
+                 gamePool.push(matchup);
                 teamPlayCounts[teamA]++;
                 teamPlayCounts[teamB]++;
                 matchups[teamA].push(teamB);
                 matchups[teamB].push(teamA);
+                gameAdded = true;
+                break; // Found a game, add it and restart the while loop's check
             }
         }
+        
+        if (!gameAdded) {
+            // This should ideally not happen with the current logic, but is a safeguard.
+            break;
+        }
+
         fillIterations++;
     }
 
     console.log('Final game counts:', teamPlayCounts);
     console.log(`--- SCHEDULING COMPLETE: ${gamePool.length} matches generated. ---`);
 
-
-    // --- Phase 2: Schedule games from the pool ---
     const schedule: Match[] = [];
     const startTime = parse(startTimeStr, 'HH:mm', new Date());
-    const gameDuration = 30; // minutes
+    const gameDuration = 30;
     let timeSlotIndex = 0;
-    
+
     const teamLastPlayTime: { [team: string]: number } = {};
     teamNames.forEach(t => teamLastPlayTime[t] = -1);
 
-    const tempGamePool = [...gamePool];
+    let tempGamePool = [...gamePool];
 
     while (tempGamePool.length > 0) {
         const currentTime = addMinutes(startTime, timeSlotIndex * gameDuration);
         const currentTimeSlotStr = format(currentTime, 'h:mm a');
         let teamsPlayingInThisSlot: string[] = [];
-        
+
         for (const court of courts) {
-            if(tempGamePool.length === 0) break;
+            if (tempGamePool.length === 0) break;
 
             let bestGameIndex = -1;
             let bestGameScore = -1;
 
+            // Find the best game for the current court and time slot
             for (let i = 0; i < tempGamePool.length; i++) {
                 const game = tempGamePool[i];
+                // CRITICAL CHECK: Ensure neither team is already scheduled in this time slot
                 if (teamsPlayingInThisSlot.includes(game.teamA) || teamsPlayingInThisSlot.includes(game.teamB)) {
-                    continue; 
+                    continue;
                 }
-                
-                const teamARest = timeSlotIndex - teamLastPlayTime[game.teamA];
-                const teamBRest = timeSlotIndex - teamLastPlayTime[game.teamB];
+
+                // Prioritize teams that have had a longer break
+                const teamARest = timeSlotIndex - (teamLastPlayTime[game.teamA] ?? -1);
+                const teamBRest = timeSlotIndex - (teamLastPlayTime[game.teamB] ?? -1);
                 const score = teamARest + teamBRest;
 
                 if (score > bestGameScore) {
@@ -157,7 +167,7 @@ function generateRoundRobinSchedule(
             }
 
             if (bestGameIndex !== -1) {
-                const gameToSchedule = tempGamePool.splice(bestGameIndex, 1)[0];
+                const [gameToSchedule] = tempGamePool.splice(bestGameIndex, 1);
                 const { teamA, teamB } = gameToSchedule;
 
                 schedule.push({
@@ -168,19 +178,20 @@ function generateRoundRobinSchedule(
                     resultB: null,
                     ...gameToSchedule
                 });
-                
+
                 teamsPlayingInThisSlot.push(teamA, teamB);
                 teamLastPlayTime[teamA] = timeSlotIndex;
                 teamLastPlayTime[teamB] = timeSlotIndex;
             }
         }
-        
+
         timeSlotIndex++;
         if (timeSlotIndex > 100) {
-             console.error("Scheduling loop exceeded max iterations.");
-             break;
+            console.error("Scheduling loop exceeded max iterations.");
+            break;
         }
     }
+
 
     console.log(`--- Analyzing Generated Schedule ---`);
     teamNames.forEach(teamName => {
@@ -199,22 +210,27 @@ function generateRoundRobinSchedule(
 
 const isScheduleValid = (schedule: Match[], teams: Team[], gamesPerTeam: number): boolean => {
     if (schedule.length === 0 && teams.length > 0) return false;
-    if(teams.length === 0) return true;
+    if (teams.length === 0) return true;
 
     const teamNames = teams.map(t => t.name);
     const gameCounts: { [key: string]: number } = {};
-    const matchups: { [key: string]: string[] } = {};
+    const matchups: { [key: string]: { [opponent: string]: number } } = {};
 
     teamNames.forEach(name => {
         gameCounts[name] = 0;
-        matchups[name] = [];
+        matchups[name] = {};
     });
 
     for (const match of schedule) {
         if (gameCounts[match.teamA] !== undefined) gameCounts[match.teamA]++;
         if (gameCounts[match.teamB] !== undefined) gameCounts[match.teamB]++;
-        if (matchups[match.teamA]) matchups[match.teamA].push(match.teamB);
-        if (matchups[match.teamB]) matchups[match.teamB].push(match.teamA);
+        
+        if (matchups[match.teamA]) {
+            matchups[match.teamA][match.teamB] = (matchups[match.teamA][match.teamB] || 0) + 1;
+        }
+        if (matchups[match.teamB]) {
+            matchups[match.teamB][match.teamA] = (matchups[match.teamB][match.teamA] || 0) + 1;
+        }
     }
     
     // 1. Check if every team has the correct number of games
@@ -229,13 +245,9 @@ const isScheduleValid = (schedule: Match[], teams: Team[], gamesPerTeam: number)
     const uniqueGamesPossible = (teamNames.length * (teamNames.length - 1)) / 2;
     if (schedule.length <= uniqueGamesPossible) {
         for (const teamName of teamNames) {
-            const opponentCounts: { [key: string]: number } = {};
-            for (const opponent of matchups[teamName]) {
-                opponentCounts[opponent] = (opponentCounts[opponent] || 0) + 1;
-            }
-            for (const opponent in opponentCounts) {
-                if (opponentCounts[opponent] > 1) {
-                    console.warn(`Validation failed: ${teamName} plays ${opponent} ${opponentCounts[opponent]} times.`);
+            for (const opponent in matchups[teamName]) {
+                if (matchups[teamName][opponent] > 1) {
+                    console.warn(`Validation failed: ${teamName} plays ${opponent} ${matchups[teamName][opponent]} times.`);
                     return false;
                 }
             }
@@ -255,7 +267,7 @@ export function ScheduleGenerator() {
 
   const timeOptions = useMemo(() => {
     const options = [];
-    const startHour = 13; // 1 PM
+    const startHour = 14; // 2 PM
     const endHour = 22; // 10 PM
     for (let h = startHour; h <= endHour; h++) {
         for (let m = 0; m < 60; m += 15) {
@@ -327,55 +339,48 @@ export function ScheduleGenerator() {
 
     let newSchedule: Match[] = [];
     let formatDescription = '';
-    let retries = 0;
-    const MAX_RETRIES = 50;
-
-    switch(gameFormat) {
-        case 'pool-play-bracket':
-        case 'round-robin':
-        case 'level-up':
-            while(retries < MAX_RETRIES) {
-                newSchedule = generateRoundRobinSchedule(teams.map(t => t.name), gamesPerTeam, startTime);
-                if (isScheduleValid(newSchedule, teams, gamesPerTeam)) {
-                    break;
-                }
-                retries++;
-                console.log(`Invalid schedule generated, retrying... (${retries}/${MAX_RETRIES})`);
+    
+    if (gameFormat === 'pool-play-bracket' || gameFormat === 'round-robin' || gameFormat === 'level-up') {
+        let retries = 0;
+        const MAX_RETRIES = 50;
+        while(retries < MAX_RETRIES) {
+            newSchedule = generateRoundRobinSchedule(teams.map(t => t.name), gamesPerTeam, startTime);
+            if (isScheduleValid(newSchedule, teams, gamesPerTeam)) {
+                break;
             }
-            if (retries === MAX_RETRIES) {
-                console.error("Failed to generate a valid schedule after 50 attempts.");
-                toast({
-                    title: 'Scheduling Failed',
-                    description: 'Could not generate a fair schedule. Please try again or adjust settings.',
-                    variant: 'destructive',
-                });
-                return; // Return here to avoid setting a bad schedule
-            }
-
-            if (gameFormat === 'round-robin') formatDescription = "Round Robin";
-            else if (gameFormat === 'level-up') formatDescription = "Level Up";
-            else formatDescription = "Pool Play / Bracket";
-            break;
-        case 'king-of-the-court':
-            newSchedule = generateKOTCSchedule(teams.map(t => t.name));
-            switch(gameVariant) {
-                case 'standard': formatDescription = "King of the Court"; break;
-                case 'monarch-of-the-court': formatDescription = "Monarch of the Court"; break;
-                case 'king-s-ransom': formatDescription = "King's Ransom"; break;
-                case 'power-up-round': formatDescription = "Power-Up Round"; break;
-            }
-            break;
-        case 'blind-draw':
-            toast({ title: 'Blind Draw schedule not implemented yet.' });
-            formatDescription = 'Blind Draw';
-            break;
-        default:
-             toast({
-                title: 'Unknown game format',
-                description: 'Please select a valid game format.',
+            retries++;
+            console.log(`Invalid schedule generated, retrying... (${retries}/${MAX_RETRIES})`);
+        }
+        if (retries === MAX_RETRIES) {
+            toast({
+                title: 'Scheduling Failed',
+                description: 'Could not generate a fair schedule after 50 attempts. Please try again or adjust settings.',
                 variant: 'destructive',
-             });
-             return;
+            });
+            return;
+        }
+
+        if (gameFormat === 'round-robin') formatDescription = "Round Robin";
+        else if (gameFormat === 'level-up') formatDescription = "Level Up";
+        else formatDescription = "Pool Play / Bracket";
+    } else if (gameFormat === 'king-of-the-court') {
+        newSchedule = generateKOTCSchedule(teams.map(t => t.name));
+        switch(gameVariant) {
+            case 'standard': formatDescription = "King of the Court"; break;
+            case 'monarch-of-the-court': formatDescription = "Monarch of the Court"; break;
+            case 'king-s-ransom': formatDescription = "King's Ransom"; break;
+            case 'power-up-round': formatDescription = "Power-Up Round"; break;
+        }
+    } else if (gameFormat === 'blind-draw') {
+        toast({ title: 'Blind Draw schedule not implemented yet.' });
+        formatDescription = 'Blind Draw';
+    } else {
+         toast({
+            title: 'Unknown game format',
+            description: 'Please select a valid game format.',
+            variant: 'destructive',
+         });
+         return;
     }
 
     setSchedule(newSchedule);
@@ -643,3 +648,4 @@ export function ScheduleGenerator() {
     </div>
   );
 }
+
