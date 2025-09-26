@@ -485,10 +485,24 @@ export function ScheduleGenerator() {
     }));
   };
   
-  const handleSaveAllResults = () => {
-    // Here you would typically send the results to your backend/DB
-    // For this prototype, we just toast
-    toast({ title: "Results saved", description: "All match results have been updated." });
+  const handleSaveAllResults = async () => {
+    setIsPublishing(true);
+    const finalFormat = gameFormat === 'king-of-the-court' && gameVariant !== 'standard' ? gameVariant : gameFormat;
+    const result = await publishData(teams, finalFormat, schedule, activeRule, pointsToWin);
+    setIsPublishing(false);
+
+    if (result.success) {
+      toast({
+        title: "Results Published!",
+        description: "All match results have been updated on the public dashboard."
+      });
+    } else {
+        toast({
+            title: 'Error Saving Results',
+            description: result.error,
+            variant: 'destructive',
+        });
+    }
   };
   
     const handleClearSchedule = () => {
@@ -580,9 +594,9 @@ export function ScheduleGenerator() {
                     <CardDescription>Enter results as games are completed.</CardDescription>
                 </div>
                  <div className="flex gap-2 w-full sm:w-auto">
-                    <Button onClick={handleSaveAllResults} variant="secondary" className="w-full sm:w-auto">
+                    <Button onClick={handleSaveAllResults} variant="secondary" className="w-full sm:w-auto" disabled={isPublishing}>
                         <Save className="mr-2 h-4 w-4" />
-                        Save All Results
+                        {isPublishing ? 'Saving...' : 'Save All Results'}
                     </Button>
                      <Button onClick={handlePublish} disabled={isPublishing} className="w-full sm:w-auto">
                         <Send className="mr-2 h-4 w-4" />
@@ -681,6 +695,7 @@ export function ScheduleGenerator() {
     </div>
   );
 }
+
 
 
 

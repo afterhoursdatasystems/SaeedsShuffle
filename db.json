@@ -214,111 +214,111 @@
   "format": "pool-play-bracket",
   "schedule": [
     {
-      "id": "38aa7575-c857-4f75-9c3f-5414c74a9e48",
+      "id": "d276c15b-80da-426a-a166-2c70c37f96bc",
       "court": "Court 1",
       "time": "2:00 PM",
-      "resultA": null,
-      "resultB": null,
-      "teamA": "Thor",
-      "teamB": "Aphrodite"
-    },
-    {
-      "id": "73f3fd86-ee29-4749-a643-ac2382995866",
-      "court": "Court 2",
-      "time": "2:00 PM",
-      "resultA": null,
-      "resultB": null,
-      "teamA": "Zeus",
-      "teamB": "Heimdall"
-    },
-    {
-      "id": "374803b8-faff-4c7f-9c6d-87963be59c58",
-      "court": "Court 1",
-      "time": "2:30 PM",
-      "resultA": null,
-      "resultB": null,
+      "resultA": 25,
+      "resultB": 16,
       "teamA": "Heimdall",
       "teamB": "Thor"
     },
     {
-      "id": "40fb436d-0b99-4ee7-87c2-ff6939db7a46",
+      "id": "ea40a50e-05d6-433b-9bc5-42a7c4b85d27",
+      "court": "Court 2",
+      "time": "2:00 PM",
+      "resultA": 25,
+      "resultB": 18,
+      "teamA": "Zeus",
+      "teamB": "Aphrodite"
+    },
+    {
+      "id": "838f6ea6-3d8c-4e17-9eba-142114adee66",
+      "court": "Court 1",
+      "time": "2:30 PM",
+      "resultA": 25,
+      "resultB": 20,
+      "teamA": "Loki",
+      "teamB": "Tyr"
+    },
+    {
+      "id": "29b38935-13b7-49ee-97b9-935bb4119a93",
       "court": "Court 2",
       "time": "2:30 PM",
+      "resultA": 20,
+      "resultB": 15,
+      "teamA": "Heimdall",
+      "teamB": "Aphrodite"
+    },
+    {
+      "id": "f3aa22fe-0116-4fbb-9bb0-a861263ba0a0",
+      "court": "Court 1",
+      "time": "3:00 PM",
+      "resultA": 20,
+      "resultB": 15,
+      "teamA": "Zeus",
+      "teamB": "Thor"
+    },
+    {
+      "id": "3eaf4c40-e47e-414e-9638-dda87fd43936",
+      "court": "Court 2",
+      "time": "3:00 PM",
+      "resultA": 20,
+      "resultB": 15,
+      "teamA": "Heimdall",
+      "teamB": "Tyr"
+    },
+    {
+      "id": "274cc24d-ba96-4d88-a7d8-6dfb5f195b51",
+      "court": "Court 1",
+      "time": "3:30 PM",
+      "resultA": 20,
+      "resultB": 15,
+      "teamA": "Loki",
+      "teamB": "Thor"
+    },
+    {
+      "id": "129cab58-d980-4504-9cd7-623bc8b404c9",
+      "court": "Court 2",
+      "time": "3:30 PM",
+      "resultA": 20,
+      "resultB": 15,
+      "teamA": "Tyr",
+      "teamB": "Aphrodite"
+    },
+    {
+      "id": "4ab83eae-88d1-456a-9c99-2499805338ce",
+      "court": "Court 1",
+      "time": "4:00 PM",
       "resultA": null,
       "resultB": null,
       "teamA": "Loki",
       "teamB": "Zeus"
     },
     {
-      "id": "22acb701-7dec-422f-88fc-42ae33816467",
-      "court": "Court 1",
-      "time": "3:00 PM",
-      "resultA": null,
-      "resultB": null,
-      "teamA": "Heimdall",
-      "teamB": "Aphrodite"
-    },
-    {
-      "id": "bf8ff7de-5298-4fe4-a82a-56fb85071daf",
+      "id": "c5f5557a-bfd1-4862-8b2b-b55531981237",
       "court": "Court 2",
-      "time": "3:00 PM",
-      "resultA": null,
-      "resultB": null,
-      "teamA": "Tyr",
-      "teamB": "Thor"
-    },
-    {
-      "id": "0c00426b-2118-4198-b6d9-9804d810e186",
-      "court": "Court 1",
-      "time": "3:30 PM",
-      "resultA": null,
-      "resultB": null,
-      "teamA": "Zeus",
-      "teamB": "Thor"
-    },
-    {
-      "id": "4afa7ba7-00fe-4d5a-809e-fd34608d86e6",
-      "court": "Court 2",
-      "time": "3:30 PM",
-      "resultA": null,
-      "resultB": null,
-      "teamA": "Tyr",
-      "teamB": "Aphrodite"
-    },
-    {
-      "id": "25dbde00-cb6e-402d-9066-0e430baa21dc",
-      "court": "Court 1",
       "time": "4:00 PM",
+      "resultA": null,
+      "resultB": null,
+      "teamA": "Thor",
+      "teamB": "Aphrodite"
+    },
+    {
+      "id": "3387b30b-e37e-479f-9480-7f681aa501ac",
+      "court": "Court 1",
+      "time": "4:30 PM",
       "resultA": null,
       "resultB": null,
       "teamA": "Loki",
       "teamB": "Heimdall"
     },
     {
-      "id": "484d3986-2e1e-4f5f-a7a6-82867f512f29",
+      "id": "fbd4dd74-dc05-4e99-88ea-d20221cc91c9",
       "court": "Court 2",
-      "time": "4:00 PM",
-      "resultA": null,
-      "resultB": null,
-      "teamA": "Zeus",
-      "teamB": "Tyr"
-    },
-    {
-      "id": "faa66dbd-31c1-4eef-ad1d-f6b4afcdeaa5",
-      "court": "Court 1",
       "time": "4:30 PM",
       "resultA": null,
       "resultB": null,
-      "teamA": "Loki",
-      "teamB": "Aphrodite"
-    },
-    {
-      "id": "d1c9e213-4f65-4482-96ab-553609a84b90",
-      "court": "Court 1",
-      "time": "5:00 PM",
-      "resultA": null,
-      "resultB": null,
-      "teamA": "Loki",
+      "teamA": "Zeus",
       "teamB": "Tyr"
     }
   ],
