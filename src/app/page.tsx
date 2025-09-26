@@ -179,7 +179,7 @@ const getFormatDetails = (pointsToWin: number, teamCount: number, handicaps: Han
         <h4 className="font-bold text-lg mb-2">Phase 1: Pool Play</h4>
         <p className="mb-4">All teams will play against other teams in their assigned pool. The results of these matches (wins, losses, and point differential) will be used to rank the teams and determine their seeding for the bracket.</p>
         <h4 className="font-bold text-lg mb-2">Phase 2: Bracket Play</h4>
-        <p>After pool play is complete, teams are seeded into a single-elimination tournament. The top-ranked team plays the lowest-ranked team, and so on. In this phase, if you win, you advance; if you lose, you're out. The last team standing is the tournament champion!</p>
+        <p>After pool play is complete, the top four teams are seeded into a single-elimination tournament. The top-ranked team plays the lowest-ranked team, and so on. In this phase, if you win, you advance; if you lose, you're out. The last team standing is the tournament champion!</p>
       </div>
     ),
   },
@@ -475,6 +475,41 @@ export default function PublicTeamsPage() {
     const rank = standings.findIndex(s => s.teamName === teamName);
     return rank !== -1 ? rank + 1 : null;
   }
+  
+    const { playoffBracket, areAllGamesPlayed } = useMemo(() => {
+        if (gameFormat !== 'pool-play-bracket' || standings.length < 4) {
+            return { playoffBracket: null, areAllGamesPlayed: false };
+        }
+        
+        const allPlayed = schedule.every(match => match.resultA !== null && match.resultB !== null);
+
+        if (!allPlayed) {
+            return { playoffBracket: null, areAllGamesPlayed: false };
+        }
+
+        // Assuming top 4 teams make the bracket
+        const top4 = standings.slice(0, 4);
+        if (top4.length < 4) {
+            return { playoffBracket: null, areAllGamesPlayed: allPlayed };
+        }
+
+        const semiFinal1 = {
+            teamA: top4[0], // #1 Seed
+            teamB: top4[3], // #4 Seed
+        };
+        const semiFinal2 = {
+            teamA: top4[1], // #2 Seed
+            teamB: top4[2], // #3 Seed
+        };
+
+        return { 
+            playoffBracket: {
+                semiFinals: [semiFinal1, semiFinal2]
+            },
+            areAllGamesPlayed: allPlayed 
+        };
+    }, [gameFormat, standings, schedule]);
+
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
@@ -537,12 +572,12 @@ export default function PublicTeamsPage() {
                         isLevelUp ? `border-transparent` : 'border-primary'
                       )}>
                         <CardHeader className={cn("p-4 rounded-t-lg", isLevelUp ? getLevelHeaderStyle(s.level) : 'bg-slate-600 text-white')}>
-                            <CardTitle className="text-lg font-bold">
+                             <CardTitle className="text-lg font-bold">
                                 <div className="flex items-center justify-between">
                                    <div className="flex items-center gap-3">
                                         <Users className="h-5 w-5" />
-                                        {team.name}
-                                        {gameFormat === 'pool-play-bracket' && <span className="ml-2 font-normal text-base opacity-90">{teamRecord}</span>}
+                                        <span>{team.name}</span>
+                                         {gameFormat === 'pool-play-bracket' && <span className="ml-2 font-normal text-sm opacity-80">{teamRecord}</span>}
                                    </div>
                                     <div className="flex items-center gap-3">
                                       {isLevelUp && <span className="font-semibold">{s.level}</span>}
@@ -611,6 +646,53 @@ export default function PublicTeamsPage() {
                           </CardContent>
                       </Card>
                   )}
+                  
+                  {playoffBracket && (
+                    <Card className="rounded-xl border-2 shadow-2xl">
+                         <CardHeader className="p-4 bg-muted/50 rounded-t-lg">
+                            <CardTitle className="flex items-center gap-3 text-xl font-bold">
+                                <Trophy className="h-6 w-6 text-primary" />
+                                Playoff Bracket
+                            </CardTitle>
+                         </CardHeader>
+                         <CardContent className="p-6">
+                            <div className="flex flex-col md:flex-row justify-center items-center gap-8">
+                                {/* Semi-Finals */}
+                                <div className="flex flex-col gap-8">
+                                    {playoffBracket.semiFinals.map((match, index) => (
+                                        <div key={index} className="space-y-2">
+                                             <p className="font-bold text-center text-muted-foreground">Semi-Final {index + 1}</p>
+                                             <div className="border rounded-lg p-3 min-w-[250px]">
+                                                <div className="flex justify-between items-center">
+                                                    <span className="font-bold">#{getRankByName(match.teamA.teamName)} {match.teamA.teamName}</span>
+                                                    <span className="text-muted-foreground text-sm">{match.teamA.wins}-{match.teamA.losses}</span>
+                                                </div>
+                                                <Separator className="my-2" />
+                                                <div className="flex justify-between items-center">
+                                                     <span className="font-bold">#{getRankByName(match.teamB.teamName)} {match.teamB.teamName}</span>
+                                                     <span className="text-muted-foreground text-sm">{match.teamB.wins}-{match.teamB.losses}</span>
+                                                </div>
+                                             </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                
+                                {/* Connector and Final */}
+                                <div className="flex items-center">
+                                    <div className="hidden md:block w-8 border-t-2 border-dashed"></div>
+                                    <div className="space-y-2">
+                                         <p className="font-bold text-center text-muted-foreground">Final</p>
+                                         <div className="border-2 border-primary rounded-lg p-4 min-w-[250px] bg-primary/5">
+                                            <div className="text-center font-semibold">TBD</div>
+                                             <Separator className="my-2" />
+                                            <div className="text-center font-semibold">TBD</div>
+                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+                         </CardContent>
+                    </Card>
+                  )}
 
 
                    {schedule.length > 0 && !isKOTC && groupedSchedule && (
@@ -643,7 +725,7 @@ export default function PublicTeamsPage() {
                                                         <div>{match.teamA}</div>
                                                         <div className="text-muted-foreground text-sm flex items-center gap-2">
                                                           {gameFormat === 'pool-play-bracket' && teamARank && <span>#{teamARank}</span>}
-                                                          {gameFormat !== 'level-up' && <span>{teamARecord}</span>}
+                                                          <span>{teamARecord}</span>
                                                           {isLevelUp && teamAStats && <span>Level {teamAStats.level}</span>}
                                                         </div>
                                                     </div>
@@ -656,7 +738,7 @@ export default function PublicTeamsPage() {
                                                         <div>{match.teamB}</div>
                                                         <div className="text-muted-foreground text-sm flex items-center justify-end gap-2">
                                                            {isLevelUp && teamBStats && <span>Level {teamBStats.level}</span>}
-                                                           {gameFormat !== 'level-up' && <span>{teamBRecord}</span>}
+                                                           <span>{teamBRecord}</span>
                                                            {gameFormat === 'pool-play-bracket' && teamBRank && <span>#{teamBRank}</span>}
                                                         </div>
                                                     </div>
