@@ -283,17 +283,17 @@ export default function PlayerManagementPage() {
   return (
     <>
       <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
-          <div>
-            <h1 className="text-3xl font-bold">Player Management</h1>
-            <p className="text-muted-foreground">
-              Manage your league's players here. Click a player to toggle their presence.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-             <Button onClick={() => setIsAddPlayerOpen(true)} className="flex-grow sm:flex-grow-0">
-              <UserPlus className="mr-2 h-4 w-4" />
-              Add Player
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold">Player Management</h1>
+          <p className="text-muted-foreground">
+            Manage your league's players here. Click a player to toggle their presence.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap gap-2 mb-8">
+            <Button onClick={() => setIsAddPlayerOpen(true)} className="flex-grow sm:flex-grow-0">
+            <UserPlus className="mr-2 h-4 w-4" />
+            Add Player
             </Button>
             <Button onClick={handleResetPresence} variant="outline" className="flex-grow sm:flex-grow-0">
                 <RotateCcw className="mr-2 h-4 w-4" />
@@ -304,7 +304,7 @@ export default function PlayerManagementPage() {
                 <FileUp className="mr-2 h-4 w-4" />
                 Import CSV
             </Button>
-             <Button onClick={handleExportCSV} variant="outline" className="flex-grow sm:flex-grow-0">
+            <Button onClick={handleExportCSV} variant="outline" className="flex-grow sm:flex-grow-0">
                 <FileDown className="mr-2 h-4 w-4" />
                 Export CSV
             </Button>
@@ -328,7 +328,6 @@ export default function PlayerManagementPage() {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-          </div>
         </div>
         
         {/* Mobile View: Cards */}
