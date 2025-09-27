@@ -219,7 +219,7 @@
   ],
   "format": "pool-play-bracket",
   "activeRule": null,
-  "pointsToWin": 25,
+  "pointsToWin": 21,
   "levelUpHandicaps": [
     {
       "level": 2,

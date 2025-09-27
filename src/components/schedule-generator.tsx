@@ -227,7 +227,7 @@ function generateRoundRobinSchedule(
     return schedule;
 }
 
-const isScheduleValid = (schedule: Match[], teams: Team[], gamesPerTeam: number): boolean => {
+const isScheduleValid = (schedule: Match[], teams: Team[], gamesPerTeam: number, gameDuration: number): boolean => {
     if (teams.length === 0) return true;
     if (schedule.length === 0 && (teams.length > 0 && gamesPerTeam > 0)) return false;
 
@@ -279,8 +279,10 @@ const isScheduleValid = (schedule: Match[], teams: Team[], gamesPerTeam: number)
              for (let i = 0; i < teamSchedule.length - 1; i++) {
                 const time1 = timeStringToMinutes(teamSchedule[i].time);
                 const time2 = timeStringToMinutes(teamSchedule[i+1].time);
+                
+                const restTimeInMillis = gameDuration * 60 * 1000;
 
-                if (time2 - time1 < 1800000 * 1.5) { // less than 45 mins apart
+                if (time2 - time1 < restTimeInMillis) { // Check if time between games is less than one game duration
                     consecutiveGames++;
                 } else {
                     consecutiveGames = 1; // Reset if there's a break
@@ -384,7 +386,7 @@ export function ScheduleGenerator() {
         const MAX_RETRIES = 50;
         while(retries < MAX_RETRIES) {
             newSchedule = generateRoundRobinSchedule(teams.map(t => t.name), gamesPerTeam, startTime, gameDuration);
-            if (isScheduleValid(newSchedule, teams, gamesPerTeam)) {
+            if (isScheduleValid(newSchedule, teams, gamesPerTeam, gameDuration)) {
                 break;
             }
             retries++;
@@ -976,6 +978,7 @@ export function ScheduleGenerator() {
     </div>
   );
 }
+
 
 
 
