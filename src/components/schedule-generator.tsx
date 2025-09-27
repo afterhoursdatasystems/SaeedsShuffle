@@ -53,6 +53,7 @@ function generateRoundRobinSchedule(
     teamNames: string[],
     gamesPerTeam: number,
     startTimeStr: string,
+    gameDuration: number,
     courts = ['Court 1', 'Court 2']
 ): Match[] {
     console.log(`--- SCHEDULER START: ${teamNames.length} teams, ${gamesPerTeam} games each, ${courts.length} courts ---`);
@@ -140,7 +141,6 @@ function generateRoundRobinSchedule(
     // --- 2. Schedule the games into time slots ---
     const schedule: Match[] = [];
     const startTime = parse(startTimeStr, 'HH:mm', new Date());
-    const gameDuration = 30; // in minutes
     let timeSlotIndex = 0;
 
     const teamLastPlayTimeSlot: { [team: string]: number } = {};
@@ -299,7 +299,7 @@ const isScheduleValid = (schedule: Match[], teams: Team[], gamesPerTeam: number)
 
 
 export function ScheduleGenerator() {
-  const { teams, schedule, setSchedule, gameFormat, gameVariant, players, activeRule, pointsToWin, gamesPerTeam, setGamesPerTeam } = usePlayerContext();
+  const { teams, schedule, setSchedule, gameFormat, gameVariant, players, activeRule, pointsToWin, gamesPerTeam, setGamesPerTeam, gameDuration, setGameDuration } = usePlayerContext();
   const { toast } = useToast();
   const [isPublishing, setIsPublishing] = React.useState(false);
   const [startTime, setStartTime] = React.useState('18:45');
@@ -383,7 +383,7 @@ export function ScheduleGenerator() {
         let retries = 0;
         const MAX_RETRIES = 50;
         while(retries < MAX_RETRIES) {
-            newSchedule = generateRoundRobinSchedule(teams.map(t => t.name), gamesPerTeam, startTime);
+            newSchedule = generateRoundRobinSchedule(teams.map(t => t.name), gamesPerTeam, startTime, gameDuration);
             if (isScheduleValid(newSchedule, teams, gamesPerTeam)) {
                 break;
             }
@@ -728,7 +728,7 @@ export function ScheduleGenerator() {
             <div className="space-y-2">
                 <Label htmlFor="start-time">Start Time</Label>
                  <Select value={startTime} onValueChange={setStartTime}>
-                    <SelectTrigger className="max-w-xs" id="start-time">
+                    <SelectTrigger className="w-full md:w-[150px]" id="start-time">
                         <SelectValue placeholder="Select a start time" />
                     </SelectTrigger>
                     <SelectContent>
@@ -738,10 +738,23 @@ export function ScheduleGenerator() {
                     </SelectContent>
                 </Select>
             </div>
+            <div className="space-y-2">
+                <Label htmlFor="game-duration">Game Duration</Label>
+                 <Select value={String(gameDuration)} onValueChange={(val) => setGameDuration(Number(val))}>
+                    <SelectTrigger className="w-full md:w-[150px]" id="game-duration">
+                        <SelectValue placeholder="Select duration" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {[15, 20, 25, 30, 35, 40, 45].map(duration => (
+                           <SelectItem key={duration} value={String(duration)}>{duration} min</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
             <div className="space-y-2 flex-grow">
                 <Label htmlFor="games-per-team">Games Per Team</Label>
                 <Select value={String(gamesPerTeam)} onValueChange={(val) => setGamesPerTeam(Number(val))}>
-                    <SelectTrigger className="max-w-xs" id="games-per-team">
+                    <SelectTrigger className="w-full md:w-[150px]" id="games-per-team">
                         <SelectValue placeholder="Select games per team" />
                     </SelectTrigger>
                     <SelectContent>
@@ -963,5 +976,6 @@ export function ScheduleGenerator() {
     </div>
   );
 }
+
 
 
