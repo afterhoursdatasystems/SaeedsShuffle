@@ -8,7 +8,7 @@ import { getPublishedData } from '@/app/actions';
 import type { Team, GameFormat, GameVariant, Match, PowerUp, Handicap, Player } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Volleyball, Users, Trophy, BookOpen, Crown, Gem, ShieldQuestion, KeyRound, Zap, Calendar, Shuffle, Wand2, Clock, TrendingUp, Brain, Hammer, Heart, Shield, Sun, Scale, Dumbbell, Pen, Apple, Anchor, Snowflake, Target, Sparkles, Moon } from 'lucide-react';
+import { Volleyball, Users, Trophy, BookOpen, Crown, Gem, ShieldQuestion, KeyRound, Zap, Calendar, Shuffle, Wand2, Clock, TrendingUp, Brain, Hammer, Heart, Shield, Sun, Scale, Dumbbell, Pen, Apple, Anchor, Snowflake, Target, Sparkles, Moon, Drama } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -293,7 +293,7 @@ const PlayerRoster = ({ players }: { players: Player[] }) => (
 );
 
 const iconMap: { [key: string]: React.ElementType } = {
-    Brain, Hammer, Crown: Crown, Heart, Shield, Sun, Scale, Dumbbell, Pen, Apple, Anchor, Snowflake, Target, Sparkles, Moon
+    Brain, Hammer, Crown: Crown, Heart, Shield, Sun, Scale, Dumbbell, Pen, Apple, Anchor, Snowflake, Target, Sparkles, Moon, Drama, Users
 };
 
 
@@ -575,7 +575,7 @@ export default function PublicTeamsPage() {
                              <CardTitle className="text-lg font-bold">
                                 <div className="flex items-center justify-between">
                                    <div className="flex items-center gap-3">
-                                        <Icon className="h-5 w-5" />
+                                        {Icon && <Icon className="h-5 w-5" />}
                                         <span>{team.name}</span>
                                    </div>
                                     <div className="flex items-center gap-3">

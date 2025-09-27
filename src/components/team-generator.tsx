@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Send, Shuffle, Info, Trash2, Users, MoreVertical, PlusCircle, MinusCircle, Brain, Hammer, Crown as CrownIcon, Heart, Shield, Sun, Scale, Dumbbell, Pen, Apple, Anchor, Snowflake, Target, Sparkles, Moon } from 'lucide-react';
+import { Send, Shuffle, Info, Trash2, Users, MoreVertical, PlusCircle, MinusCircle, Brain, Hammer, Crown as CrownIcon, Heart, Shield, Sun, Scale, Dumbbell, Pen, Apple, Anchor, Snowflake, Target, Sparkles, Moon, Drama } from 'lucide-react';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import React, { useEffect, useMemo, useState } from 'react';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
@@ -23,7 +23,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 const teamNameDetails: {[key: string]: {icon: string}} = {
   'Odin': { icon: 'Brain' },
   'Thor': { icon: 'Hammer' },
-  'Loki': { icon: 'Users' },
+  'Loki': { icon: 'Drama' },
   'Frigg': { icon: 'Crown' },
   'Freya': { icon: 'Heart' },
   'Heimdall': { icon: 'Shield' },
@@ -61,7 +61,7 @@ const getTeamAnalysis = (team: Team) => {
 };
 
 const iconMap: { [key: string]: React.ElementType } = {
-    Brain, Hammer, Crown: CrownIcon, Heart, Shield, Sun, Scale, Dumbbell, Pen, Apple, Anchor, Snowflake, Target, Sparkles, Moon, Users
+    Brain, Hammer, Crown: CrownIcon, Heart, Shield, Sun, Scale, Dumbbell, Pen, Apple, Anchor, Snowflake, Target, Sparkles, Moon, Users, Drama
 };
 
 
@@ -414,7 +414,7 @@ export function TeamGenerator() {
                                 <CardHeader className="p-4">
                                 <CardTitle className="text-lg flex justify-between items-center">
                                     <div className="flex items-center gap-3">
-                                        <Icon className="h-5 w-5 text-primary" />
+                                        {Icon && <Icon className="h-5 w-5 text-primary" />}
                                         <span>{team.name}</span>
                                     </div>
                                     {isLevelUp && (
