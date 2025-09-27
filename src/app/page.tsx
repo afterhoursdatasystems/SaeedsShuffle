@@ -679,8 +679,8 @@ export default function PublicTeamsPage() {
                                                 <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 w-full p-2">
                                                     <div className="font-medium text-left">
                                                         <div className="flex items-center gap-2">
-                                                            {IconA && <IconA className="h-4 w-4" />}
                                                             {gameFormat === 'pool-play-bracket' && teamARank && <span className="font-bold mr-2">#{teamARank}</span>}
+                                                            {IconA && <IconA className="h-4 w-4" />}
                                                             {match.teamA}
                                                         </div>
                                                         <div className="text-muted-foreground text-sm flex items-center gap-2">
@@ -695,9 +695,9 @@ export default function PublicTeamsPage() {
                                                     </div>
                                                     <div className="font-medium text-right">
                                                          <div className="flex items-center justify-end gap-2">
-                                                            {gameFormat === 'pool-play-bracket' && teamBRank && <span className="font-bold ml-2">#{teamBRank}</span>}
-                                                            {match.teamB}
+                                                            {gameFormat === 'pool-play-bracket' && teamBRank && <span className="font-bold mr-2">#{teamBRank}</span>}
                                                             {IconB && <IconB className="h-4 w-4" />}
+                                                            {match.teamB}
                                                         </div>
                                                         <div className="text-muted-foreground text-sm flex items-center justify-end gap-2">
                                                            {isLevelUp && teamBStats && <span>Level {teamBStats.level}</span>}
