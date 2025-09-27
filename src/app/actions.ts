@@ -13,6 +13,11 @@ type PublishedData = {
     levelUpHandicaps?: Handicap[];
 };
 
+type AllData = PublishedData & {
+    players: Player[];
+    schedule: Match[];
+}
+
 // Use separate JSON files for different data types.
 const dbPath = path.join(process.cwd(), 'db.json');
 const playersDbPath = path.join(process.cwd(), 'players.json');
@@ -294,5 +299,45 @@ export async function getPublishedData(): Promise<{ success: boolean; data?: Pub
     } catch (error) {
         console.error('Get Published Data Error:', error);
         return { success: false, error: 'Failed to retrieve data.' };
+    }
+}
+
+
+export async function exportAllData(): Promise<{ success: boolean; data?: AllData; error?: string }> {
+    try {
+        const dbData = await readDb();
+        const players = await readPlayersDb();
+        const schedule = await readScheduleDb();
+        
+        const allData: AllData = {
+            ...dbData,
+            players,
+            schedule,
+        };
+        
+        return { success: true, data: allData };
+    } catch (error) {
+        console.error('Export All Data Error:', error);
+        return { success: false, error: 'Failed to export data.' };
+    }
+}
+
+export async function importAllData(data: AllData): Promise<{ success: boolean; error?: string }> {
+    try {
+        const { players, schedule, ...dbData } = data;
+
+        // Validate data structure
+        if (!Array.isArray(players) || !Array.isArray(schedule) || !dbData.format) {
+            throw new Error('Invalid or corrupted backup file.');
+        }
+
+        await writePlayersDb(players);
+        await writeScheduleDb(schedule);
+        await writeDb(dbData);
+
+        return { success: true };
+    } catch (error: any) {
+        console.error('Import All Data Error:', error);
+        return { success: false, error: error.message || 'Failed to import data.' };
     }
 }

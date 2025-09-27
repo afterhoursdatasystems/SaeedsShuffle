@@ -92,6 +92,7 @@ interface PlayerContextType {
   levelUpHandicaps: Handicap[];
   setLevelUpHandicaps: React.Dispatch<React.SetStateAction<Handicap[]>>;
   resetLevelUpHandicapsToDefault: () => Promise<void>;
+  loadAllData: () => Promise<void>;
 }
 
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
@@ -108,63 +109,69 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [levelUpHandicaps, setLevelUpHandicaps] = useState<Handicap[]>(defaultLevelUpHandicaps);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  
+  const loadAllData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+        const [playerResult, publishedDataResult] = await Promise.all([
+            getPlayers(),
+            getPublishedData()
+        ]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-        setIsLoading(true);
-        try {
-            const [playerResult, publishedDataResult] = await Promise.all([
-                getPlayers(),
-                getPublishedData()
-            ]);
-
-            if (playerResult.success && playerResult.data) {
-                setPlayers(playerResult.data);
-            } else {
-                 toast({
-                    title: "Error fetching players",
-                    description: playerResult.error || "Could not load player data.",
-                    variant: 'destructive',
-                });
-            }
-
-            if (publishedDataResult.success && publishedDataResult.data) {
-                const { teams, format, schedule, activeRule, pointsToWin, levelUpHandicaps } = publishedDataResult.data as any;
-                setTeams(teams || []);
-                setSchedule(schedule || []);
-                setActiveRule(activeRule || null);
-                setPointsToWin(pointsToWin || 15);
-                setLevelUpHandicaps(levelUpHandicaps && levelUpHandicaps.length > 0 ? levelUpHandicaps : defaultLevelUpHandicaps);
-                
-                // Handle complex format state
-                if (format === 'monarch-of-the-court' || format === 'king-s-ransom' || format === 'power-up-round' || format === 'standard') {
-                    setGameFormat('king-of-the-court');
-                    setGameVariant(format);
-                } else if (format) {
-                    setGameFormat(format as GameFormat);
-                    setGameVariant('standard');
-                }
-
-            } else {
-                 toast({
-                    title: "Error fetching settings",
-                    description: publishedDataResult.error || "Could not load tournament settings.",
-                    variant: 'destructive',
-                });
-            }
-
-        } catch (error) {
+        if (playerResult.success && playerResult.data) {
+            setPlayers(playerResult.data);
+        } else {
              toast({
-                title: "Failed to load initial data",
-                description: "There was an error loading data from the server.",
+                title: "Error fetching players",
+                description: playerResult.error || "Could not load player data.",
                 variant: 'destructive',
             });
-        } finally {
-            setIsLoading(false);
         }
-    };
-    fetchData();
+
+        if (publishedDataResult.success && publishedDataResult.data) {
+            const { teams, format, schedule, activeRule, pointsToWin, levelUpHandicaps, players: publishedPlayers } = publishedDataResult.data as any;
+            setTeams(teams || []);
+            setSchedule(schedule || []);
+            setActiveRule(activeRule || null);
+            setPointsToWin(pointsToWin || 15);
+            setLevelUpHandicaps(levelUpHandicaps && levelUpHandicaps.length > 0 ? levelUpHandicaps : defaultLevelUpHandicaps);
+            
+             if (publishedPlayers) {
+                setPlayers(publishedPlayers);
+            }
+            
+            // Handle complex format state
+            if (format === 'monarch-of-the-court' || format === 'king-s-ransom' || format === 'power-up-round' || format === 'standard') {
+                setGameFormat('king-of-the-court');
+                setGameVariant(format);
+            } else if (format) {
+                setGameFormat(format as GameFormat);
+                setGameVariant('standard');
+            }
+
+        } else {
+             toast({
+                title: "Error fetching settings",
+                description: publishedDataResult.error || "Could not load tournament settings.",
+                variant: 'destructive',
+            });
+        }
+
+    } catch (error) {
+         toast({
+            title: "Failed to load initial data",
+            description: "There was an error loading data from the server.",
+            variant: 'destructive',
+        });
+    } finally {
+        setIsLoading(false);
+    }
   }, [toast]);
+
+
+  useEffect(() => {
+    loadAllData();
+  }, [loadAllData]);
   
   useEffect(() => {
     if (gameFormat === 'level-up' && teams.length > 0 && schedule.length > 0) {
@@ -489,6 +496,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     levelUpHandicaps,
     setLevelUpHandicaps,
     resetLevelUpHandicapsToDefault,
+    loadAllData,
   };
 
   return (

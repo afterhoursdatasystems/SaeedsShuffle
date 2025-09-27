@@ -3,7 +3,7 @@
 
 import PlayerManagement from '@/components/player-management';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bot, Calendar, Crown, BookOpen, Shuffle, Settings, UserPlus, Trophy, Zap, Send, TrendingUp } from 'lucide-react';
+import { Bot, Calendar, Crown, BookOpen, Shuffle, Settings, UserPlus, Trophy, Zap, Send, TrendingUp, Download, Upload } from 'lucide-react';
 import Link from 'next/link';
 import { usePlayerContext } from '@/contexts/player-context';
 import { Label } from '@/components/ui/label';
@@ -11,6 +11,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { GameFormat, GameVariant } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useRef } from 'react';
+import { exportAllData, importAllData } from '@/app/actions';
+import { useToast } from '@/hooks/use-toast';
+
 
 export default function AdminPage() {
     const { 
@@ -18,10 +22,80 @@ export default function AdminPage() {
       gameVariant, handleSetGameVariant, 
       teams, schedule, 
       pointsToWin, setPointsToWin,
-      publishSettings 
+      publishSettings,
+      loadAllData,
     } = usePlayerContext();
+    const { toast } = useToast();
+    const importInputRef = useRef<HTMLInputElement>(null);
 
     const isKOTC = gameFormat === 'king-of-the-court';
+    
+    const handleExport = async () => {
+        const result = await exportAllData();
+        if (result.success && result.data) {
+            const blob = new Blob([JSON.stringify(result.data, null, 2)], { type: 'application/json' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'tournament-backup.json');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            toast({
+                title: 'Export Successful',
+                description: 'All tournament data has been downloaded.',
+            });
+        } else {
+             toast({
+                title: 'Export Failed',
+                description: result.error || 'Could not export data.',
+                variant: 'destructive',
+            });
+        }
+    };
+
+    const handleImportClick = () => {
+        importInputRef.current?.click();
+    };
+
+    const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const text = e.target?.result;
+                if (typeof text !== 'string') throw new Error('Invalid file content.');
+                const data = JSON.parse(text);
+
+                const result = await importAllData(data);
+                if (result.success) {
+                    await loadAllData(); // This will re-fetch everything and update the context
+                    toast({
+                        title: 'Import Successful',
+                        description: 'All tournament data has been restored.',
+                    });
+                } else {
+                    throw new Error(result.error || 'Failed to import data.');
+                }
+
+            } catch (error: any) {
+                toast({
+                    title: 'Import Failed',
+                    description: error.message || 'The backup file is corrupted or invalid.',
+                    variant: 'destructive',
+                });
+            } finally {
+                 if(importInputRef.current) {
+                    importInputRef.current.value = '';
+                }
+            }
+        };
+        reader.readAsText(file);
+    };
+
 
   return (
     <>
@@ -141,6 +215,26 @@ export default function AdminPage() {
                        <Link href="/admin/rule-generator">
                            <Zap className="mr-2 h-5 w-5" /> Rule Generator
                        </Link>
+                   </Button>
+                </CardContent>
+            </Card>
+
+            {/* Backup & Restore */}
+            <Card className="shadow-lg">
+                <CardHeader>
+                     <CardTitle className="flex items-center gap-3">
+                        <Download className="h-6 w-6" />
+                        Backup & Restore
+                    </CardTitle>
+                    <CardDescription>Export all tournament data to a file or import it to restore a previous state.</CardDescription>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input type="file" ref={importInputRef} onChange={handleFileImport} accept=".json" style={{ display: 'none' }} />
+                   <Button onClick={handleExport} size="lg" variant="outline">
+                       <Download className="mr-2 h-5 w-5" /> Export Data
+                   </Button>
+                   <Button onClick={handleImportClick} size="lg" variant="outline">
+                       <Upload className="mr-2 h-5 w-5" /> Import Data
                    </Button>
                 </CardContent>
             </Card>
