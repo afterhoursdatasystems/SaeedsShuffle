@@ -696,8 +696,8 @@ export default function PublicTeamsPage() {
                                                     <div className="font-medium text-right">
                                                          <div className="flex items-center justify-end gap-2">
                                                             {gameFormat === 'pool-play-bracket' && teamBRank && <span className="font-bold mr-2">#{teamBRank}</span>}
-                                                            {IconB && <IconB className="h-4 w-4" />}
                                                             {match.teamB}
+                                                            {IconB && <IconB className="h-4 w-4" />}
                                                         </div>
                                                         <div className="text-muted-foreground text-sm flex items-center justify-end gap-2">
                                                            {isLevelUp && teamBStats && <span>Level {teamBStats.level}</span>}
@@ -829,7 +829,7 @@ export default function PublicTeamsPage() {
                   <CardHeader className="p-6 bg-secondary/10 rounded-t-lg">
                     <CardTitle className="flex items-center gap-4 text-2xl font-bold text-secondary-foreground">
                       <CurrentFormatIcon className="h-7 w-7 text-secondary" />
-                      Tonight's Format
+                      Tournament Format
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-6">
@@ -852,5 +852,7 @@ export default function PublicTeamsPage() {
 
 
 
+
+    
 
     
