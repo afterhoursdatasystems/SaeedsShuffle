@@ -1,3 +1,4 @@
+
 {
   "teams": [
     {
@@ -212,7 +213,6 @@
     }
   ],
   "format": "pool-play-bracket",
-  "schedule": [],
   "activeRule": null,
   "pointsToWin": 25,
   "levelUpHandicaps": [
