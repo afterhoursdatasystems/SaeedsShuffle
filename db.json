@@ -320,6 +320,24 @@
       "resultB": 15,
       "teamA": "Zeus",
       "teamB": "Thor"
+    },
+    {
+      "id": "playoff-semi-1",
+      "teamA": "Loki",
+      "teamB": "Tyr",
+      "court": "Playoff Semi 1",
+      "time": "Playoffs",
+      "resultA": 2,
+      "resultB": 1
+    },
+    {
+      "id": "playoff-semi-2",
+      "teamA": "Zeus",
+      "teamB": "Heimdall",
+      "court": "Playoff Semi 2",
+      "time": "Playoffs",
+      "resultA": 2,
+      "resultB": 1
     }
   ],
   "activeRule": null,

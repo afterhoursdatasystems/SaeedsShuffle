@@ -483,35 +483,33 @@ export function ScheduleGenerator() {
   };
 
   const handleResultChange = (matchId: string, team: 'A' | 'B', value: string) => {
-    const scoreValue = value === '' ? null : parseInt(value);
+    const scoreValue = value === '' ? null : parseInt(value, 10);
     
     setSchedule(currentSchedule => {
         const matchExists = currentSchedule.some(m => m.id === matchId);
         
         if (matchExists) {
-            // If match exists, update it
-            return currentSchedule.map(m => {
-                if (m.id === matchId) {
-                    return team === 'A' ? { ...m, resultA: scoreValue } : { ...m, resultB: scoreValue };
-                }
-                return m;
-            });
-        } else if (playoffBracket) {
-            // If match doesn't exist, it must be a new playoff match
-            const semiFinalMatch = [...playoffBracket.semiFinals].find(m => m.id === matchId);
-            // TODO: Add logic for final match if it exists in playoffBracket
-            
-            if (semiFinalMatch) {
-                const updatedMatch = { ...semiFinalMatch };
-                if (team === 'A') {
-                    updatedMatch.resultA = scoreValue;
-                } else {
-                    updatedMatch.resultB = scoreValue;
-                }
-                return [...currentSchedule, updatedMatch];
-            }
+            return currentSchedule.map(m => 
+                m.id === matchId 
+                    ? { ...m, [team === 'A' ? 'resultA' : 'resultB']: scoreValue }
+                    : m
+            );
+        } else {
+             // This case handles adding a NEW playoff match (like the final) to the schedule
+             let newMatchData: Partial<Match> | null = null;
+             if (playoffBracket?.semiFinals.some(m => m.id === matchId)) {
+                const semi = playoffBracket.semiFinals.find(m => m.id === matchId)!;
+                newMatchData = { ...semi, [team === 'A' ? 'resultA' : 'resultB']: scoreValue };
+             } else if (playoffBracket?.championship?.id === matchId) {
+                 const final = playoffBracket.championship;
+                 newMatchData = { ...final, [team === 'A' ? 'resultA' : 'resultB']: scoreValue };
+             }
+
+             if(newMatchData) {
+                return [...currentSchedule, newMatchData as Match];
+             }
         }
-        return currentSchedule; // Should not happen
+        return currentSchedule;
     });
   };
   
@@ -620,7 +618,6 @@ export function ScheduleGenerator() {
             return { playoffBracket: null, areAllGamesPlayed: false };
         }
         
-        // Check if all POOL PLAY games are done. Bracket games are not in the main schedule.
         const poolPlayGames = schedule.filter(m => !m.court.toLowerCase().includes('playoff'));
         const allPlayed = poolPlayGames.every(match => match.resultA !== null && match.resultB !== null);
 
@@ -628,15 +625,12 @@ export function ScheduleGenerator() {
             return { playoffBracket: null, areAllGamesPlayed: false };
         }
 
-        // Assuming top 4 teams make the bracket
         const top4 = standings.slice(0, 4);
         if (top4.length < 4) {
             return { playoffBracket: null, areAllGamesPlayed: allPlayed };
         }
         
         const existingSemiFinal1 = schedule.find(m => m.id === 'playoff-semi-1');
-        const existingSemiFinal2 = schedule.find(m => m.id === 'playoff-semi-2');
-
         const semiFinal1: Match = existingSemiFinal1 || {
             id: 'playoff-semi-1',
             teamA: top4[0].teamName,
@@ -646,6 +640,8 @@ export function ScheduleGenerator() {
             resultA: null,
             resultB: null,
         };
+
+        const existingSemiFinal2 = schedule.find(m => m.id === 'playoff-semi-2');
         const semiFinal2: Match = existingSemiFinal2 || {
             id: 'playoff-semi-2',
             teamA: top4[1].teamName,
@@ -656,9 +652,30 @@ export function ScheduleGenerator() {
             resultB: null,
         };
 
+        let championshipMatch: Match | null = null;
+        const semi1Played = semiFinal1.resultA !== null && semiFinal1.resultB !== null;
+        const semi2Played = semiFinal2.resultA !== null && semiFinal2.resultB !== null;
+
+        if (semi1Played && semi2Played) {
+            const winner1 = semiFinal1.resultA! > semiFinal1.resultB! ? semiFinal1.teamA : semiFinal1.teamB;
+            const winner2 = semiFinal2.resultA! > semiFinal2.resultB! ? semiFinal2.teamA : semiFinal2.teamB;
+            
+            const existingFinal = schedule.find(m => m.id === 'playoff-final');
+            championshipMatch = existingFinal || {
+                id: 'playoff-final',
+                teamA: winner1,
+                teamB: winner2,
+                court: 'Championship',
+                time: 'Playoffs',
+                resultA: null,
+                resultB: null,
+            };
+        }
+
         return { 
             playoffBracket: {
-                semiFinals: [semiFinal1, semiFinal2]
+                semiFinals: [semiFinal1, semiFinal2],
+                championship: championshipMatch,
             },
             areAllGamesPlayed: allPlayed 
         };
@@ -716,7 +733,7 @@ export function ScheduleGenerator() {
         </CardContent>
        </Card>
 
-      {schedule.length > 0 && (
+      {schedule.length > 0 && !playoffBracket && (
         <Card>
           <CardHeader>
              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -861,14 +878,45 @@ export function ScheduleGenerator() {
                     </div>
                 ))}
                 
-                {/* Placeholder for Final */}
-                <div>
-                    <h4 className="font-bold mb-2">Championship</h4>
-                    <div className="text-base rounded-lg border-2 border-dashed bg-muted/30 overflow-hidden p-4 text-center">
-                        <p className="text-muted-foreground">Winner of Semi 1 vs. Winner of Semi 2</p>
+                {playoffBracket.championship && (
+                    <div>
+                        <h4 className="font-bold mb-2">{playoffBracket.championship.court}</h4>
+                         <div className="text-base rounded-lg border-2 border-primary bg-primary/10 overflow-hidden">
+                          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 w-full p-2">
+                              <div className="font-medium text-left">
+                                  {playoffBracket.championship.teamA}
+                              </div>
+                              <div className="flex items-center gap-1">
+                                 <input
+                                    type="number"
+                                    className="h-8 w-12 p-1 text-center border rounded-md"
+                                    value={playoffBracket.championship.resultA ?? ''}
+                                    onChange={(e) => handleResultChange(playoffBracket.championship!.id, 'A', e.target.value)}
+                                    aria-label={`${playoffBracket.championship.teamA} score`}
+                                  />
+                                  <span>-</span>
+                                  <input
+                                    type="number"
+                                    className="h-8 w-12 p-1 text-center border rounded-md"
+                                    value={playoffBracket.championship.resultB ?? ''}
+                                    onChange={(e) => handleResultChange(playoffBracket.championship!.id, 'B', e.target.value)}
+                                    aria-label={`${playoffBracket.championship.teamB} score`}
+                                  />
+                              </div>
+                              <div className="font-medium text-right">
+                                  {playoffBracket.championship.teamB}
+                              </div>
+                          </div>
+                        </div>
                     </div>
-                </div>
+                )}
             </CardContent>
+            <CardFooter className="border-t pt-4">
+                 <Button onClick={handleSaveAllResults} disabled={isPublishing}>
+                    <Save className="mr-2 h-4 w-4" />
+                    {isPublishing ? 'Publishing...' : 'Publish Playoff Results'}
+                </Button>
+            </CardFooter>
          </Card>
       )}
 

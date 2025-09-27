@@ -481,30 +481,49 @@ export default function PublicTeamsPage() {
             return { playoffBracket: null, areAllGamesPlayed: false };
         }
         
-        const allPlayed = schedule.every(match => match.resultA !== null && match.resultB !== null);
+        const poolPlayGames = schedule.filter(m => !m.court.toLowerCase().includes('playoff'));
+        const allPlayed = poolPlayGames.every(match => match.resultA !== null && match.resultB !== null);
 
         if (!allPlayed) {
             return { playoffBracket: null, areAllGamesPlayed: false };
         }
 
-        // Assuming top 4 teams make the bracket
         const top4 = standings.slice(0, 4);
         if (top4.length < 4) {
             return { playoffBracket: null, areAllGamesPlayed: allPlayed };
         }
+        
+        const semiFinal1Data = schedule.find(m => m.id === 'playoff-semi-1') || { teamA: top4[0].teamName, teamB: top4[3].teamName, resultA: null, resultB: null };
+        const semiFinal2Data = schedule.find(m => m.id === 'playoff-semi-2') || { teamA: top4[1].teamName, teamB: top4[2].teamName, resultA: null, resultB: null };
+        
+        const semiFinals = [
+            { teamA: semiFinal1Data.teamA, teamB: semiFinal1Data.teamB, resultA: semiFinal1Data.resultA, resultB: semiFinal1Data.resultB },
+            { teamA: semiFinal2Data.teamA, teamB: semiFinal2Data.teamB, resultA: semiFinal2Data.resultA, resultB: semiFinal2Data.resultB }
+        ];
 
-        const semiFinal1 = {
-            teamA: top4[0], // #1 Seed
-            teamB: top4[3], // #4 Seed
-        };
-        const semiFinal2 = {
-            teamA: top4[1], // #2 Seed
-            teamB: top4[2], // #3 Seed
-        };
+        let championshipMatch = null;
+        const semi1Played = semiFinal1Data.resultA !== null && semiFinal1Data.resultB !== null;
+        const semi2Played = semiFinal2Data.resultA !== null && semiFinal2Data.resultB !== null;
+
+        if (semi1Played && semi2Played) {
+            const winner1 = semiFinal1Data.resultA! > semiFinal1Data.resultB! ? semiFinal1Data.teamA : semiFinal1Data.teamB;
+            const winner2 = semiFinal2Data.resultA! > semiFinal2Data.resultB! ? semiFinal2Data.teamA : semiFinal2Data.teamB;
+            
+            const finalData = schedule.find(m => m.id === 'playoff-final') || { resultA: null, resultB: null };
+
+            championshipMatch = {
+                teamA: winner1,
+                teamB: winner2,
+                resultA: finalData.resultA,
+                resultB: finalData.resultB
+            };
+        }
+
 
         return { 
             playoffBracket: {
-                semiFinals: [semiFinal1, semiFinal2]
+                semiFinals: semiFinals,
+                championship: championshipMatch,
             },
             areAllGamesPlayed: allPlayed 
         };
@@ -577,11 +596,10 @@ export default function PublicTeamsPage() {
                                    <div className="flex items-center gap-3">
                                         <Users className="h-5 w-5" />
                                         <span>{team.name}</span>
-                                         {gameFormat === 'pool-play-bracket' && <span className="ml-2 font-normal text-sm opacity-80">{teamRecord}</span>}
                                    </div>
                                     <div className="flex items-center gap-3">
                                       {isLevelUp && <span className="font-semibold">{s.level}</span>}
-                                      {gameFormat === 'pool-play-bracket' && <span className="font-bold text-2xl">#{index + 1}</span>}
+                                      {gameFormat === 'pool-play-bracket' && <span className="ml-2 font-normal text-sm opacity-80">{teamRecord}</span>}
                                     </div>
                                 </div>
                             </CardTitle>
@@ -663,14 +681,14 @@ export default function PublicTeamsPage() {
                                         <div key={index} className="space-y-2">
                                              <p className="font-bold text-center text-muted-foreground">Semi-Final {index + 1}</p>
                                              <div className="border rounded-lg p-3 min-w-[250px]">
-                                                <div className="flex justify-between items-center">
-                                                    <span className="font-bold">#{getRankByName(match.teamA.teamName)} {match.teamA.teamName}</span>
-                                                    <span className="text-muted-foreground text-sm">{match.teamA.wins}-{match.teamA.losses}</span>
+                                                <div className={cn("flex justify-between items-center", (match.resultA !== null && match.resultB !== null && match.resultA < match.resultB) && 'opacity-50')}>
+                                                    <span className="font-bold">#{getRankByName(match.teamA)} {match.teamA}</span>
+                                                    <span>{match.resultA}</span>
                                                 </div>
                                                 <Separator className="my-2" />
-                                                <div className="flex justify-between items-center">
-                                                     <span className="font-bold">#{getRankByName(match.teamB.teamName)} {match.teamB.teamName}</span>
-                                                     <span className="text-muted-foreground text-sm">{match.teamB.wins}-{match.teamB.losses}</span>
+                                                <div className={cn("flex justify-between items-center", (match.resultA !== null && match.resultB !== null && match.resultB < match.resultA) && 'opacity-50')}>
+                                                     <span className="font-bold">#{getRankByName(match.teamB)} {match.teamB}</span>
+                                                     <span>{match.resultB}</span>
                                                 </div>
                                              </div>
                                         </div>
@@ -678,17 +696,25 @@ export default function PublicTeamsPage() {
                                 </div>
                                 
                                 {/* Connector and Final */}
+                               {playoffBracket.championship && (
                                 <div className="flex items-center">
                                     <div className="hidden md:block w-8 border-t-2 border-dashed"></div>
                                     <div className="space-y-2">
-                                         <p className="font-bold text-center text-muted-foreground">Final</p>
+                                         <p className="font-bold text-center text-muted-foreground">Championship</p>
                                          <div className="border-2 border-primary rounded-lg p-4 min-w-[250px] bg-primary/5">
-                                            <div className="text-center font-semibold">TBD</div>
+                                             <div className={cn("flex justify-between items-center font-bold", (playoffBracket.championship.resultA !== null && playoffBracket.championship.resultB !== null && playoffBracket.championship.resultA < playoffBracket.championship.resultB) && 'opacity-50')}>
+                                                <span>#{getRankByName(playoffBracket.championship.teamA)} {playoffBracket.championship.teamA}</span>
+                                                <span>{playoffBracket.championship.resultA}</span>
+                                             </div>
                                              <Separator className="my-2" />
-                                            <div className="text-center font-semibold">TBD</div>
+                                             <div className={cn("flex justify-between items-center font-bold", (playoffBracket.championship.resultA !== null && playoffBracket.championship.resultB !== null && playoffBracket.championship.resultB < playoffBracket.championship.resultA) && 'opacity-50')}>
+                                                <span>#{getRankByName(playoffBracket.championship.teamB)} {playoffBracket.championship.teamB}</span>
+                                                <span>{playoffBracket.championship.resultB}</span>
+                                             </div>
                                          </div>
                                     </div>
                                 </div>
+                               )}
                             </div>
                          </CardContent>
                     </Card>
