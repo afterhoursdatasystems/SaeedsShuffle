@@ -268,7 +268,7 @@ const isScheduleValid = (schedule: Match[], teams: Team[], gamesPerTeam: number)
         // 2. Check for fair court distribution
         if(teamSchedule.length > 1) {
             const courtUsage = new Set(teamSchedule.map(m => m.court));
-            if (courtUsage.size === 1 && !courtUsage.has("Challenger Line")) {
+            if (courtUsage.size === 1 && !courtUsage.has("Challenger Line") && !courtUsage.has("King Court")) {
                 console.warn(`Validation failed: ${teamName} plays all games on one court.`);
                 return false;
             }
@@ -493,38 +493,32 @@ export function ScheduleGenerator() {
 
   const handleResultChange = (matchId: string, team: 'A' | 'B', value: string) => {
     const scoreValue = value === '' ? null : parseInt(value, 10);
-
+  
     setSchedule(currentSchedule => {
       const matchIndex = currentSchedule.findIndex(m => m.id === matchId);
-
+  
       if (matchIndex > -1) {
-        // Match exists, update it
+        // The match exists in the schedule, update it.
         return currentSchedule.map((m, index) =>
           index === matchIndex
             ? { ...m, [team === 'A' ? 'resultA' : 'resultB']: scoreValue }
             : m
         );
       } else {
-        // This case handles adding a NEW playoff match (like the final) to the schedule
-        let newMatchData: Partial<Match> | null = null;
-        const semiFinal = playoffBracket?.semiFinals.find(m => m.id === matchId);
-        const final = playoffBracket?.championship;
-
-        if (semiFinal) {
-          newMatchData = { ...semiFinal, id: matchId, [team === 'A' ? 'resultA' : 'resultB']: scoreValue };
-        } else if (final && final.id === matchId) {
-          newMatchData = { ...final, id: matchId, [team === 'A' ? 'resultA' : 'resultB']: scoreValue };
+        // The match doesn't exist, it must be a new playoff game.
+        let matchData: Partial<Match> = { id: matchId, [team === 'A' ? 'resultA' : 'resultB']: scoreValue };
+        
+        // Find if it's a semi or final to get other details
+        const semi = playoffBracket?.semiFinals.find(m => m.id === matchId);
+        if (semi) {
+          matchData = {...semi, ...matchData};
+        } else if (playoffBracket?.championship && playoffBracket.championship.id === matchId) {
+          matchData = {...playoffBracket.championship, ...matchData};
         }
 
-        if (newMatchData) {
-          // Avoid adding a duplicate if it's already being added
-          if (currentSchedule.some(m => m.id === matchId)) {
-            return currentSchedule.map(m => m.id === matchId ? { ...m, ...newMatchData } as Match : m);
-          }
-          return [...currentSchedule, newMatchData as Match];
-        }
+        // Add the new match to the schedule state
+        return [...currentSchedule, matchData as Match];
       }
-      return currentSchedule;
     });
   };
   
@@ -548,12 +542,13 @@ export function ScheduleGenerator() {
     }
   };
   
-    const handleClearSchedule = () => {
-    // Filter out playoff games when clearing the schedule
-    setSchedule(currentSchedule => currentSchedule.filter(match => !match.id.startsWith('playoff-')));
+  const handleClearSchedule = async () => {
+    setSchedule([]);
+    const finalFormat = gameFormat === 'king-of-the-court' && gameVariant !== 'standard' ? gameVariant : gameFormat;
+    await publishData(teams, finalFormat, [], activeRule, pointsToWin);
     toast({
       title: 'Schedule Cleared',
-      description: 'The match schedule has been cleared.',
+      description: 'The match schedule has been cleared on the server.',
     });
   };
   
