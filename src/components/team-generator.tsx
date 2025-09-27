@@ -375,7 +375,7 @@ export function TeamGenerator() {
             )}
         </CardContent>
         {!isBlindDraw && (
-            <CardFooter className="border-t px-6 py-4">
+            <CardFooter className="flex justify-end border-t px-6 py-4">
                 <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                     <Button onClick={handleGenerateTeams} className="w-full sm:w-auto">
                         <Shuffle className="mr-2 h-4 w-4" />
