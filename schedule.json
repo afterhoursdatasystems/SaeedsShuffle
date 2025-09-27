@@ -1,138 +1,111 @@
 [
   {
-    "id": "8c43e396-9d46-475f-b344-2d8eb06f5c0c",
+    "id": "be04c5d1-9510-4316-9af1-e994e6b1c4df",
     "court": "Court 2",
-    "time": "2:00 PM",
+    "time": "6:45 PM",
     "resultA": null,
     "resultB": null,
-    "teamA": "Njord",
-    "teamB": "Bragi"
+    "teamA": "Tyr",
+    "teamB": "Freya"
   },
   {
-    "id": "4c2a5bf4-3f5c-4eeb-b7f6-f3a801a0fc1d",
+    "id": "e7901a27-7435-40e3-9fb4-e4c5591c5014",
     "court": "Court 1",
-    "time": "2:00 PM",
+    "time": "6:45 PM",
     "resultA": null,
     "resultB": null,
-    "teamA": "Idun",
+    "teamA": "Heimdall",
     "teamB": "Thor"
   },
   {
-    "id": "1ef2621a-33a6-4bb7-bb2f-e2611b6fbe2b",
-    "court": "Court 1",
-    "time": "2:20 PM",
-    "resultA": null,
-    "resultB": null,
-    "teamA": "Skadi",
-    "teamB": "Frigg"
-  },
-  {
-    "id": "b5aec3ca-5cad-4987-bd3d-900d04a3c7df",
+    "id": "9d674ecf-7c15-4f10-9380-139c2d360d2c",
     "court": "Court 2",
-    "time": "2:20 PM",
+    "time": "7:15 PM",
     "resultA": null,
     "resultB": null,
     "teamA": "Idun",
     "teamB": "Njord"
   },
   {
-    "id": "47981c91-ef8b-4f66-9726-4735607306fe",
-    "court": "Court 2",
-    "time": "2:40 PM",
+    "id": "184cef71-ba62-4e3c-a692-acb72f2e7054",
+    "court": "Court 1",
+    "time": "7:15 PM",
     "resultA": null,
     "resultB": null,
-    "teamA": "Bragi",
+    "teamA": "Tyr",
+    "teamB": "Heimdall"
+  },
+  {
+    "id": "afb78841-bde3-4359-844e-facdf52ae31c",
+    "court": "Court 1",
+    "time": "7:45 PM",
+    "resultA": null,
+    "resultB": null,
+    "teamA": "Freya",
     "teamB": "Thor"
   },
   {
-    "id": "99d5c9dd-5780-41a8-9e3b-81f4f8393b77",
-    "court": "Court 1",
-    "time": "2:40 PM",
+    "id": "997da96b-f1a2-4d45-9422-be59cab7b5ad",
+    "court": "Court 2",
+    "time": "7:45 PM",
     "resultA": null,
     "resultB": null,
-    "teamA": "Njord",
-    "teamB": "Frigg"
+    "teamA": "Heimdall",
+    "teamB": "Njord"
   },
   {
-    "id": "464fef51-3e68-4c2b-b5f2-bb0973e99584",
+    "id": "9ecc2c86-ee9b-4db3-b33a-fc05facf75bf",
     "court": "Court 2",
-    "time": "3:00 PM",
+    "time": "8:15 PM",
     "resultA": null,
     "resultB": null,
-    "teamA": "Skadi",
+    "teamA": "Tyr",
     "teamB": "Idun"
   },
   {
-    "id": "7f60f141-e4a7-4cd5-819f-884b9af282d1",
+    "id": "2fe8bd4a-5ebd-4b7d-8746-c1b86152842d",
     "court": "Court 1",
-    "time": "3:00 PM",
+    "time": "8:15 PM",
     "resultA": null,
     "resultB": null,
     "teamA": "Njord",
     "teamB": "Thor"
   },
   {
-    "id": "aca1bd57-efed-4cf3-a716-75be3e93c6e3",
+    "id": "7960787b-1726-45cf-b489-1187503ce779",
     "court": "Court 1",
-    "time": "3:20 PM",
+    "time": "8:45 PM",
     "resultA": null,
     "resultB": null,
-    "teamA": "Bragi",
-    "teamB": "Frigg"
+    "teamA": "Freya",
+    "teamB": "Heimdall"
   },
   {
-    "id": "47e90862-9da3-4430-8af8-7ed9c419efb7",
+    "id": "0bdf14b5-49d1-4283-b9f4-139d455696a9",
     "court": "Court 2",
-    "time": "3:20 PM",
+    "time": "8:45 PM",
     "resultA": null,
     "resultB": null,
-    "teamA": "Skadi",
+    "teamA": "Tyr",
     "teamB": "Thor"
   },
   {
-    "id": "ec037353-2e8b-4014-b7d3-0bb4838f1778",
-    "court": "Court 1",
-    "time": "3:40 PM",
+    "id": "294656d3-32f3-4330-bc78-9c6b09bd44e5",
+    "court": "Court 2",
+    "time": "9:15 PM",
     "resultA": null,
     "resultB": null,
     "teamA": "Idun",
-    "teamB": "Frigg"
-  },
-  {
-    "id": "034b7be9-fba1-4d35-84ba-21b70e0c6c33",
-    "court": "Court 2",
-    "time": "3:40 PM",
-    "resultA": null,
-    "resultB": null,
-    "teamA": "Skadi",
     "teamB": "Njord"
   },
   {
-    "id": "e3db34e1-b8e0-473a-ba5c-307807093689",
+    "id": "f7f6c469-c19c-49b4-be77-70bab8833a5c",
     "court": "Court 1",
-    "time": "4:00 PM",
+    "time": "9:45 PM",
     "resultA": null,
     "resultB": null,
-    "teamA": "Skadi",
-    "teamB": "Bragi"
-  },
-  {
-    "id": "5cc00d66-359b-4711-bdec-3ce0215adeaa",
-    "court": "Court 2",
-    "time": "4:00 PM",
-    "resultA": null,
-    "resultB": null,
-    "teamA": "Thor",
-    "teamB": "Frigg"
-  },
-  {
-    "id": "52d90d04-0e51-439d-aca0-dd01672a55e2",
-    "court": "Court 1",
-    "time": "4:20 PM",
-    "resultA": null,
-    "resultB": null,
-    "teamA": "Idun",
-    "teamB": "Bragi"
+    "teamA": "Freya",
+    "teamB": "Idun"
   },
   {
     "id": "playoff-semi-1",

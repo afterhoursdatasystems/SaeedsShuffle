@@ -566,7 +566,7 @@ export default function PublicTeamsPage() {
                     {standings.map((s, index) => {
                       const team = s.teamData;
                       const teamRecord = `${s.wins}-${s.losses}`;
-                      const Icon = team.icon ? iconMap[team.icon] : Users;
+                      const Icon = team.icon && iconMap[team.icon] ? iconMap[team.icon] : Users;
                       return(
                       <Card key={team.id} className={cn("flex flex-col rounded-xl border-2 shadow-2xl transition-transform hover:scale-105 bg-card",
                         isLevelUp ? `border-transparent` : 'border-primary'
@@ -669,8 +669,8 @@ export default function PublicTeamsPage() {
                                     const teamBRecord = teamBStats ? `${teamBStats.wins}-${teamBStats.losses}` : '';
                                     const teamARank = getRankByName(match.teamA);
                                     const teamBRank = getRankByName(match.teamB);
-                                    const IconA = teamA?.icon ? iconMap[teamA.icon] : null;
-                                    const IconB = teamB?.icon ? iconMap[teamB.icon] : null;
+                                    const IconA = teamA?.icon && iconMap[teamA.icon] ? iconMap[teamA.icon] : null;
+                                    const IconB = teamB?.icon && iconMap[teamB.icon] ? iconMap[teamB.icon] : null;
 
                                     return (
                                         <React.Fragment key={match.id}>
