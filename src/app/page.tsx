@@ -666,61 +666,6 @@ export default function PublicTeamsPage() {
                           </CardContent>
                       </Card>
                   )}
-                  
-                  {playoffBracket && (
-                    <Card className="rounded-xl border-2 shadow-2xl">
-                         <CardHeader className="p-4 bg-muted/50 rounded-t-lg">
-                            <CardTitle className="flex items-center gap-3 text-xl font-bold">
-                                <Trophy className="h-6 w-6 text-primary" />
-                                Playoff Bracket
-                            </CardTitle>
-                         </CardHeader>
-                         <CardContent className="p-6">
-                            <div className="flex flex-col md:flex-row justify-center items-center gap-8">
-                                {/* Semi-Finals */}
-                                <div className="flex flex-col gap-8">
-                                    {playoffBracket.semiFinals.map((match, index) => (
-                                        <div key={index} className="space-y-2">
-                                             <p className="font-bold text-center text-muted-foreground">Semi-Final {index + 1}</p>
-                                             <div className="border rounded-lg p-3 min-w-[250px]">
-                                                <div className={cn("flex justify-between items-center", (match.resultA !== null && match.resultB !== null && match.resultA < match.resultB) && 'opacity-50')}>
-                                                    <span className="font-bold">#{getRankByName(match.teamA)} {match.teamA}</span>
-                                                    <span>{match.resultA}</span>
-                                                </div>
-                                                <Separator className="my-2" />
-                                                <div className={cn("flex justify-between items-center", (match.resultA !== null && match.resultB !== null && match.resultB < match.resultA) && 'opacity-50')}>
-                                                     <span className="font-bold">#{getRankByName(match.teamB)} {match.teamB}</span>
-                                                     <span>{match.resultB}</span>
-                                                </div>
-                                             </div>
-                                        </div>
-                                    ))}
-                                </div>
-                                
-                                {/* Connector and Final */}
-                               {playoffBracket.championship && (
-                                <div className="flex items-center">
-                                    <div className="hidden md:block w-8 border-t-2 border-dashed"></div>
-                                    <div className="space-y-2">
-                                         <p className="font-bold text-center text-muted-foreground">Championship</p>
-                                         <div className="border-2 border-primary rounded-lg p-4 min-w-[250px] bg-primary/5">
-                                             <div className={cn("flex justify-between items-center font-bold", (playoffBracket.championship.resultA !== null && playoffBracket.championship.resultB !== null && playoffBracket.championship.resultA < playoffBracket.championship.resultB) && 'opacity-50')}>
-                                                <span>#{getRankByName(playoffBracket.championship.teamA)} {playoffBracket.championship.teamA}</span>
-                                                <span>{playoffBracket.championship.resultA}</span>
-                                             </div>
-                                             <Separator className="my-2" />
-                                             <div className={cn("flex justify-between items-center font-bold", (playoffBracket.championship.resultA !== null && playoffBracket.championship.resultB !== null && playoffBracket.championship.resultB < playoffBracket.championship.resultA) && 'opacity-50')}>
-                                                <span>#{getRankByName(playoffBracket.championship.teamB)} {playoffBracket.championship.teamB}</span>
-                                                <span>{playoffBracket.championship.resultB}</span>
-                                             </div>
-                                         </div>
-                                    </div>
-                                </div>
-                               )}
-                            </div>
-                         </CardContent>
-                    </Card>
-                  )}
 
 
                    {schedule.length > 0 && !isKOTC && groupedSchedule && (
@@ -795,6 +740,61 @@ export default function PublicTeamsPage() {
                     </div>
                   )}
 
+                  {playoffBracket && (
+                    <Card className="rounded-xl border-2 shadow-2xl">
+                         <CardHeader className="p-4 bg-muted/50 rounded-t-lg">
+                            <CardTitle className="flex items-center gap-3 text-xl font-bold">
+                                <Trophy className="h-6 w-6 text-primary" />
+                                Playoff Bracket
+                            </CardTitle>
+                         </CardHeader>
+                         <CardContent className="p-6">
+                            <div className="flex flex-col md:flex-row justify-center items-center gap-8">
+                                {/* Semi-Finals */}
+                                <div className="flex flex-col gap-8">
+                                    {playoffBracket.semiFinals.map((match, index) => (
+                                        <div key={index} className="space-y-2">
+                                             <p className="font-bold text-center text-muted-foreground">Semi-Final {index + 1}</p>
+                                             <div className="border rounded-lg p-3 min-w-[250px]">
+                                                <div className={cn("flex justify-between items-center", (match.resultA !== null && match.resultB !== null && match.resultA < match.resultB) && 'opacity-50')}>
+                                                    <span className="font-bold">#{getRankByName(match.teamA)} {match.teamA}</span>
+                                                    <span>{match.resultA}</span>
+                                                </div>
+                                                <Separator className="my-2" />
+                                                <div className={cn("flex justify-between items-center", (match.resultA !== null && match.resultB !== null && match.resultB < match.resultA) && 'opacity-50')}>
+                                                     <span className="font-bold">#{getRankByName(match.teamB)} {match.teamB}</span>
+                                                     <span>{match.resultB}</span>
+                                                </div>
+                                             </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                
+                                {/* Connector and Final */}
+                               {playoffBracket.championship && (
+                                <div className="flex items-center">
+                                    <div className="hidden md:block w-8 border-t-2 border-dashed"></div>
+                                    <div className="space-y-2">
+                                         <p className="font-bold text-center text-muted-foreground">Championship</p>
+                                         <div className="border-2 border-primary rounded-lg p-4 min-w-[250px] bg-primary/5">
+                                             <div className={cn("flex justify-between items-center font-bold", (playoffBracket.championship.resultA !== null && playoffBracket.championship.resultB !== null && playoffBracket.championship.resultA < playoffBracket.championship.resultB) && 'opacity-50')}>
+                                                <span>#{getRankByName(playoffBracket.championship.teamA)} {playoffBracket.championship.teamA}</span>
+                                                <span>{playoffBracket.championship.resultA}</span>
+                                             </div>
+                                             <Separator className="my-2" />
+                                             <div className={cn("flex justify-between items-center font-bold", (playoffBracket.championship.resultA !== null && playoffBracket.championship.resultB !== null && playoffBracket.championship.resultB < playoffBracket.championship.resultA) && 'opacity-50')}>
+                                                <span>#{getRankByName(playoffBracket.championship.teamB)} {playoffBracket.championship.teamB}</span>
+                                                <span>{playoffBracket.championship.resultB}</span>
+                                             </div>
+                                         </div>
+                                    </div>
+                                </div>
+                               )}
+                            </div>
+                         </CardContent>
+                    </Card>
+                  )}
+
                   {schedule.length > 0 && isKOTC && (
                     <Card className="rounded-xl border-2 shadow-2xl">
                       <CardHeader className="p-6 bg-muted/50 rounded-t-lg">
@@ -864,4 +864,5 @@ export default function PublicTeamsPage() {
     </div>
   );
 }
+
 
