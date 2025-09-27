@@ -230,13 +230,28 @@ export function TeamGenerator() {
     }
   };
   
-    const handleClearTeams = () => {
+  const handleClearTeams = async () => {
     setTeams([]);
     setSchedule([]); // Also clear schedule when teams are cleared
-    toast({
-      title: 'Teams & Schedule Cleared',
-      description: 'All teams have been cleared and the schedule has been reset.',
-    });
+    
+    // Publish the empty state to the server
+    const finalFormat = gameFormat === 'king-of-the-court' && gameVariant !== 'standard' ? gameVariant : gameFormat;
+    const result = await publishData([], finalFormat, [], activeRule, pointsToWin);
+    
+    if (result.success) {
+        toast({
+            title: 'Teams & Schedule Cleared',
+            description: 'All teams have been cleared from the admin panel and the public dashboard.',
+        });
+    } else {
+         toast({
+            title: 'Error Clearing Teams',
+            description: result.error || 'Could not clear teams on the server.',
+            variant: 'destructive',
+        });
+        // NOTE: In a real-world app, you might want to re-fetch state here to revert optimistic UI updates.
+        // For now, the local state is cleared, but the server state might be stale.
+    }
   };
 
   const handlePlayerMove = async (playerToMove: Player, currentTeamName: string | null, newTeamName: string | null) => {
