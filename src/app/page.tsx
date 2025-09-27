@@ -514,7 +514,6 @@ export default function PublicTeamsPage() {
           <Volleyball className="h-10 w-10 text-primary" />
           <div>
             <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Saeed's Shuffle</h1>
-            <p className="text-md text-muted-foreground sm:text-lg">Good vibes, great serves, and a fresh draft weekly.</p>
           </div>
         </div>
       </header>
