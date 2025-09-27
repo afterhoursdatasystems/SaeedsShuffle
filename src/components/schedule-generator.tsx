@@ -268,7 +268,7 @@ const isScheduleValid = (schedule: Match[], teams: Team[], gamesPerTeam: number)
         // 2. Check for fair court distribution
         if(teamSchedule.length > 1) {
             const courtUsage = new Set(teamSchedule.map(m => m.court));
-            if (courtUsage.size === 1) {
+            if (courtUsage.size === 1 && !courtUsage.has("Challenger Line")) {
                 console.warn(`Validation failed: ${teamName} plays all games on one court.`);
                 return false;
             }
@@ -483,12 +483,36 @@ export function ScheduleGenerator() {
   };
 
   const handleResultChange = (matchId: string, team: 'A' | 'B', value: string) => {
-    setSchedule(currentSchedule => currentSchedule.map(m => {
-      if (m.id === matchId) {
-        return team === 'A' ? { ...m, resultA: value === '' ? null : parseInt(value) } : { ...m, resultB: value === '' ? null : parseInt(value) };
-      }
-      return m;
-    }));
+    const scoreValue = value === '' ? null : parseInt(value);
+    
+    setSchedule(currentSchedule => {
+        const matchExists = currentSchedule.some(m => m.id === matchId);
+        
+        if (matchExists) {
+            // If match exists, update it
+            return currentSchedule.map(m => {
+                if (m.id === matchId) {
+                    return team === 'A' ? { ...m, resultA: scoreValue } : { ...m, resultB: scoreValue };
+                }
+                return m;
+            });
+        } else if (playoffBracket) {
+            // If match doesn't exist, it must be a new playoff match
+            const semiFinalMatch = [...playoffBracket.semiFinals].find(m => m.id === matchId);
+            // TODO: Add logic for final match if it exists in playoffBracket
+            
+            if (semiFinalMatch) {
+                const updatedMatch = { ...semiFinalMatch };
+                if (team === 'A') {
+                    updatedMatch.resultA = scoreValue;
+                } else {
+                    updatedMatch.resultB = scoreValue;
+                }
+                return [...currentSchedule, updatedMatch];
+            }
+        }
+        return currentSchedule; // Should not happen
+    });
   };
   
   const handleSaveAllResults = async () => {
