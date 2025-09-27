@@ -505,33 +505,42 @@ export function ScheduleGenerator() {
             : m
         );
       } else {
-        // The match doesn't exist, it must be a new playoff game.
-        // This part of the logic might be flawed if playoffBracket isn't in scope.
-        // For now, we'll assume it's just for existing matches.
-        // The correct way would be to check if it's a new playoff game and create it.
-        // Re-evaluating this based on user feedback.
-        // Let's create a new playoff match object if it's not found.
-        
-        let matchData: Partial<Match> = { id: matchId };
-        
-        // This is a simplified addition. For a full implementation, we'd need
-        // the team names for the new playoff match.
-        // This is likely why the score input wasn't working. The state update
-        // needs to be more robust.
-        const newMatch = {
-            id: matchId,
-            teamA: 'TBD', // Placeholder
-            teamB: 'TBD', // Placeholder
-            court: 'Playoffs',
-            time: 'Playoffs',
-            resultA: team === 'A' ? scoreValue : null,
-            resultB: team === 'B' ? scoreValue : null,
-        };
-
-        return [...currentSchedule, newMatch];
+        // This handles creating a new playoff match in the state if it doesn't exist yet
+        let matchData = playoffBracket?.semiFinals.find(m => m.id === matchId) || playoffBracket?.championship;
+        if (matchData) {
+             const newMatch = {
+                ...matchData,
+                resultA: team === 'A' ? scoreValue : matchData.resultA,
+                resultB: team === 'B' ? scoreValue : matchData.resultB,
+            };
+             return [...currentSchedule, newMatch];
+        }
       }
+      return currentSchedule;
     });
   };
+
+    const handleScoreBlur = async (matchId: string) => {
+        const match = schedule.find(m => m.id === matchId);
+        if (match && match.resultA !== null && match.resultB !== null) {
+            console.log(`Auto-saving scores for match ${matchId}`);
+            const finalFormat = gameFormat === 'king-of-the-court' && gameVariant !== 'standard' ? gameVariant : gameFormat;
+            const result = await publishData(teams, finalFormat, [match], activeRule, pointsToWin);
+
+            if (!result.success) {
+                toast({
+                    title: 'Auto-save Failed',
+                    description: `Could not save the scores for ${match.teamA} vs ${match.teamB}.`,
+                    variant: 'destructive',
+                });
+            } else {
+                 toast({
+                    title: 'Scores Saved!',
+                    description: `Scores for ${match.teamA} vs ${match.teamB} have been saved.`,
+                });
+            }
+        }
+    };
   
   const handleSaveAllResults = async () => {
     setIsPublishing(true);
@@ -761,7 +770,7 @@ export function ScheduleGenerator() {
              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <CardTitle>Match Schedule & Results</CardTitle>
-                    <CardDescription>Enter results as games are completed.</CardDescription>
+                    <CardDescription>Enter results as games are completed. Scores auto-save when you click away.</CardDescription>
                 </div>
                  <div className="flex gap-2 w-full sm:w-auto">
                     <Button onClick={handleSaveAllResults} variant="secondary" className="w-full sm:w-auto" disabled={isPublishing}>
@@ -824,6 +833,7 @@ export function ScheduleGenerator() {
                                             className="h-8 w-12 p-1 text-center border rounded-md"
                                             value={match.resultA ?? ''}
                                             onChange={(e) => handleResultChange(match.id, 'A', e.target.value)}
+                                            onBlur={() => handleScoreBlur(match.id)}
                                             aria-label={`${match.teamA} score`}
                                           />
                                           <span>-</span>
@@ -832,6 +842,7 @@ export function ScheduleGenerator() {
                                             className="h-8 w-12 p-1 text-center border rounded-md"
                                             value={match.resultB ?? ''}
                                             onChange={(e) => handleResultChange(match.id, 'B', e.target.value)}
+                                            onBlur={() => handleScoreBlur(match.id)}
                                             aria-label={`${match.teamB} score`}
                                           />
                                       </div>
@@ -881,6 +892,7 @@ export function ScheduleGenerator() {
                                     className="h-8 w-12 p-1 text-center border rounded-md"
                                     value={match.resultA ?? ''}
                                     onChange={(e) => handleResultChange(match.id, 'A', e.target.value)}
+                                    onBlur={() => handleScoreBlur(match.id)}
                                     aria-label={`${match.teamA} score`}
                                   />
                                   <span>-</span>
@@ -889,6 +901,7 @@ export function ScheduleGenerator() {
                                     className="h-8 w-12 p-1 text-center border rounded-md"
                                     value={match.resultB ?? ''}
                                     onChange={(e) => handleResultChange(match.id, 'B', e.target.value)}
+                                    onBlur={() => handleScoreBlur(match.id)}
                                     aria-label={`${match.teamB} score`}
                                   />
                               </div>
@@ -914,6 +927,7 @@ export function ScheduleGenerator() {
                                     className="h-8 w-12 p-1 text-center border rounded-md"
                                     value={playoffBracket.championship.resultA ?? ''}
                                     onChange={(e) => handleResultChange(playoffBracket.championship!.id, 'A', e.target.value)}
+                                    onBlur={() => handleScoreBlur(playoffBracket.championship!.id)}
                                     aria-label={`${playoffBracket.championship.teamA} score`}
                                   />
                                   <span>-</span>
@@ -922,6 +936,7 @@ export function ScheduleGenerator() {
                                     className="h-8 w-12 p-1 text-center border rounded-md"
                                     value={playoffBracket.championship.resultB ?? ''}
                                     onChange={(e) => handleResultChange(playoffBracket.championship!.id, 'B', e.target.value)}
+                                    onBlur={() => handleScoreBlur(playoffBracket.championship!.id)}
                                     aria-label={`${playoffBracket.championship.teamB} score`}
                                   />
                               </div>
@@ -948,4 +963,5 @@ export function ScheduleGenerator() {
     </div>
   );
 }
+
 

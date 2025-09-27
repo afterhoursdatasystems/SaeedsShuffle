@@ -250,7 +250,23 @@ export async function publishData(teams: Team[], format: GameFormat | GameVarian
         };
 
         await writeDb(dataToPublish);
-        await writeScheduleDb(schedule);
+        
+        // When publishing, we need to merge the new schedule data with the existing one
+        const existingSchedule = await readScheduleDb();
+        const scheduleMap = new Map(existingSchedule.map(m => [m.id, m]));
+        
+        schedule.forEach(match => {
+            scheduleMap.set(match.id, match);
+        });
+
+        const newSchedule = Array.from(scheduleMap.values());
+        
+        // If the schedule payload is an empty array, it means we are clearing it.
+        if (schedule.length === 0) {
+            await writeScheduleDb([]);
+        } else {
+            await writeScheduleDb(newSchedule);
+        }
 
         return { success: true, message: 'Teams, format, and schedule published successfully!' };
     } catch (error) {
