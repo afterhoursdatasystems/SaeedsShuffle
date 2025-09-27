@@ -737,66 +737,67 @@ export function ScheduleGenerator() {
               </div>
            </div>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:flex items-end gap-4">
-            <div className="space-y-2">
-                <Label htmlFor="start-time">Start Time</Label>
-                 <Select value={startTime} onValueChange={setStartTime}>
-                    <SelectTrigger className="w-full md:w-[150px]" id="start-time">
-                        <SelectValue placeholder="Select a start time" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {timeOptions.map(time => (
-                           <SelectItem key={time.value} value={time.value}>{time.label}</SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            </div>
-             <div className='space-y-2'>
-                <Label htmlFor="points-to-win">Points to Win</Label>
-                <Input 
-                    id="points-to-win"
-                    type="number" 
-                    value={pointsToWin}
-                    onChange={(e) => setPointsToWin(Number(e.target.value))}
-                    className="w-full md:w-[150px]"
-                    min="1"
-                />
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="game-duration">Game Duration</Label>
-                 <Select value={String(gameDuration)} onValueChange={(val) => setGameDuration(Number(val))}>
-                    <SelectTrigger className="w-full md:w-[150px]" id="game-duration">
-                        <SelectValue placeholder="Select duration" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {[15, 20, 25, 30, 35, 40, 45].map(duration => (
-                           <SelectItem key={duration} value={String(duration)}>{duration} min</SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            </div>
-            <div className="space-y-2 flex-grow">
-                <Label htmlFor="games-per-team">Games Per Team</Label>
-                <Select value={String(gamesPerTeam)} onValueChange={(val) => setGamesPerTeam(Number(val))}>
-                    <SelectTrigger className="w-full md:w-[150px]" id="games-per-team">
-                        <SelectValue placeholder="Select games per team" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {Array.from({ length: 10 }, (_, i) => i + 1).map(num => (
-                            <SelectItem key={num} value={String(num)}>{num}</SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            </div>
-            <div className="flex gap-2 w-full md:w-auto pt-4 md:pt-0">
-                <Button onClick={handleGenerateSchedule} className="w-full sm:w-auto">
-                <CalendarDays className="mr-2 h-4 w-4" />
-                Generate Schedule
-                </Button>
-                <Button onClick={handleClearSchedule} variant="outline" className="w-full sm:w-auto">
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Clear Schedule
-                </Button>
+        <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
+                <div className="space-y-2">
+                    <Label htmlFor="start-time">Start Time</Label>
+                     <Select value={startTime} onValueChange={setStartTime}>
+                        <SelectTrigger id="start-time">
+                            <SelectValue placeholder="Select a start time" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {timeOptions.map(time => (
+                               <SelectItem key={time.value} value={time.value}>{time.label}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+                 <div className='space-y-2'>
+                    <Label htmlFor="points-to-win">Points to Win</Label>
+                    <Input 
+                        id="points-to-win"
+                        type="number" 
+                        value={pointsToWin}
+                        onChange={(e) => setPointsToWin(Number(e.target.value))}
+                        min="1"
+                    />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="game-duration">Game Duration</Label>
+                     <Select value={String(gameDuration)} onValueChange={(val) => setGameDuration(Number(val))}>
+                        <SelectTrigger id="game-duration">
+                            <SelectValue placeholder="Select duration" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {[15, 20, 25, 30, 35, 40, 45].map(duration => (
+                               <SelectItem key={duration} value={String(duration)}>{duration} min</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="games-per-team">Games Per Team</Label>
+                    <Select value={String(gamesPerTeam)} onValueChange={(val) => setGamesPerTeam(Number(val))}>
+                        <SelectTrigger id="games-per-team">
+                            <SelectValue placeholder="Select games per team" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {Array.from({ length: 10 }, (_, i) => i + 1).map(num => (
+                                <SelectItem key={num} value={String(num)}>{num}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div className="flex gap-2 w-full lg:col-span-2">
+                    <Button onClick={handleGenerateSchedule} className="w-full">
+                        <CalendarDays className="mr-2 h-4 w-4" />
+                        Generate Schedule
+                    </Button>
+                    <Button onClick={handleClearSchedule} variant="outline" className="w-full">
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Clear Schedule
+                    </Button>
+                </div>
             </div>
         </CardContent>
        </Card>
@@ -1010,5 +1011,7 @@ export function ScheduleGenerator() {
 
 
 
+
+    
 
     
