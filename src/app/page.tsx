@@ -477,11 +477,11 @@ export default function PublicTeamsPage() {
   }
   
     const { playoffBracket, areAllGamesPlayed } = useMemo(() => {
-        if (gameFormat !== 'pool-play-bracket' || standings.length < 4) {
+        if (gameFormat !== 'pool-play-bracket' || standings.length < 4 || schedule.length === 0) {
             return { playoffBracket: null, areAllGamesPlayed: false };
         }
         
-        const poolPlayGames = schedule.filter(m => !m.court.toLowerCase().includes('playoff'));
+        const poolPlayGames = schedule.filter(m => !m.id.startsWith('playoff-'));
         const allPlayed = poolPlayGames.every(match => match.resultA !== null && match.resultB !== null);
 
         if (!allPlayed) {
@@ -599,7 +599,9 @@ export default function PublicTeamsPage() {
                                    </div>
                                     <div className="flex items-center gap-3">
                                       {isLevelUp && <span className="font-semibold">{s.level}</span>}
-                                      {gameFormat === 'pool-play-bracket' && <span className="ml-2 font-normal text-sm opacity-80">{teamRecord}</span>}
+                                      {gameFormat === 'pool-play-bracket' && (
+                                        <span className="ml-2 font-semibold text-base opacity-90">{teamRecord}</span>
+                                      )}
                                     </div>
                                 </div>
                             </CardTitle>
@@ -748,9 +750,11 @@ export default function PublicTeamsPage() {
                                                 <div className="p-2 font-bold text-center bg-muted text-muted-foreground">{match.court}</div>
                                                 <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 w-full p-2">
                                                     <div className="font-medium text-left">
-                                                        <div>{match.teamA}</div>
+                                                        <div>
+                                                            {gameFormat === 'pool-play-bracket' && teamARank && <span className="font-bold mr-2">#{teamARank}</span>}
+                                                            {match.teamA}
+                                                        </div>
                                                         <div className="text-muted-foreground text-sm flex items-center gap-2">
-                                                          {gameFormat === 'pool-play-bracket' && teamARank && <span>#{teamARank}</span>}
                                                           <span>{teamARecord}</span>
                                                           {isLevelUp && teamAStats && <span>Level {teamAStats.level}</span>}
                                                         </div>
@@ -761,11 +765,13 @@ export default function PublicTeamsPage() {
                                                             : 'vs'}
                                                     </div>
                                                     <div className="font-medium text-right">
-                                                        <div>{match.teamB}</div>
+                                                        <div>
+                                                            {match.teamB}
+                                                            {gameFormat === 'pool-play-bracket' && teamBRank && <span className="font-bold ml-2">#{teamBRank}</span>}
+                                                        </div>
                                                         <div className="text-muted-foreground text-sm flex items-center justify-end gap-2">
                                                            {isLevelUp && teamBStats && <span>Level {teamBStats.level}</span>}
                                                            <span>{teamBRecord}</span>
-                                                           {gameFormat === 'pool-play-bracket' && teamBRank && <span>#{teamBRank}</span>}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -858,3 +864,4 @@ export default function PublicTeamsPage() {
     </div>
   );
 }
+
