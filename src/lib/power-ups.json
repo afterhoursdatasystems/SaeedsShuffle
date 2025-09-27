@@ -1,0 +1,21 @@
+
+[
+  { "name": "Point Boost", "description": "Start the next game with a 2-point lead." },
+  { "name": "Serve Advantage", "description": "Get one 'do-over' on a missed serve during the next match." },
+  { "name": "The Equalizer", "description": "The opponent's highest-skilled player must serve underhand for the entire game." },
+  { "name": "Secret Weapon", "description": "Choose one player on your team; their points are worth double for the first 5 points of the game." },
+  { "name": "Triple Threat", "description": "For the next three serves, your team's serves cannot be returned over the net on the first touch." },
+  { "name": "Gender Bender", "description": "The next point must be scored by a player of the opposite gender of the person who just scored." },
+  { "name": "One-Handed Wonder", "description": "One player on the opposing team must play with one hand behind their back for the next rally." },
+  { "name": "Rally Stopper", "description": "Your team can choose to end a rally and replay the point, once per game." },
+  { "name": "Ace In The Hole", "description": "If your team serves an ace, you get 3 points instead of 1." },
+  { "name": "The Wall", "description": "For the next rally, your team's blocks are worth 2 points." },
+  { "name": "Butterfingers", "description": "The opposing team is not allowed to set the ball for the next two rallies (must bump-set)." },
+  { "name": "Vampire", "description": "Steal one point from the opposing team and add it to your score." },
+  { "name": "Frozen", "description": "Pick a player on the other team. They cannot jump for the next rally." },
+  { "name": "Mimic", "description": "For the next rally, the opposing team must mimic your team's formation." },
+  { "name": "Double Trouble", "description": "For the next rally, your team is allowed to have two contacts in a row by the same player." },
+  { "name": "Low Ceiling", "description": "For the next rally, the opposing team is not allowed to send the ball over the net above the height of the antennae." },
+  { "name": "Friendly Fire", "description": "Your team can get a point if the opposing team has a miscommunication and two players run into each other." },
+  { "name": "Serve Swap", "description": "You may force any player on the opposing team to serve for the next point." }
+]
