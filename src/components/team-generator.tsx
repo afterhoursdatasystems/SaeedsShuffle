@@ -20,7 +20,7 @@ import { usePlayerContext } from '@/contexts/player-context';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
 
 
-const teamNameDetails = {
+const teamNameDetails: {[key: string]: {icon: string}} = {
   'Odin': { icon: 'Brain' },
   'Thor': { icon: 'Hammer' },
   'Loki': { icon: 'Users' },
@@ -146,7 +146,7 @@ export function TeamGenerator() {
         return {
             id: crypto.randomUUID(),
             name: teamName,
-            icon: details.icon,
+            icon: details?.icon,
             players: [],
             level: 1, // Start all teams at level 1
         };
