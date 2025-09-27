@@ -109,13 +109,25 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [gameFormat, setGameFormat] = useState<GameFormat>('king-of-the-court');
   const [gameVariant, setGameVariant] = useState<GameVariant>('standard');
   const [activeRule, setActiveRule] = useState<PowerUp | null>(null);
-  const [pointsToWin, setPointsToWin] = useState<number>(15);
+  const [pointsToWin, setPointsToWinInternal] = useState<number>(15);
   const [gamesPerTeam, setGamesPerTeam] = useState<number>(4);
   const [gameDuration, setGameDuration] = useState<number>(30);
   const [levelUpHandicaps, setLevelUpHandicaps] = useState<Handicap[]>(defaultLevelUpHandicaps);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   
+  const setPointsToWin = useCallback((points: number) => {
+    setPointsToWinInternal(points);
+    const durationOptions = [15, 20, 25, 30, 35, 40, 45];
+    let newDuration = Math.round(points / 5) * 5;
+    // Find the closest available duration
+    newDuration = durationOptions.reduce((prev, curr) => 
+      Math.abs(curr - newDuration) < Math.abs(prev - newDuration) ? curr : prev
+    );
+    setGameDuration(newDuration);
+  }, []);
+
+
   const loadAllData = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -172,7 +184,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     } finally {
         setIsLoading(false);
     }
-  }, [toast]);
+  }, [toast, setPointsToWin]);
 
 
   useEffect(() => {

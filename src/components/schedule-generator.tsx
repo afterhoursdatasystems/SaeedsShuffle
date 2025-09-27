@@ -18,6 +18,7 @@ import { Avatar, AvatarFallback } from './ui/avatar';
 import { Separator } from './ui/separator';
 import { GameMatrix } from './game-matrix';
 import { cn } from '@/lib/utils';
+import { Input } from './ui/input';
 
 const iconMap: { [key: string]: React.ElementType } = {
     Brain, Hammer, Crown: CrownIcon, Heart, Shield, Sun, Scale, Dumbbell, Pen, Apple, Anchor, Snowflake, Target, Sparkles, Moon, Drama, Users
@@ -311,7 +312,7 @@ const isScheduleValid = (schedule: Match[], teams: Team[], gamesPerTeam: number,
 
 
 export function ScheduleGenerator() {
-  const { teams, schedule, setSchedule, gameFormat, gameVariant, players, activeRule, pointsToWin, gamesPerTeam, setGamesPerTeam, gameDuration, setGameDuration } = usePlayerContext();
+  const { teams, schedule, setSchedule, gameFormat, gameVariant, players, activeRule, pointsToWin, setPointsToWin, gamesPerTeam, setGamesPerTeam, gameDuration, setGameDuration } = usePlayerContext();
   const { toast } = useToast();
   const [isPublishing, setIsPublishing] = React.useState(false);
   const [startTime, setStartTime] = React.useState('18:45');
@@ -749,6 +750,17 @@ export function ScheduleGenerator() {
                         ))}
                     </SelectContent>
                 </Select>
+            </div>
+             <div className='space-y-2'>
+                <Label htmlFor="points-to-win">Points to Win</Label>
+                <Input 
+                    id="points-to-win"
+                    type="number" 
+                    value={pointsToWin}
+                    onChange={(e) => setPointsToWin(Number(e.target.value))}
+                    className="w-full md:w-[150px]"
+                    min="1"
+                />
             </div>
             <div className="space-y-2">
                 <Label htmlFor="game-duration">Game Duration</Label>
