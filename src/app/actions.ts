@@ -10,7 +10,6 @@ type PublishedData = {
     format: GameFormat | GameVariant;
     activeRule: PowerUp | null;
     pointsToWin: number;
-    players?: Player[];
     levelUpHandicaps?: Handicap[];
 };
 
@@ -90,6 +89,10 @@ async function readDb(): Promise<Omit<PublishedData, 'schedule'>> {
         // Remove schedule from main db if it exists (for migration)
         if ('schedule' in parsedData) {
             delete parsedData.schedule;
+        }
+         // Remove players from main db if it exists (for migration)
+        if ('players' in parsedData) {
+            delete parsedData.players;
         }
         return parsedData;
     } catch (error: any) {
@@ -260,13 +263,18 @@ export async function getPublishedData(): Promise<{ success: boolean; data?: Pub
     try {
         const settingsData = await readDb();
         const scheduleData = await readScheduleDb();
+        const playersData = await readPlayersDb();
 
+        // This function combines all data for the public view.
+        // It's important to merge player data correctly into teams if needed,
+        // but for now, we'll return players as a separate root property.
         const combinedData = {
             ...settingsData,
-            schedule: scheduleData
+            schedule: scheduleData,
+            players: playersData
         };
 
-        return { success: true, data: combinedData };
+        return { success: true, data: combinedData as any }; // Cast as any to add players
     } catch (error) {
         console.error('Get Published Data Error:', error);
         return { success: false, error: 'Failed to retrieve data.' };

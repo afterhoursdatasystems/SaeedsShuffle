@@ -129,7 +129,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
             }
 
             if (publishedDataResult.success && publishedDataResult.data) {
-                const { teams, format, schedule, activeRule, pointsToWin, levelUpHandicaps } = publishedDataResult.data;
+                const { teams, format, schedule, activeRule, pointsToWin, levelUpHandicaps } = publishedDataResult.data as any;
                 setTeams(teams || []);
                 setSchedule(schedule || []);
                 setActiveRule(activeRule || null);
