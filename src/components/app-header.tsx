@@ -4,7 +4,7 @@
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { LogOut, Volleyball, LayoutDashboard, PanelLeft, UserCheck, Users, Calendar, Wand2, Bot, Home } from 'lucide-react';
+import { LogOut, Volleyball, LayoutDashboard, PanelLeft, UserCheck, Users, Calendar, Wand2, Home } from 'lucide-react';
 import Link from 'next/link';
 import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
 import React from 'react';
@@ -17,7 +17,6 @@ const navItems = [
     { href: '/admin/teams', label: 'Team Management', icon: Users },
     { href: '/admin/schedule', label: 'Schedule Management', icon: Calendar },
     { href: '/admin/rule-generator', label: 'Rule Generator', icon: Wand2 },
-    { href: '/admin/simulation', label: 'Simulate Standings', icon: Bot },
 ];
 
 export default function AppHeader() {

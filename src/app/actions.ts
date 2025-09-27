@@ -3,7 +3,6 @@
 
 import { promises as fs } from 'fs';
 import path from 'path';
-import { simulateLeagueStandings, type SimulateLeagueStandingsInput } from '@/ai/flows/simulate-league-standings';
 import type { Team, GameFormat, GameVariant, Match, PowerUp, Player, PlayerPresence, Handicap } from '@/types';
 
 type PublishedData = {
@@ -209,16 +208,6 @@ export async function resetAllPlayerPresence(): Promise<{ success: boolean; erro
     } catch (error) {
         console.error('Reset All Player Presence Error:', error);
         return { success: false, error: 'Failed to reset all players to pending.' };
-    }
-}
-
-export async function getSimulatedStandings(input: SimulateLeagueStandingsInput) {
-    try {
-        const result = await simulateLeagueStandings(input);
-        return { success: true, data: result };
-    } catch (error) {
-        console.error('AI Simulation Error:', error);
-        return { success: false, error: 'Failed to simulate standings due to an internal error.' };
     }
 }
 

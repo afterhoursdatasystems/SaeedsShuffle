@@ -138,11 +138,6 @@ export default function AdminPage() {
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
                    <Button asChild size="lg" variant="outline">
-                       <Link href="/admin/simulation">
-                           <Bot className="mr-2 h-5 w-5" /> Simulate Standings
-                       </Link>
-                   </Button>
-                   <Button asChild size="lg" variant="outline">
                        <Link href="/admin/rule-generator">
                            <Zap className="mr-2 h-5 w-5" /> Rule Generator
                        </Link>

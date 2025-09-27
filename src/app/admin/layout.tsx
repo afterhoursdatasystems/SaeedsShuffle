@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { PlayerProvider } from '@/contexts/player-context';
 import { SidebarProvider, Sidebar, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarTrigger } from '@/components/ui/sidebar';
-import { LayoutDashboard, UserCheck, Users, Calendar, Wand2, Bot, Volleyball } from 'lucide-react';
+import { LayoutDashboard, UserCheck, Users, Calendar, Wand2, Volleyball } from 'lucide-react';
 import Link from 'next/link';
 import AppHeader from '@/components/app-header';
 
@@ -17,7 +17,6 @@ const navItems = [
     { href: '/admin/teams', label: 'Team Management', icon: Users },
     { href: '/admin/schedule', label: 'Schedule Management', icon: Calendar },
     { href: '/admin/rule-generator', label: 'Rule Generator', icon: Wand2 },
-    { href: '/admin/simulation', label: 'Simulate Standings', icon: Bot },
 ];
 
 export default function AdminLayout({
