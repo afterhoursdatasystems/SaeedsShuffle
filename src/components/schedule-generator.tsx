@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Save, CalendarDays, Send, Trash2, Clock, Trophy } from 'lucide-react';
+import { Save, CalendarDays, Send, Trash2, Clock, Trophy, Users, Brain, Hammer, Crown as CrownIcon, Heart, Shield, Sun, Scale, Dumbbell, Pen, Apple, Anchor, Snowflake, Target, Sparkles, Moon, Drama } from 'lucide-react';
 import React, { useMemo } from 'react';
 import { usePlayerContext } from '@/contexts/player-context';
 import { publishData } from '@/app/actions';
@@ -18,6 +18,10 @@ import { Avatar, AvatarFallback } from './ui/avatar';
 import { Separator } from './ui/separator';
 import { GameMatrix } from './game-matrix';
 import { cn } from '@/lib/utils';
+
+const iconMap: { [key: string]: React.ElementType } = {
+    Brain, Hammer, Crown: CrownIcon, Heart, Shield, Sun, Scale, Dumbbell, Pen, Apple, Anchor, Snowflake, Target, Sparkles, Moon, Drama, Users
+};
 
 
 const shuffleArray = <T,>(array: T[]): T[] => {
@@ -835,11 +839,14 @@ export function ScheduleGenerator() {
                         {matches.map((match) => {
                             const teamA = teamMap.get(match.teamA);
                             const teamB = teamMap.get(match.teamB);
+                            const IconA = teamA?.icon && iconMap[teamA.icon] ? iconMap[teamA.icon] : null;
+                            const IconB = teamB?.icon && iconMap[teamB.icon] ? iconMap[teamB.icon] : null;
                             return (
                                 <div key={match.id} className="text-base rounded-lg border bg-background overflow-hidden">
                                   <div className="p-2 font-bold text-center bg-muted text-muted-foreground">{match.court}</div>
                                   <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 w-full p-2">
-                                      <div className="font-medium text-left">
+                                      <div className="font-medium text-left flex items-center gap-2">
+                                          {IconA && <IconA className="h-4 w-4" />}
                                           {match.teamA}
                                       </div>
                                       <div className="flex items-center gap-1">
@@ -861,8 +868,9 @@ export function ScheduleGenerator() {
                                             aria-label={`${match.teamB} score`}
                                           />
                                       </div>
-                                      <div className="font-medium text-right">
+                                      <div className="font-medium text-right flex items-center justify-end gap-2">
                                           {match.teamB}
+                                          {IconB && <IconB className="h-4 w-4" />}
                                       </div>
                                   </div>
                                   <Separator />
@@ -978,6 +986,7 @@ export function ScheduleGenerator() {
     </div>
   );
 }
+
 
 
 
