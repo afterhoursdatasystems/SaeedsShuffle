@@ -95,7 +95,7 @@ interface PlayerContextType {
   updateTeam: (team: Team) => void;
   levelUpHandicaps: Handicap[];
   setLevelUpHandicaps: React.Dispatch<React.SetStateAction<Handicap[]>>;
-  shuffleLevelUpHandicaps: () => Promise<void>;
+  shuffleLevelUpHandicaps: (levelToShuffle?: number) => Promise<void>;
   resetLevelUpHandicapsToDefault: () => Promise<void>;
   loadAllData: () => Promise<void>;
 }
@@ -463,17 +463,38 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     );
   };
   
-    const shuffleLevelUpHandicaps = async () => {
-        const newHandicaps = AllHandicaps.map(levelData => {
-            const randomIndex = Math.floor(Math.random() * levelData.handicaps.length);
+    const shuffleLevelUpHandicaps = async (levelToShuffle?: number) => {
+    let newHandicaps: Handicap[] = [];
+
+    if (levelToShuffle) {
+      newHandicaps = levelUpHandicaps.map(handicap => {
+        if (handicap.level === levelToShuffle) {
+          const levelData = AllHandicaps.find(h => h.level === levelToShuffle);
+          if (levelData) {
+            const availableHandicaps = levelData.handicaps.filter(h => h !== handicap.description);
+            const randomIndex = Math.floor(Math.random() * availableHandicaps.length);
             return {
-                level: levelData.level,
-                description: levelData.handicaps[randomIndex]
+              ...handicap,
+              description: availableHandicaps.length > 0 ? availableHandicaps[randomIndex] : handicap.description
             };
-        });
-        setLevelUpHandicaps(newHandicaps);
-        await publishData(teams, gameFormat, schedule, activeRule, pointsToWin, newHandicaps);
-    };
+          }
+        }
+        return handicap;
+      });
+    } else {
+      newHandicaps = AllHandicaps.map(levelData => {
+        const randomIndex = Math.floor(Math.random() * levelData.handicaps.length);
+        return {
+          level: levelData.level,
+          description: levelData.handicaps[randomIndex]
+        };
+      });
+    }
+
+    setLevelUpHandicaps(newHandicaps);
+    await publishData(teams, gameFormat, schedule, activeRule, pointsToWin, newHandicaps);
+  };
+
 
   const resetLevelUpHandicapsToDefault = async () => {
     setLevelUpHandicaps(defaultLevelUpHandicaps);
@@ -534,3 +555,4 @@ export function usePlayerContext() {
   }
   return context;
 }
+

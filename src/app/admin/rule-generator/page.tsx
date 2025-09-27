@@ -9,7 +9,7 @@ import { Wand2, RefreshCw, Info, ListChecks, RotateCcw, Shuffle } from 'lucide-r
 import type { PowerUp, Handicap } from '@/types';
 import { usePlayerContext } from '@/contexts/player-context';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { publishData } from '@/app/actions';
+import { publishData } from '@/ai/flows/../../app/actions';
 import { generatePowerUps } from '@/ai/flows/generate-power-ups';
 import { generateCosmicScrambleRules } from '@/ai/flows/generate-cosmic-scramble-rules';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -30,7 +30,6 @@ export default function RuleGeneratorPage() {
     allPowerUps,
     cosmicScrambleRules,
     levelUpHandicaps,
-    setLevelUpHandicaps,
     shuffleLevelUpHandicaps,
     resetLevelUpHandicapsToDefault,
   } = usePlayerContext();
@@ -110,13 +109,13 @@ export default function RuleGeneratorPage() {
     }
   }
 
-  const handleShuffleHandicaps = async () => {
+  const handleShuffleHandicaps = async (levelToShuffle?: number) => {
     setIsLoading(true);
-    await shuffleLevelUpHandicaps();
+    await shuffleLevelUpHandicaps(levelToShuffle);
     setIsLoading(false);
     toast({
-        title: 'Handicaps Shuffled!',
-        description: 'A new set of handicaps has been selected and published.',
+        title: levelToShuffle ? `Level ${levelToShuffle} Handicap Shuffled!` : 'All Handicaps Shuffled!',
+        description: 'A new handicap has been selected and published.',
     });
   }
 
@@ -211,9 +210,9 @@ export default function RuleGeneratorPage() {
             <div className="text-center mb-8">
               {isLevelUp ? (
                   <div className="flex justify-center gap-4">
-                     <Button onClick={handleShuffleHandicaps} disabled={isLoading || !isClient} size="lg">
+                     <Button onClick={() => handleShuffleHandicaps()} disabled={isLoading || !isClient} size="lg">
                         {isLoading ? <RefreshCw className="mr-2 h-5 w-5 animate-spin" /> : <Shuffle className="mr-2 h-5 w-5" />}
-                        {isLoading ? 'Shuffling...' : `Shuffle Today's Handicaps`}
+                        {isLoading ? 'Shuffling...' : `Shuffle All Handicaps`}
                     </Button>
                      <Button onClick={handleResetToDefault} disabled={isLoading || !isClient} size="lg" variant="outline">
                         <RotateCcw className="mr-2 h-5 w-5" />
@@ -273,6 +272,9 @@ export default function RuleGeneratorPage() {
                                     <div key={handicap.level} className="space-y-1 rounded-md bg-muted/50 p-4">
                                         <div className="flex justify-between items-center">
                                             <p className="font-semibold text-lg">Level {handicap.level}</p>
+                                            <Button variant="ghost" size="icon" onClick={() => handleShuffleHandicaps(handicap.level)} disabled={isLoading || !isClient}>
+                                                <Shuffle className="h-5 w-5" />
+                                            </Button>
                                         </div>
                                         <p className="text-muted-foreground">{handicap.description}</p>
                                     </div>

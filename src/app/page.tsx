@@ -215,10 +215,10 @@ const getFormatDetails = (pointsToWin: number, teamCount: number, handicaps: Han
                 ))
             ) : (
                 <>
-                  <p><strong>Level 2:</strong> All players on the team must rotate positions after each side-out.</p>
-                  <p><strong>Level 3:</strong> The opposing team designates your strongest hitter, who must then play defense for the entire game.</p>
-                  <p><strong>Level 4:</strong> All serves from your team must be underhand.</p>
-                  <p><strong>Level 5:</strong> No player on your team is allowed to jump.</p>
+                  <p><strong>Level 2:</strong> All attacks (spikes or tips) must be performed by a female player.</p>
+                  <p><strong>Level 3:</strong> One of your male players, chosen by the opposing team, is not allowed to jump for the entire game.</p>
+                  <p><strong>Level 4:</strong> All players on your team must hit the ball with their non-dominant hand.</p>
+                  <p><strong>Level 5:</strong> Your team is only allowed one touch to get the ball back over the net.</p>
                 </>
             )}
         </div>
