@@ -669,6 +669,8 @@ export default function PublicTeamsPage() {
                                     const teamBRecord = teamBStats ? `${teamBStats.wins}-${teamBStats.losses}` : '';
                                     const teamARank = getRankByName(match.teamA);
                                     const teamBRank = getRankByName(match.teamB);
+                                    const IconA = teamA?.icon ? iconMap[teamA.icon] : null;
+                                    const IconB = teamB?.icon ? iconMap[teamB.icon] : null;
 
                                     return (
                                         <React.Fragment key={match.id}>
@@ -676,7 +678,8 @@ export default function PublicTeamsPage() {
                                                 <div className="p-2 font-bold text-center bg-muted text-muted-foreground">{match.court}</div>
                                                 <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 w-full p-2">
                                                     <div className="font-medium text-left">
-                                                        <div>
+                                                        <div className="flex items-center gap-2">
+                                                            {IconA && <IconA className="h-4 w-4" />}
                                                             {gameFormat === 'pool-play-bracket' && teamARank && <span className="font-bold mr-2">#{teamARank}</span>}
                                                             {match.teamA}
                                                         </div>
@@ -691,9 +694,10 @@ export default function PublicTeamsPage() {
                                                             : 'vs'}
                                                     </div>
                                                     <div className="font-medium text-right">
-                                                        <div>
-                                                            {match.teamB}
+                                                         <div className="flex items-center justify-end gap-2">
                                                             {gameFormat === 'pool-play-bracket' && teamBRank && <span className="font-bold ml-2">#{teamBRank}</span>}
+                                                            {match.teamB}
+                                                            {IconB && <IconB className="h-4 w-4" />}
                                                         </div>
                                                         <div className="text-muted-foreground text-sm flex items-center justify-end gap-2">
                                                            {isLevelUp && teamBStats && <span>Level {teamBStats.level}</span>}

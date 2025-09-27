@@ -6,10 +6,10 @@
       "icon": "Snowflake",
       "players": [
         {
-          "name": "Matt Schrader",
-          "gender": "Guy",
-          "skill": 9,
-          "id": "2025-09-26T21:43:14.961Z0.38741860879057755",
+          "name": "Alexandra Broskey",
+          "gender": "Gal",
+          "skill": 6,
+          "id": "2025-09-26T21:43:14.961Z0.5614096897448619",
           "presence": "Present"
         },
         {
@@ -20,17 +20,17 @@
           "presence": "Present"
         },
         {
-          "name": "Alexandra Broskey",
-          "gender": "Gal",
-          "skill": 6,
-          "id": "2025-09-26T21:43:14.961Z0.5614096897448619",
-          "presence": "Present"
-        },
-        {
           "name": "Jasona Jones",
           "gender": "Gal",
           "skill": 1,
           "id": "2025-09-26T21:43:14.961Z0.05281959899623878",
+          "presence": "Present"
+        },
+        {
+          "name": "Matt Schrader",
+          "gender": "Guy",
+          "skill": 9,
+          "id": "2025-09-26T21:43:14.961Z0.38741860879057755",
           "presence": "Present"
         }
       ],
@@ -41,6 +41,13 @@
       "name": "Idun",
       "icon": "Apple",
       "players": [
+        {
+          "name": "Abby Gilpin",
+          "gender": "Gal",
+          "skill": 6,
+          "id": "2025-09-26T21:43:14.961Z0.7264991156949785",
+          "presence": "Present"
+        },
         {
           "name": "Brian Kempert",
           "gender": "Guy",
@@ -53,13 +60,6 @@
           "gender": "Gal",
           "skill": 7,
           "id": "2025-09-26T21:43:14.961Z0.5017007408381566",
-          "presence": "Present"
-        },
-        {
-          "name": "Abby Gilpin",
-          "gender": "Gal",
-          "skill": 6,
-          "id": "2025-09-26T21:43:14.961Z0.7264991156949785",
           "presence": "Present"
         },
         {
@@ -85,17 +85,17 @@
           "presence": "Present"
         },
         {
-          "name": "Rachel Nystrom",
-          "gender": "Gal",
-          "skill": 8,
-          "id": "2025-09-26T21:43:14.961Z0.7807148382060562",
-          "presence": "Present"
-        },
-        {
           "name": "Lauren Hopkins",
           "gender": "Gal",
           "skill": 6,
           "id": "2025-09-26T21:43:14.961Z0.4060375379498602",
+          "presence": "Present"
+        },
+        {
+          "name": "Rachel Nystrom",
+          "gender": "Gal",
+          "skill": 8,
+          "id": "2025-09-26T21:43:14.961Z0.7807148382060562",
           "presence": "Present"
         },
         {
@@ -121,13 +121,6 @@
           "presence": "Present"
         },
         {
-          "name": "Shaylyn Murphy",
-          "gender": "Gal",
-          "skill": 8,
-          "id": "2025-09-26T21:43:14.961Z0.4029942449960613",
-          "presence": "Present"
-        },
-        {
           "name": "Nicole Malone",
           "gender": "Gal",
           "skill": 5,
@@ -140,6 +133,13 @@
           "skill": 6,
           "id": "2025-09-26T21:43:14.961Z0.13858608583208043",
           "presence": "Present"
+        },
+        {
+          "name": "Shaylyn Murphy",
+          "gender": "Gal",
+          "skill": 8,
+          "id": "2025-09-26T21:43:14.961Z0.4029942449960613",
+          "presence": "Present"
         }
       ],
       "level": 1
@@ -150,17 +150,17 @@
       "icon": "Hammer",
       "players": [
         {
+          "name": "Cole Deaver",
+          "gender": "Guy",
+          "skill": 6,
+          "id": "2025-09-26T21:43:14.959Z0.5769044833339514",
+          "presence": "Present"
+        },
+        {
           "name": "Giovanni Salvatore",
           "gender": "Guy",
           "skill": 7,
           "id": "2025-09-26T21:43:14.961Z0.09941459373862394",
-          "presence": "Present"
-        },
-        {
-          "name": "Kristin Drinka",
-          "gender": "Gal",
-          "skill": 7,
-          "id": "2025-09-26T21:43:14.960Z0.6347155443906336",
           "presence": "Present"
         },
         {
@@ -171,10 +171,10 @@
           "presence": "Present"
         },
         {
-          "name": "Cole Deaver",
-          "gender": "Guy",
-          "skill": 6,
-          "id": "2025-09-26T21:43:14.959Z0.5769044833339514",
+          "name": "Kristin Drinka",
+          "gender": "Gal",
+          "skill": 7,
+          "id": "2025-09-26T21:43:14.960Z0.6347155443906336",
           "presence": "Present"
         }
       ],
@@ -185,20 +185,6 @@
       "name": "Frigg",
       "icon": "Crown",
       "players": [
-        {
-          "name": "Matt Taylor",
-          "gender": "Guy",
-          "skill": 7,
-          "id": "2025-09-26T21:43:14.961Z0.851220591558296",
-          "presence": "Present"
-        },
-        {
-          "name": "Kyle Novak",
-          "gender": "Gal",
-          "skill": 9,
-          "id": "2025-09-26T21:43:14.960Z0.7540714396438857",
-          "presence": "Present"
-        },
         {
           "name": "Alaina McCoy",
           "gender": "Gal",
@@ -211,6 +197,20 @@
           "gender": "Guy",
           "skill": 5,
           "id": "2025-09-26T21:43:14.961Z0.870565567859608",
+          "presence": "Present"
+        },
+        {
+          "name": "Kyle Novak",
+          "gender": "Gal",
+          "skill": 9,
+          "id": "2025-09-26T21:43:14.960Z0.7540714396438857",
+          "presence": "Present"
+        },
+        {
+          "name": "Matt Taylor",
+          "gender": "Guy",
+          "skill": 7,
+          "id": "2025-09-26T21:43:14.961Z0.851220591558296",
           "presence": "Present"
         }
       ],
