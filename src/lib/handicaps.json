@@ -7,8 +7,7 @@
             "The serving team cannot talk or make any verbal signals until the ball is served.",
             "Your team is only allowed a maximum of two touches before sending the ball over.",
             "All attacks (spikes or tips) must be performed by a female player.",
-            "All serves from your team must be float serves (no topspin).",
-            "Your team cannot block at the net. All players must stay behind the attack line on defense.",
+            "All serves from your team must be float serves (no topspin).",            
             "The server must call out the name of the player they are serving to before making contact.",
             "Your team must play with a designated 'captain' who is the only person allowed to talk."
         ]
@@ -18,8 +17,7 @@
         "handicaps": [
             "The opposing team designates your strongest hitter, who must then play defense for the entire game.",
             "Your team must designate one player who is not your primary setter to set every ball for the entire game.",
-            "One of your male players, chosen by the opposing team, is not allowed to jump for the entire game.",
-            "Your team is not allowed to have any front-row players attack the ball.",
+            "One of your male players, chosen by the opposing team, is not allowed to jump for the entire game.",            
             "All serves must be hit from a seated or kneeling position on the sand.",
             "After serving, the server must run and touch the net before they can play the ball.",
             "Your team must play with four players instead of the standard court number (e.g., 4 vs. 4 becomes 3 vs. 4)."
@@ -29,26 +27,20 @@
         "level": 4,
         "handicaps": [
             "All serves from your team must be underhand.",
-            "All players on your team must hit the ball with their non-dominant hand.",
-            "Your team's designated setter is not allowed to cross in front of the 10-foot line.",
+            "Your team cannot block at the net. All players must stay behind the attack line on defense.",
+            "Your team is not allowed to have any front-row players attack the ball.",            
             "For your team, only points scored on a play made by a female player will count.",
-            "When playing defense, your players are only allowed to use one arm to pass the ball.",
-            "Your team can only score points on serves (you must be the serving team to win a point).",
-            "All of your team's hits over the net must be with a closed fist (a 'dink' or 'pokey').",
-            "Players on your team must link arms with a teammate while in the back row."
+            "All of your team's hits over the net must be with a closed fist (a 'dink', 'knuckes', or 'pokey')."
         ]
     },
     {
         "level": 5,
         "handicaps": [
             "No player on your team is allowed to jump.",
+            "Your team's designated setter is not allowed to cross in front of the 10-foot line.",
             "The ball is not allowed to be hit with any downward trajectory over the net. All returns must be a 'free ball'.",
             "Your team is only allowed one touch to get the ball back over the net.",
-            "Players on your team must play the entire game from a seated or kneeling position.",
-            "Any ball that your team sends over the net that touches the net on its way over is an automatic point for the other team.",
-            "Your team must play the entire game in complete silence. No verbal communication is allowed.",
-            "Every player on your team must touch the ball before it can be sent over the net (if more than one contact is made).",
-            "One player on your team (chosen by the opponent) must play with one hand behind their back for the entire game."
+            "Your team must play the entire game in complete silence. No verbal communication is allowed."
         ]
     }
 ]
