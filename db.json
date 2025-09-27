@@ -338,6 +338,15 @@
       "time": "Playoffs",
       "resultA": 2,
       "resultB": 1
+    },
+    {
+      "id": "playoff-final",
+      "teamA": "Loki",
+      "teamB": "Zeus",
+      "court": "Championship",
+      "time": "Playoffs",
+      "resultA": 2,
+      "resultB": 1
     }
   ],
   "activeRule": null,

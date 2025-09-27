@@ -401,7 +401,16 @@ export function ScheduleGenerator() {
 
         if (gameFormat === 'round-robin') formatDescription = "Round Robin";
         else if (gameFormat === 'level-up') formatDescription = "Level Up";
-        else formatDescription = "Pool Play / Bracket";
+        else {
+             formatDescription = "Pool Play / Bracket";
+             // Also add empty playoff matches to db.json
+             const playoffMatches = [
+                { id: 'playoff-semi-1', teamA: 'TBD', teamB: 'TBD', court: 'Playoff Semi 1', time: 'Playoffs', resultA: null, resultB: null },
+                { id: 'playoff-semi-2', teamA: 'TBD', teamB: 'TBD', court: 'Playoff Semi 2', time: 'Playoffs', resultA: null, resultB: null },
+                { id: 'playoff-final', teamA: 'TBD', teamB: 'TBD', court: 'Championship', time: 'Playoffs', resultA: null, resultB: null },
+             ];
+             newSchedule.push(...playoffMatches);
+        }
     } else if (gameFormat === 'king-of-the-court') {
         newSchedule = generateKOTCSchedule(teams.map(t => t.name));
         switch(gameVariant) {
@@ -484,32 +493,38 @@ export function ScheduleGenerator() {
 
   const handleResultChange = (matchId: string, team: 'A' | 'B', value: string) => {
     const scoreValue = value === '' ? null : parseInt(value, 10);
-    
-    setSchedule(currentSchedule => {
-        const matchExists = currentSchedule.some(m => m.id === matchId);
-        
-        if (matchExists) {
-            return currentSchedule.map(m => 
-                m.id === matchId 
-                    ? { ...m, [team === 'A' ? 'resultA' : 'resultB']: scoreValue }
-                    : m
-            );
-        } else {
-             // This case handles adding a NEW playoff match (like the final) to the schedule
-             let newMatchData: Partial<Match> | null = null;
-             if (playoffBracket?.semiFinals.some(m => m.id === matchId)) {
-                const semi = playoffBracket.semiFinals.find(m => m.id === matchId)!;
-                newMatchData = { ...semi, [team === 'A' ? 'resultA' : 'resultB']: scoreValue };
-             } else if (playoffBracket?.championship?.id === matchId) {
-                 const final = playoffBracket.championship;
-                 newMatchData = { ...final, [team === 'A' ? 'resultA' : 'resultB']: scoreValue };
-             }
 
-             if(newMatchData) {
-                return [...currentSchedule, newMatchData as Match];
-             }
+    setSchedule(currentSchedule => {
+      const matchIndex = currentSchedule.findIndex(m => m.id === matchId);
+
+      if (matchIndex > -1) {
+        // Match exists, update it
+        return currentSchedule.map((m, index) =>
+          index === matchIndex
+            ? { ...m, [team === 'A' ? 'resultA' : 'resultB']: scoreValue }
+            : m
+        );
+      } else {
+        // This case handles adding a NEW playoff match (like the final) to the schedule
+        let newMatchData: Partial<Match> | null = null;
+        const semiFinal = playoffBracket?.semiFinals.find(m => m.id === matchId);
+        const final = playoffBracket?.championship;
+
+        if (semiFinal) {
+          newMatchData = { ...semiFinal, id: matchId, [team === 'A' ? 'resultA' : 'resultB']: scoreValue };
+        } else if (final && final.id === matchId) {
+          newMatchData = { ...final, id: matchId, [team === 'A' ? 'resultA' : 'resultB']: scoreValue };
         }
-        return currentSchedule;
+
+        if (newMatchData) {
+          // Avoid adding a duplicate if it's already being added
+          if (currentSchedule.some(m => m.id === matchId)) {
+            return currentSchedule.map(m => m.id === matchId ? { ...m, ...newMatchData } as Match : m);
+          }
+          return [...currentSchedule, newMatchData as Match];
+        }
+      }
+      return currentSchedule;
     });
   };
   
@@ -534,7 +549,8 @@ export function ScheduleGenerator() {
   };
   
     const handleClearSchedule = () => {
-    setSchedule([]);
+    // Filter out playoff games when clearing the schedule
+    setSchedule(currentSchedule => currentSchedule.filter(match => !match.id.startsWith('playoff-')));
     toast({
       title: 'Schedule Cleared',
       description: 'The match schedule has been cleared.',
@@ -546,7 +562,7 @@ export function ScheduleGenerator() {
   const groupedSchedule = useMemo(() => {
     if (isKOTC) return null;
     
-    const sortedSchedule = [...schedule].sort((a,b) => {
+    const sortedSchedule = [...schedule].filter(m => !m.id.startsWith('playoff-')).sort((a,b) => {
         const timeA = parse(a.time, 'h:mm a', new Date()).getTime();
         const timeB = parse(b.time, 'h:mm a', new Date()).getTime();
         if (timeA !== timeB) return timeA - timeB;
@@ -618,7 +634,7 @@ export function ScheduleGenerator() {
             return { playoffBracket: null, areAllGamesPlayed: false };
         }
         
-        const poolPlayGames = schedule.filter(m => !m.court.toLowerCase().includes('playoff'));
+        const poolPlayGames = schedule.filter(m => !m.id.startsWith('playoff-'));
         const allPlayed = poolPlayGames.every(match => match.resultA !== null && match.resultB !== null);
 
         if (!allPlayed) {
@@ -631,25 +647,25 @@ export function ScheduleGenerator() {
         }
         
         const existingSemiFinal1 = schedule.find(m => m.id === 'playoff-semi-1');
-        const semiFinal1: Match = existingSemiFinal1 || {
+        const semiFinal1: Match = {
             id: 'playoff-semi-1',
-            teamA: top4[0].teamName,
-            teamB: top4[3].teamName,
+            teamA: existingSemiFinal1?.teamA && existingSemiFinal1.teamA !== 'TBD' ? existingSemiFinal1.teamA : top4[0].teamName,
+            teamB: existingSemiFinal1?.teamB && existingSemiFinal1.teamB !== 'TBD' ? existingSemiFinal1.teamB : top4[3].teamName,
             court: 'Playoff Semi 1',
             time: 'Playoffs',
-            resultA: null,
-            resultB: null,
+            resultA: existingSemiFinal1?.resultA ?? null,
+            resultB: existingSemiFinal1?.resultB ?? null,
         };
 
         const existingSemiFinal2 = schedule.find(m => m.id === 'playoff-semi-2');
-        const semiFinal2: Match = existingSemiFinal2 || {
+        const semiFinal2: Match = {
             id: 'playoff-semi-2',
-            teamA: top4[1].teamName,
-            teamB: top4[2].teamName,
+            teamA: existingSemiFinal2?.teamA && existingSemiFinal2.teamA !== 'TBD' ? existingSemiFinal2.teamA : top4[1].teamName,
+            teamB: existingSemiFinal2?.teamB && existingSemiFinal2.teamB !== 'TBD' ? existingSemiFinal2.teamB : top4[2].teamName,
             court: 'Playoff Semi 2',
             time: 'Playoffs',
-            resultA: null,
-            resultB: null,
+            resultA: existingSemiFinal2?.resultA ?? null,
+            resultB: existingSemiFinal2?.resultB ?? null,
         };
 
         let championshipMatch: Match | null = null;
@@ -661,14 +677,14 @@ export function ScheduleGenerator() {
             const winner2 = semiFinal2.resultA! > semiFinal2.resultB! ? semiFinal2.teamA : semiFinal2.teamB;
             
             const existingFinal = schedule.find(m => m.id === 'playoff-final');
-            championshipMatch = existingFinal || {
+            championshipMatch = {
                 id: 'playoff-final',
                 teamA: winner1,
                 teamB: winner2,
                 court: 'Championship',
                 time: 'Playoffs',
-                resultA: null,
-                resultB: null,
+                resultA: existingFinal?.resultA ?? null,
+                resultB: existingFinal?.resultB ?? null,
             };
         }
 
