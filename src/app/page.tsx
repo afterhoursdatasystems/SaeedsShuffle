@@ -8,7 +8,7 @@ import { getPublishedData } from '@/app/actions';
 import type { Team, GameFormat, GameVariant, Match, PowerUp, Handicap, Player } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Volleyball, Users, Trophy, BookOpen, Crown, Gem, ShieldQuestion, KeyRound, Zap, Calendar, Shuffle, Wand2, Clock, TrendingUp } from 'lucide-react';
+import { Volleyball, Users, Trophy, BookOpen, Crown, Gem, ShieldQuestion, KeyRound, Zap, Calendar, Shuffle, Wand2, Clock, TrendingUp, Brain, Hammer, Heart, Shield, Sun, Scale, Dumbbell, Pen, Apple, Anchor, Snowflake, Target, Sparkles, Moon } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -292,6 +292,10 @@ const PlayerRoster = ({ players }: { players: Player[] }) => (
     </div>
 );
 
+const iconMap: { [key: string]: React.ElementType } = {
+    Brain, Hammer, Crown: Crown, Heart, Shield, Sun, Scale, Dumbbell, Pen, Apple, Anchor, Snowflake, Target, Sparkles, Moon
+};
+
 
 export default function PublicTeamsPage() {
   const [teams, setTeams] = useState<Team[]>([]);
@@ -562,6 +566,7 @@ export default function PublicTeamsPage() {
                     {standings.map((s, index) => {
                       const team = s.teamData;
                       const teamRecord = `${s.wins}-${s.losses}`;
+                      const Icon = team.icon ? iconMap[team.icon] : Users;
                       return(
                       <Card key={team.id} className={cn("flex flex-col rounded-xl border-2 shadow-2xl transition-transform hover:scale-105 bg-card",
                         isLevelUp ? `border-transparent` : 'border-primary'
@@ -570,7 +575,7 @@ export default function PublicTeamsPage() {
                              <CardTitle className="text-lg font-bold">
                                 <div className="flex items-center justify-between">
                                    <div className="flex items-center gap-3">
-                                        <Users className="h-5 w-5" />
+                                        <Icon className="h-5 w-5" />
                                         <span>{team.name}</span>
                                    </div>
                                     <div className="flex items-center gap-3">

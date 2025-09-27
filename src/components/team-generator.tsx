@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Send, Shuffle, Info, Trash2, Users, MoreVertical, PlusCircle, MinusCircle } from 'lucide-react';
+import { Send, Shuffle, Info, Trash2, Users, MoreVertical, PlusCircle, MinusCircle, Brain, Hammer, Crown as CrownIcon, Heart, Shield, Sun, Scale, Dumbbell, Pen, Apple, Anchor, Snowflake, Target, Sparkles, Moon } from 'lucide-react';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import React, { useEffect, useMemo, useState } from 'react';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
@@ -20,24 +20,26 @@ import { usePlayerContext } from '@/contexts/player-context';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
 
 
-const teamNames = [
-  'Odin',
-  'Thor',
-  'Loki',
-  'Frigg',
-  'Freya',
-  'Heimdall',
-  'Baldur',
-  'Tyr',
-  'Vidar',
-  'Bragi',
-  'Idun',
-  'Njord',
-  'Skadi',
-  'Ullr',
-  'Sif',
-  'Fenrir',
-];
+const teamNameDetails = {
+  'Odin': { icon: 'Brain' },
+  'Thor': { icon: 'Hammer' },
+  'Loki': { icon: 'Users' },
+  'Frigg': { icon: 'Crown' },
+  'Freya': { icon: 'Heart' },
+  'Heimdall': { icon: 'Shield' },
+  'Baldur': { icon: 'Sun' },
+  'Tyr': { icon: 'Scale' },
+  'Vidar': { icon: 'Dumbbell' },
+  'Bragi': { icon: 'Pen' },
+  'Idun': { icon: 'Apple' },
+  'Njord': { icon: 'Anchor' },
+  'Skadi': { icon: 'Snowflake' },
+  'Ullr': { icon: 'Target' },
+  'Sif': { icon: 'Sparkles' },
+  'Fenrir': { icon: 'Moon' },
+};
+
+const teamNames = Object.keys(teamNameDetails);
 
 const shuffleArray = <T,>(array: T[]): T[] => {
   const newArray = [...array];
@@ -56,6 +58,10 @@ const getTeamAnalysis = (team: Team) => {
     const galCount = team.players.filter(p => p.gender === 'Gal').length;
     const guyPercentage = team.players.length > 0 ? Math.round((guyCount / team.players.length) * 100) : 0;
     return { avgSkill, guyCount, galCount, guyPercentage };
+};
+
+const iconMap: { [key: string]: React.ElementType } = {
+    Brain, Hammer, Crown: CrownIcon, Heart, Shield, Sun, Scale, Dumbbell, Pen, Apple, Anchor, Snowflake, Target, Sparkles, Moon, Users
 };
 
 
@@ -134,12 +140,17 @@ export function TeamGenerator() {
         return undefined;
     };
     
-    const newTeams: Team[] = Array.from({ length: numTeams }, (_, i) => ({
-        id: crypto.randomUUID(),
-        name: shuffledTeamNames[i % shuffledTeamNames.length],
-        players: [],
-        level: 1, // Start all teams at level 1
-    }));
+    const newTeams: Team[] = Array.from({ length: numTeams }, (_, i) => {
+        const teamName = shuffledTeamNames[i % shuffledTeamNames.length];
+        const details = (teamNameDetails as any)[teamName];
+        return {
+            id: crypto.randomUUID(),
+            name: teamName,
+            icon: details.icon,
+            players: [],
+            level: 1, // Start all teams at level 1
+        };
+    });
 
     const totalPlayers = allPlayers.length;
     const leagueGuyRatio = allPlayers.filter(p => p.gender === 'Guy').length / totalPlayers;
@@ -397,11 +408,15 @@ export function TeamGenerator() {
                     <CardContent className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
                         {teams.map((team) => {
                         const { avgSkill, guyCount, galCount, guyPercentage } = getTeamAnalysis(team);
+                        const Icon = team.icon ? iconMap[team.icon] : Users;
                         return (
                             <Card key={team.id} className="flex flex-col">
                                 <CardHeader className="p-4">
                                 <CardTitle className="text-lg flex justify-between items-center">
-                                    {team.name}
+                                    <div className="flex items-center gap-3">
+                                        <Icon className="h-5 w-5 text-primary" />
+                                        <span>{team.name}</span>
+                                    </div>
                                     {isLevelUp && (
                                         <span className="font-semibold text-muted-foreground text-base">
                                             {(team.level || 1)}/5

@@ -15,6 +15,7 @@ export type Team = {
   name: string;
   players: Player[];
   level?: number;
+  icon?: string;
 };
 
 export type Match = {
