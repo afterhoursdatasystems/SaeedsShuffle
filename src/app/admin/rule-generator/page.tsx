@@ -5,15 +5,13 @@ import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Wand2, RefreshCw, Info, ListChecks, RotateCcw } from 'lucide-react';
+import { Wand2, RefreshCw, Info, ListChecks, RotateCcw, Shuffle } from 'lucide-react';
 import type { PowerUp, Handicap } from '@/types';
 import { usePlayerContext } from '@/contexts/player-context';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { publishData } from '@/app/actions';
-import { generateLevelUpHandicaps } from '@/ai/flows/generate-level-up-handicaps';
 import { generatePowerUps } from '@/ai/flows/generate-power-ups';
 import { generateCosmicScrambleRules } from '@/ai/flows/generate-cosmic-scramble-rules';
-import { regenerateLevelUpHandicap } from '@/ai/flows/regenerate-level-up-handicap';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 
@@ -33,11 +31,11 @@ export default function RuleGeneratorPage() {
     cosmicScrambleRules,
     levelUpHandicaps,
     setLevelUpHandicaps,
+    shuffleLevelUpHandicaps,
     resetLevelUpHandicapsToDefault,
   } = usePlayerContext();
 
   const [isLoading, setIsLoading] = useState(false);
-  const [regeneratingLevel, setRegeneratingLevel] = useState<number | null>(null);
   const [isClient, setIsClient] = useState(false);
   const [generationMode, setGenerationMode] = useState<GenerationMode>('random');
 
@@ -75,8 +73,6 @@ export default function RuleGeneratorPage() {
     if (isLevelUp) {
          return {
             ruleSet: levelUpHandicaps,
-            generateFn: generateLevelUpHandicaps,
-            generateInput: { gameType: 'Level Up' },
             cardTitle: 'Level-Up Handicaps',
             type: 'handicap',
             noun: 'Handicaps'
@@ -88,34 +84,21 @@ export default function RuleGeneratorPage() {
   const config = getRuleSetConfig();
   
   const handleAIGeneration = async () => {
-    if (!config || !config.generateFn) return;
+    if (!config || config.type !== 'powerup' || !config.generateFn) return;
     setIsLoading(true);
 
     try {
-        if(config.type === 'handicap') {
-            const result = await generateLevelUpHandicaps(config.generateInput);
-            if (result.handicaps) {
-                const sortedHandicaps = result.handicaps.sort((a,b) => a.level - b.level);
-                setLevelUpHandicaps(sortedHandicaps);
-                await publishData(teams, gameFormat, schedule, activeRule, pointsToWin, sortedHandicaps);
-                toast({
-                    title: 'Handicaps Generated & Published!',
-                    description: 'The new Level Up handicaps are now live on the public dashboard.',
-                });
-            }
-        } else if (config.type === 'powerup') {
-            const result = config.noun === 'Power-Up' 
-              ? await generatePowerUps(config.generateInput)
-              : await generateCosmicScrambleRules(config.generateInput);
-              
-            if ('powerUps' in result && result.powerUps && result.powerUps.length > 0) {
-              const newRule = result.powerUps[Math.floor(Math.random() * result.powerUps.length)];
-              await publishNewRule(newRule);
-            } else if ('rules' in result && result.rules && result.rules.length > 0) {
-              const newRule = result.rules[Math.floor(Math.random() * result.rules.length)];
-              await publishNewRule(newRule);
-            }
-        }
+      const result = config.noun === 'Power-Up' 
+        ? await generatePowerUps(config.generateInput)
+        : await generateCosmicScrambleRules(config.generateInput);
+        
+      if ('powerUps' in result && result.powerUps && result.powerUps.length > 0) {
+        const newRule = result.powerUps[Math.floor(Math.random() * result.powerUps.length)];
+        await publishNewRule(newRule);
+      } else if ('rules' in result && result.rules && result.rules.length > 0) {
+        const newRule = result.rules[Math.floor(Math.random() * result.rules.length)];
+        await publishNewRule(newRule);
+      }
     } catch(e) {
         toast({
             title: `Error Generating ${config.noun}`,
@@ -127,36 +110,15 @@ export default function RuleGeneratorPage() {
     }
   }
 
-  const handleRegenerateSingleHandicap = async (level: number) => {
-    setRegeneratingLevel(level);
-    try {
-        const existingHandicaps = levelUpHandicaps.filter(h => h.level !== level);
-        const result = await regenerateLevelUpHandicap({
-            levelToRegenerate: level,
-            existingHandicaps: existingHandicaps,
-            gameType: 'Level Up',
-        });
-
-        if (result && result.description) {
-            const newHandicaps = levelUpHandicaps.map(h => h.level === level ? result : h);
-            const sortedHandicaps = newHandicaps.sort((a,b) => a.level - b.level);
-            setLevelUpHandicaps(sortedHandicaps);
-            await publishData(teams, gameFormat, schedule, activeRule, pointsToWin, sortedHandicaps);
-            toast({
-                title: `Level ${level} Handicap Regenerated!`,
-                description: `The new rule has been published to the dashboard.`,
-            });
-        }
-    } catch(e) {
-        toast({
-            title: `Error Regenerating Handicap`,
-            description: `Could not generate a new rule for Level ${level}. Please try again.`,
-            variant: 'destructive',
-        });
-    } finally {
-        setRegeneratingLevel(null);
-    }
-  };
+  const handleShuffleHandicaps = async () => {
+    setIsLoading(true);
+    await shuffleLevelUpHandicaps();
+    setIsLoading(false);
+    toast({
+        title: 'Handicaps Shuffled!',
+        description: 'A new set of handicaps has been selected and published.',
+    });
+  }
 
   const handleResetToDefault = async () => {
     setIsLoading(true);
@@ -249,9 +211,9 @@ export default function RuleGeneratorPage() {
             <div className="text-center mb-8">
               {isLevelUp ? (
                   <div className="flex justify-center gap-4">
-                     <Button onClick={handleAIGeneration} disabled={isLoading || !isClient} size="lg">
-                        {isLoading && !regeneratingLevel ? <RefreshCw className="mr-2 h-5 w-5 animate-spin" /> : <Wand2 className="mr-2 h-5 w-5" />}
-                        {isLoading && !regeneratingLevel ? 'Generating All...' : `Generate New Set`}
+                     <Button onClick={handleShuffleHandicaps} disabled={isLoading || !isClient} size="lg">
+                        {isLoading ? <RefreshCw className="mr-2 h-5 w-5 animate-spin" /> : <Shuffle className="mr-2 h-5 w-5" />}
+                        {isLoading ? 'Shuffling...' : `Shuffle Today's Handicaps`}
                     </Button>
                      <Button onClick={handleResetToDefault} disabled={isLoading || !isClient} size="lg" variant="outline">
                         <RotateCcw className="mr-2 h-5 w-5" />
@@ -311,19 +273,6 @@ export default function RuleGeneratorPage() {
                                     <div key={handicap.level} className="space-y-1 rounded-md bg-muted/50 p-4">
                                         <div className="flex justify-between items-center">
                                             <p className="font-semibold text-lg">Level {handicap.level}</p>
-                                            <Button 
-                                                size="sm" 
-                                                variant="ghost" 
-                                                onClick={() => handleRegenerateSingleHandicap(handicap.level)}
-                                                disabled={regeneratingLevel !== null}
-                                            >
-                                                {regeneratingLevel === handicap.level ? (
-                                                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                                                ) : (
-                                                    <Wand2 className="mr-2 h-4 w-4" />
-                                                )}
-                                                Regenerate
-                                            </Button>
                                         </div>
                                         <p className="text-muted-foreground">{handicap.description}</p>
                                     </div>

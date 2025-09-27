@@ -1,0 +1,42 @@
+
+[
+    {
+        "level": 2,
+        "handicaps": [
+            "All players on the team must rotate positions after each side-out.",
+            "The serving team cannot talk or make any verbal signals until the ball is served.",
+            "Your team is only allowed a maximum of two touches before sending the ball over.",
+            "All attacks (spikes or tips) must be performed by a female player.",
+            "All serves from your team must be float serves (no topspin)."
+        ]
+    },
+    {
+        "level": 3,
+        "handicaps": [
+            "The opposing team designates your strongest hitter, who must then play defense for the entire game.",
+            "Your team must designate one player who is not your primary setter to set every ball for the entire game.",
+            "One of your male players, chosen by the opposing team, is not allowed to jump for the entire game.",
+            "Your team is not allowed to have any front-row players attack the ball."
+        ]
+    },
+    {
+        "level": 4,
+        "handicaps": [
+            "All serves from your team must be underhand.",
+            "All players on your team must hit the ball with their non-dominant hand.",
+            "Your team's designated setter is not allowed to cross in front of the 10-foot line.",
+            "For your team, only points scored on a play made by a female player will count.",
+            "When playing defense, your players are only allowed to use one arm to pass the ball."
+        ]
+    },
+    {
+        "level": 5,
+        "handicaps": [
+            "No player on your team is allowed to jump.",
+            "The ball is not allowed to be hit with any downward trajectory over the net. All returns must be a 'free ball'.",
+            "Your team is only allowed one touch to get the ball back over the net.",
+            "Players on your team must play the entire game from a seated or kneeling position.",
+            "Any ball that your team sends over the net that touches the net on its way over is an automatic point for the other team."
+        ]
+    }
+]

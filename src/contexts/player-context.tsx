@@ -6,6 +6,8 @@ import type { Player, Team, Match, GameFormat, GameVariant, PowerUp, PlayerPrese
 import React, { createContext, useContext, useState, type ReactNode, useEffect, useCallback } from 'react';
 import { getPlayers, updatePlayerPresence, getPublishedData, updatePlayer, addPlayer, deletePlayer, publishData, resetAllPlayerPresence as resetAllPlayerPresenceAction, deleteAllPlayers as deleteAllPlayersAction, importPlayers as importPlayersAction } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
+import AllHandicaps from '@/lib/handicaps.json';
+
 
 const allPowerUps: PowerUp[] = [
   { name: 'Point Boost', description: 'Start the next game with a 2-point lead.' },
@@ -51,12 +53,12 @@ const cosmicScrambleRules: PowerUp[] = [
     { name: 'Movie Goer Swap', description: 'The player who last watched a movie in a theater on the losing team swaps places with the player who last did the same on the other team.' },
 ];
 
-const defaultLevelUpHandicaps: Handicap[] = [
-    { level: 2, description: 'All players on the team must rotate positions after each side-out.' },
-    { level: 3, description: 'The opposing team designates your strongest hitter, who must then play defense for the entire game.' },
-    { level: 4, description: 'All serves from your team must be underhand.' },
-    { level: 5, description: 'No player on your team is allowed to jump.' },
-];
+const defaultLevelUpHandicaps = AllHandicaps.map(levelData => {
+    return {
+        level: levelData.level,
+        description: levelData.handicaps[0] // Select the first rule as the default
+    };
+});
 
 
 interface PlayerContextType {
@@ -93,6 +95,7 @@ interface PlayerContextType {
   updateTeam: (team: Team) => void;
   levelUpHandicaps: Handicap[];
   setLevelUpHandicaps: React.Dispatch<React.SetStateAction<Handicap[]>>;
+  shuffleLevelUpHandicaps: () => Promise<void>;
   resetLevelUpHandicapsToDefault: () => Promise<void>;
   loadAllData: () => Promise<void>;
 }
@@ -460,6 +463,18 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     );
   };
   
+    const shuffleLevelUpHandicaps = async () => {
+        const newHandicaps = AllHandicaps.map(levelData => {
+            const randomIndex = Math.floor(Math.random() * levelData.handicaps.length);
+            return {
+                level: levelData.level,
+                description: levelData.handicaps[randomIndex]
+            };
+        });
+        setLevelUpHandicaps(newHandicaps);
+        await publishData(teams, gameFormat, schedule, activeRule, pointsToWin, newHandicaps);
+    };
+
   const resetLevelUpHandicapsToDefault = async () => {
     setLevelUpHandicaps(defaultLevelUpHandicaps);
     await publishData(teams, gameFormat, schedule, activeRule, pointsToWin, defaultLevelUpHandicaps);
@@ -500,6 +515,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     updateTeam,
     levelUpHandicaps,
     setLevelUpHandicaps,
+    shuffleLevelUpHandicaps,
     resetLevelUpHandicapsToDefault,
     loadAllData,
   };
