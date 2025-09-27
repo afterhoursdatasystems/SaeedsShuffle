@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Save, CalendarDays, Send, Trash2, Clock } from 'lucide-react';
+import { Save, CalendarDays, Send, Trash2, Clock, Trophy } from 'lucide-react';
 import React, { useMemo } from 'react';
 import { usePlayerContext } from '@/contexts/player-context';
 import { publishData } from '@/app/actions';
@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { Separator } from './ui/separator';
 import { GameMatrix } from './game-matrix';
+import { cn } from '@/lib/utils';
 
 
 const shuffleArray = <T,>(array: T[]): T[] => {
@@ -265,10 +266,12 @@ const isScheduleValid = (schedule: Match[], teams: Team[], gamesPerTeam: number)
             .sort((a, b) => timeStringToMinutes(a.time) - timeStringToMinutes(b.time));
 
         // 2. Check for fair court distribution
-        const courtUsage = new Set(teamSchedule.map(m => m.court));
-        if (courtUsage.size === 1 && teamSchedule.length > 1) {
-            console.warn(`Validation failed: ${teamName} plays all games on one court.`);
-            return false;
+        if(teamSchedule.length > 1) {
+            const courtUsage = new Set(teamSchedule.map(m => m.court));
+            if (courtUsage.size === 1) {
+                console.warn(`Validation failed: ${teamName} plays all games on one court.`);
+                return false;
+            }
         }
             
         if (teamSchedule.length >= 4) {
@@ -543,6 +546,100 @@ export function ScheduleGenerator() {
     teams.forEach(team => map.set(team.name, team));
     return map;
   }, [teams]);
+  
+  const { standings } = useMemo(() => {
+    const stats: { [teamName: string]: { wins: number, losses: number, pointsFor: number, pointsAgainst: number, pointDifferential: number, level: number } } = {};
+
+    teams.forEach(team => {
+      stats[team.name] = { wins: 0, losses: 0, pointsFor: 0, pointsAgainst: 0, pointDifferential: 0, level: team.level || 1 };
+    });
+
+    schedule.forEach(match => {
+      const { teamA, teamB, resultA, resultB } = match;
+      if (resultA !== null && resultB !== null) {
+        if (stats[teamA]) {
+          stats[teamA].pointsFor += resultA;
+          stats[teamA].pointsAgainst += resultB;
+        }
+        if (stats[teamB]) {
+          stats[teamB].pointsFor += resultB;
+          stats[teamB].pointsAgainst += resultA;
+        }
+
+        if (resultA > resultB) {
+          if (stats[teamA]) stats[teamA].wins++;
+          if (stats[teamB]) stats[teamB].losses++;
+        } else if (resultB > resultA) {
+          if (stats[teamB]) stats[teamB].wins++;
+          if (stats[teamA]) stats[teamA].losses++;
+        }
+      }
+    });
+    
+    for (const teamName in stats) {
+        stats[teamName].pointDifferential = stats[teamName].pointsFor - stats[teamName].pointsAgainst;
+    }
+
+    const standings = teams
+        .map(team => ({ teamName: team.name, ...stats[team.name], teamData: team }))
+        .sort((a, b) => {
+            if (b.wins !== a.wins) return b.wins - a.wins;
+            return b.pointDifferential - a.pointDifferential;
+        });
+
+    return { standings };
+  }, [teams, schedule]);
+
+
+  const { playoffBracket, areAllGamesPlayed } = useMemo(() => {
+        if (gameFormat !== 'pool-play-bracket' || standings.length < 4) {
+            return { playoffBracket: null, areAllGamesPlayed: false };
+        }
+        
+        // Check if all POOL PLAY games are done. Bracket games are not in the main schedule.
+        const poolPlayGames = schedule.filter(m => !m.court.toLowerCase().includes('playoff'));
+        const allPlayed = poolPlayGames.every(match => match.resultA !== null && match.resultB !== null);
+
+        if (!allPlayed) {
+            return { playoffBracket: null, areAllGamesPlayed: false };
+        }
+
+        // Assuming top 4 teams make the bracket
+        const top4 = standings.slice(0, 4);
+        if (top4.length < 4) {
+            return { playoffBracket: null, areAllGamesPlayed: allPlayed };
+        }
+        
+        const existingSemiFinal1 = schedule.find(m => m.id === 'playoff-semi-1');
+        const existingSemiFinal2 = schedule.find(m => m.id === 'playoff-semi-2');
+
+        const semiFinal1: Match = existingSemiFinal1 || {
+            id: 'playoff-semi-1',
+            teamA: top4[0].teamName,
+            teamB: top4[3].teamName,
+            court: 'Playoff Semi 1',
+            time: 'Playoffs',
+            resultA: null,
+            resultB: null,
+        };
+        const semiFinal2: Match = existingSemiFinal2 || {
+            id: 'playoff-semi-2',
+            teamA: top4[1].teamName,
+            teamB: top4[2].teamName,
+            court: 'Playoff Semi 2',
+            time: 'Playoffs',
+            resultA: null,
+            resultB: null,
+        };
+
+        return { 
+            playoffBracket: {
+                semiFinals: [semiFinal1, semiFinal2]
+            },
+            areAllGamesPlayed: allPlayed 
+        };
+    }, [gameFormat, standings, schedule]);
+
 
   return (
     <div className="space-y-8">
@@ -699,16 +796,61 @@ export function ScheduleGenerator() {
           </CardContent>
         </Card>
       )}
+
+      {playoffBracket && (
+         <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-3"><Trophy className="h-6 w-6 text-primary" />Playoff Bracket</CardTitle>
+                <CardDescription>Pool play is complete. Enter scores for the playoff games below.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                 {playoffBracket.semiFinals.map((match) => (
+                    <div key={match.id}>
+                        <h4 className="font-bold mb-2">{match.court}</h4>
+                        <div className="text-base rounded-lg border bg-background overflow-hidden">
+                          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 w-full p-2">
+                              <div className="font-medium text-left">
+                                  {match.teamA} <Badge variant="outline">#{standings.findIndex(s => s.teamName === match.teamA) + 1}</Badge>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                 <input
+                                    type="number"
+                                    className="h-8 w-12 p-1 text-center border rounded-md"
+                                    value={match.resultA ?? ''}
+                                    onChange={(e) => handleResultChange(match.id, 'A', e.target.value)}
+                                    aria-label={`${match.teamA} score`}
+                                  />
+                                  <span>-</span>
+                                  <input
+                                    type="number"
+                                    className="h-8 w-12 p-1 text-center border rounded-md"
+                                    value={match.resultB ?? ''}
+                                    onChange={(e) => handleResultChange(match.id, 'B', e.target.value)}
+                                    aria-label={`${match.teamB} score`}
+                                  />
+                              </div>
+                              <div className="font-medium text-right">
+                                  <Badge variant="outline">#{standings.findIndex(s => s.teamName === match.teamB) + 1}</Badge> {match.teamB}
+                              </div>
+                          </div>
+                        </div>
+                    </div>
+                ))}
+                
+                {/* Placeholder for Final */}
+                <div>
+                    <h4 className="font-bold mb-2">Championship</h4>
+                    <div className="text-base rounded-lg border-2 border-dashed bg-muted/30 overflow-hidden p-4 text-center">
+                        <p className="text-muted-foreground">Winner of Semi 1 vs. Winner of Semi 2</p>
+                    </div>
+                </div>
+            </CardContent>
+         </Card>
+      )}
+
       {schedule.length > 0 && !isKOTC && (
         <GameMatrix teams={teams} schedule={schedule} />
       )}
     </div>
   );
 }
-
-
-
-
-
-
-
