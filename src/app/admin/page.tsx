@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { useRef } from 'react';
 import { exportAllData, importAllData } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
+import { format, parse } from 'date-fns';
 
 
 export default function AdminPage() {
@@ -22,6 +23,8 @@ export default function AdminPage() {
       gameVariant, handleSetGameVariant, 
       teams, schedule, 
       pointsToWin, setPointsToWin,
+      gamesPerTeam, setGamesPerTeam,
+      gameDuration, setGameDuration,
       publishSettings,
       loadAllData,
     } = usePlayerContext();
@@ -126,7 +129,7 @@ export default function AdminPage() {
                 </CardHeader>
                 <CardContent>
                     <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between rounded-lg border p-4">
-                        <div className='grid grid-cols-1 md:grid-cols-3 gap-4 flex-grow'>
+                        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 flex-grow'>
                             <div className='space-y-2'>
                                 <Label>Game Format</Label>
                                 <Select value={gameFormat} onValueChange={(val: GameFormat) => setGameFormat(val)}>
@@ -168,6 +171,32 @@ export default function AdminPage() {
                                     className="w-full"
                                     min="1"
                                 />
+                            </div>
+                             <div className="space-y-2">
+                                <Label htmlFor="game-duration">Game Duration</Label>
+                                <Select value={String(gameDuration)} onValueChange={(val) => setGameDuration(Number(val))}>
+                                    <SelectTrigger id="game-duration">
+                                        <SelectValue placeholder="Select duration" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {[15, 20, 25, 30, 35, 40, 45].map(duration => (
+                                           <SelectItem key={duration} value={String(duration)}>{duration} min</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="games-per-team">Games Per Team</Label>
+                                <Select value={String(gamesPerTeam)} onValueChange={(val) => setGamesPerTeam(Number(val))}>
+                                    <SelectTrigger id="games-per-team">
+                                        <SelectValue placeholder="Select games per team" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {Array.from({ length: 10 }, (_, i) => i + 1).map(num => (
+                                            <SelectItem key={num} value={String(num)}>{num}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
                         </div>
                         <Button onClick={publishSettings} className="mt-4 sm:mt-0">
@@ -244,3 +273,5 @@ export default function AdminPage() {
     </>
   )
 }
+
+    
