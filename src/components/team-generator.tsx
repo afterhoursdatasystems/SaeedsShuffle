@@ -29,16 +29,14 @@ const teamNames = [
   'Heimdall',
   'Baldur',
   'Tyr',
-  'Zeus',
-  'Hera',
-  'Poseidon',
-  'Hades',
-  'Apollo',
-  'Artemis',
-  'Ares',
-  'Aphrodite',
-  'Athena',
-  'Hermes'
+  'Vidar',
+  'Bragi',
+  'Idun',
+  'Njord',
+  'Skadi',
+  'Ullr',
+  'Sif',
+  'Fenrir',
 ];
 
 const shuffleArray = <T,>(array: T[]): T[] => {
