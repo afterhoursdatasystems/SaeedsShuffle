@@ -190,7 +190,12 @@ function generateRoundRobinSchedule(
             
             if (bestGameIndex !== -1) {
                 const [gameToSchedule] = tempGamePool.splice(bestGameIndex, 1);
-                const { teamA, teamB } = gameToSchedule;
+                let { teamA, teamB } = gameToSchedule;
+
+                // Randomly swap teamA and teamB for visual variety
+                if (Math.random() > 0.5) {
+                    [teamA, teamB] = [teamB, teamA];
+                }
 
                 schedule.push({
                     id: crypto.randomUUID(),
@@ -198,7 +203,8 @@ function generateRoundRobinSchedule(
                     time: currentTimeSlotStr,
                     resultA: null,
                     resultB: null,
-                    ...gameToSchedule
+                    teamA,
+                    teamB
                 });
 
                 teamsPlayingInThisSlot.push(teamA, teamB);
@@ -991,3 +997,6 @@ export function ScheduleGenerator() {
 
 
 
+
+
+    

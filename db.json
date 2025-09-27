@@ -223,19 +223,19 @@
   "levelUpHandicaps": [
     {
       "level": 2,
-      "description": "All attacks (spikes or tips) must be performed by a female player."
+      "description": "All players on the team must rotate positions after each side-out."
     },
     {
       "level": 3,
-      "description": "One of your male players, chosen by the opposing team, is not allowed to jump for the entire game."
+      "description": "The opposing team designates your strongest hitter, who must then play defense for the entire game."
     },
     {
       "level": 4,
-      "description": "All players on your team must hit the ball with their non-dominant hand."
+      "description": "All serves from your team must be underhand."
     },
     {
       "level": 5,
-      "description": "Your team is only allowed one touch to get the ball back over the net."
+      "description": "Players on your team must play the entire game from a seated or kneeling position."
     }
   ]
 }
