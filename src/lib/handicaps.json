@@ -14,6 +14,7 @@
         "level": 3,
         "handicaps": [
             "All attacks (spikes or tips) must be performed by a female player.",
+            "One of your male players, chosen by the opposing team, is not allowed to jump for the entire game.",
             "All blocks must be performed by female players only.",
             "Your team must alternate which side of the court attacks come from (left side attack, then right side attack, etc.).",
             "The tallest player on your team cannot jump for blocks or attacks.",
@@ -23,7 +24,6 @@
             "All attacks must go cross-court - no line shots allowed.",
             "The opposing team designates your strongest hitter, who must then play defense for the entire game.",
             "Your team must designate one player who is not your primary setter to set every ball for the entire game.",
-            "One of your male players, chosen by the opposing team, is not allowed to jump for the entire game.",
             "Your team cannot attack the ball on the second touch - must use all three."
         ]
     },
@@ -47,11 +47,13 @@
         "level": 5,
         "handicaps": [
             "No player on your team is allowed to jump.",
-            "Your team's designated setter is not allowed to cross in front of the 10-foot line.",
             "Your team is only allowed one touch to get the ball back over the net.",
             "All attacks must be tips or roll shots - no hard spikes.",
             "Your team's attacks can only be directed to zones chosen by the opposing team before each point.",
-            "All attacks must land within 3 feet of the sidelines - no middle shots."
+            "All attacks must land within 3 feet of the sidelines - no middle shots.",
+            "The ball is not allowed to be hit with any downward trajectory over the net. All returns must be a 'free ball'.",
+            "Players on your team must play the entire game from a seated or kneeling position.",
+            "Any ball that your team sends over the net that touches the net on its way over is an automatic point for the other team."
         ]
     }
 ]
