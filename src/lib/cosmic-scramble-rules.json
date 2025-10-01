@@ -1,0 +1,23 @@
+
+[
+    { "name": "Birthday Swap", "description": "The two players (one from each team) whose birthday is closest to today must swap teams." },
+    { "name": "Alphabetical Swap", "description": "The player whose first name comes last alphabetically on the losing team swaps with the player whose first name comes last alphabetically on the other team." },
+    { "name": "Brightest Shirt Swap", "description": "Of all the players on both teams, the two wearing the brightest color shirts must swap." },
+    { "name": "Sibling Swap", "description": "The player with the most siblings on the losing team swaps places with the player with the most siblings on the other team." },
+    { "name": "Traveler Swap", "description": "The two players (one from each team) who traveled the farthest to get to the tournament must swap teams." },
+    { "name": "Longest Last Name Swap", "description": "The player with the most letters in their last name on the losing team swaps with the player with the most letters in their last name on the other team." },
+    { "name": "Newest Shoes Swap", "description": "The two players (one from each team) with the newest-looking shoes must swap." },
+    { "name": "Concert Goer Swap", "description": "The player who most recently went to a concert on the losing team swaps with the player who most recently went to a concert on the other team." },
+    { "name": "Longest Hair Swap", "description": "The two players (one from each team) with the longest hair must swap." },
+    { "name": "Most Vowels Swap", "description": "The player with the most vowels in their first name on the losing team swaps with the player with the most vowels in their first name on the other team." },
+    { "name": "Car Brand Swap", "description": "The two players (one from each team) who own the same brand of car must swap." },
+    { "name": "Early Bird Swap", "description": "The player who woke up the earliest this morning on the losing team swaps places with the player who woke up the earliest on the other team." },
+    { "name": "Tallest Swap", "description": "The two players (one from each team) who are the tallest must swap." },
+    { "name": "Restaurant Swap", "description": "The player who last ate at a restaurant on the losing team swaps with the player who last ate at a restaurant on the other team." },
+    { "name": "Pet Swap", "description": "The two players (one from each team) with the most unique or unusual pet must swap." },
+    { "name": "Volleyball Veteran Swap", "description": "The player who has been playing volleyball for the longest number of years on the losing team swaps with their counterpart on the other team." },
+    { "name": "Blue Clothing Swap", "description": "The two players (one from each team) with the most blue on their clothing must swap." },
+    { "name": "Language Swap", "description": "The player who can speak another language on the losing team swaps with the player who can speak another language on the other team (if one exists on both teams)." },
+    { "name": "Birth Month Swap", "description": "The two players (one from each team) who share the same birth month must swap (if applicable)." },
+    { "name": "Movie Goer Swap", "description": "The player who last watched a movie in a theater on the losing team swaps places with the player who last did the same on the other team." }
+]

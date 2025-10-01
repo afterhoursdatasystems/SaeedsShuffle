@@ -1,0 +1,24 @@
+{
+  "teams": [],
+  "format": "level-up",
+  "activeRule": null,
+  "pointsToWin": 15,
+  "levelUpHandicaps": [
+    {
+      "level": 2,
+      "description": "All players on the team must rotate positions after each side-out."
+    },
+    {
+      "level": 3,
+      "description": "One of your male players, chosen by the opposing team, is not allowed to jump for the entire game."
+    },
+    {
+      "level": 4,
+      "description": "Players cannot use the same type of serve twice in a row (must alternate underhand, overhand, jump serve, etc.)."
+    },
+    {
+      "level": 5,
+      "description": "All attacks must land within 3 feet of the sidelines - no middle shots."
+    }
+  ]
+}

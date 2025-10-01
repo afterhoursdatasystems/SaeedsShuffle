@@ -1,0 +1,59 @@
+
+[
+    {
+        "level": 2,
+        "handicaps": [
+            "All players on the team must rotate positions after each side-out.",
+            "The server must call out the name of the player they are serving to before making contact.",
+            "Your team must call 'mine' before every touch, or the point is lost.",
+            "All tips and roll shots must be announced by saying 'soft' before contact.",
+            "All sets must be bump sets - no hand setting allowed."
+        ]
+    },
+    {
+        "level": 3,
+        "handicaps": [
+            "All attacks (spikes or tips) must be performed by a female player.",
+            "One of your male players, chosen by the opposing team, is not allowed to jump for the entire game.",
+            "All blocks must be performed by female players only.",
+            "Your team must alternate which side of the court attacks come from (left side attack, then right side attack, etc.).",
+            "The tallest player on your team cannot jump for blocks or attacks.",
+            "One player (chosen by your team) must play the entire game in the back row only.",
+            "All serves must land in the back half of the opponent's court.",
+            "All serves must land in the front half of the opponent's court.",
+            "All attacks must go cross-court - no line shots allowed.",
+            "The opposing team designates your strongest hitter, who must then play defense for the entire game.",
+            "Your team must designate one player who is not your primary setter to set every ball for the entire game.",
+            "Your team cannot attack the ball on the second touch - must use all three."
+        ]
+    },
+    {
+        "level": 4,
+        "handicaps": [
+            "Players cannot use the same type of serve twice in a row (must alternate underhand, overhand, jump serve, etc.).",
+            "All overhand passes must be directed to the antenna (extreme angle sets only).",
+            "All serves from your team must be underhand.",
+            "Your team cannot block at the net. All players must stay behind the attack line on defense.",
+            "Your team is not allowed to have any front-row players attack the ball.",
+            "For your team, only points scored on a play made by a female player will count.",
+            "All of your team's hits over the net must be with a closed fist (a 'dink', 'knuckes', or 'pokey').",
+            "The ball is not allowed to be hit with any downward trajectory over the net. All returns must be a 'free ball'.",
+            "All attacks must go to the back half of the opponent's court - no short shots.",
+            "Male players cannot attack balls above the height of the net.",
+            "Your team must set every ball backwards (setter facing away from target)."
+        ]
+    },
+    {
+        "level": 5,
+        "handicaps": [
+            "No player on your team is allowed to jump.",
+            "Your team is only allowed one touch to get the ball back over the net.",
+            "All attacks must be tips or roll shots - no hard spikes.",
+            "Your team's attacks can only be directed to zones chosen by the opposing team before each point.",
+            "All attacks must land within 3 feet of the sidelines - no middle shots.",
+            "The ball is not allowed to be hit with any downward trajectory over the net. All returns must be a 'free ball'.",
+            "Players on your team must play the entire game from a seated or kneeling position.",
+            "Any ball that your team sends over the net that touches the net on its way over is an automatic point for the other team."
+        ]
+    }
+]

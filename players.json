@@ -1,199 +1,203 @@
-
 [
   {
-    "id": "1",
     "name": "Cole Deaver",
     "gender": "Guy",
     "skill": 6,
-    "present": false
+    "id": "2025-09-26T21:43:14.959Z0.5769044833339514",
+    "presence": "Pending"
   },
   {
-    "id": "2",
     "name": "Melissa Roy",
     "gender": "Gal",
     "skill": 6,
-    "present": false
+    "id": "2025-09-26T21:43:14.960Z0.8338814832276729",
+    "presence": "Pending"
   },
   {
-    "id": "3",
     "name": "Kristin Drinka",
     "gender": "Gal",
     "skill": 7,
-    "present": false
+    "id": "2025-09-26T21:43:14.960Z0.6347155443906336",
+    "presence": "Pending"
   },
   {
-    "id": "4",
     "name": "Kyle Novak",
     "gender": "Gal",
-    "skill": 10,
-    "present": false
+    "skill": 9,
+    "id": "2025-09-26T21:43:14.960Z0.7540714396438857",
+    "presence": "Pending"
   },
   {
-    "id": "5",
     "name": "Nicole Malone",
     "gender": "Gal",
     "skill": 5,
-    "present": false
+    "id": "2025-09-26T21:43:14.961Z0.3540237219260216",
+    "presence": "Pending"
   },
   {
-    "id": "6",
     "name": "Heidi Kempert",
     "gender": "Gal",
     "skill": 4,
-    "present": false
+    "id": "2025-09-26T21:43:14.961Z0.019781246231655336",
+    "presence": "Pending"
   },
   {
-    "id": "7",
     "name": "Brian Kempert",
     "gender": "Guy",
     "skill": 8,
-    "present": false
+    "id": "2025-09-26T21:43:14.961Z0.9681099546231642",
+    "presence": "Pending"
   },
   {
-    "id": "8",
     "name": "Abby Gilpin",
     "gender": "Gal",
     "skill": 6,
-    "present": false
+    "id": "2025-09-26T21:43:14.961Z0.7264991156949785",
+    "presence": "Pending"
   },
   {
-    "id": "9",
     "name": "Miranda Griego",
     "gender": "Gal",
     "skill": 3,
-    "present": false
+    "id": "2025-09-26T21:43:14.961Z0.18108312807183835",
+    "presence": "Pending"
   },
   {
-    "id": "10",
     "name": "Jonathan Bradley",
     "gender": "Guy",
     "skill": 5,
-    "present": false
+    "id": "2025-09-26T21:43:14.961Z0.870565567859608",
+    "presence": "Pending"
   },
   {
-    "id": "11",
     "name": "Aditya Singh",
     "gender": "Guy",
     "skill": 7,
-    "present": false
+    "id": "2025-09-26T21:43:14.961Z0.7881361512793768",
+    "presence": "Pending"
   },
   {
-    "id": "12",
     "name": "Giovanni Salvatore",
     "gender": "Guy",
     "skill": 7,
-    "present": false
+    "id": "2025-09-26T21:43:14.961Z0.09941459373862394",
+    "presence": "Pending"
   },
   {
-    "id": "13",
     "name": "Emily Victoria",
     "gender": "Gal",
     "skill": 6,
-    "present": false
+    "id": "2025-09-26T21:43:14.961Z0.51518706387164",
+    "presence": "Pending"
   },
   {
-    "id": "14",
     "name": "Eric Ahrens",
     "gender": "Guy",
     "skill": 7,
-    "present": false
+    "id": "2025-09-26T21:43:14.961Z0.005198312815202222",
+    "presence": "Pending"
   },
   {
-    "id": "15",
     "name": "Stephen Jaqua",
     "gender": "Guy",
+<<<<<<< HEAD
     "skill": 3,
     "present": false
+=======
+    "skill": 1,
+    "id": "2025-09-26T21:43:14.961Z0.344120365887459",
+    "presence": "Pending"
+>>>>>>> db.json
   },
   {
-    "id": "16",
     "name": "Lindsey Bowers",
     "gender": "Gal",
     "skill": 7,
-    "present": false
+    "id": "2025-09-26T21:43:14.961Z0.5017007408381566",
+    "presence": "Pending"
   },
   {
-    "id": "17",
     "name": "Shaylyn Murphy",
     "gender": "Gal",
     "skill": 8,
-    "present": false
+    "id": "2025-09-26T21:43:14.961Z0.4029942449960613",
+    "presence": "Pending"
   },
   {
-    "id": "18",
     "name": "William Van Meter",
     "gender": "Guy",
     "skill": 3,
-    "present": false
+    "id": "2025-09-26T21:43:14.961Z0.7758199134141619",
+    "presence": "Pending"
   },
   {
-    "id": "19",
     "name": "Colleen Palman",
     "gender": "Gal",
     "skill": 2,
-    "present": false
+    "id": "2025-09-26T21:43:14.961Z0.740426672728588",
+    "presence": "Pending"
   },
   {
-    "id": "20",
     "name": "Rachel Nystrom",
     "gender": "Gal",
     "skill": 8,
-    "present": false
+    "id": "2025-09-26T21:43:14.961Z0.7807148382060562",
+    "presence": "Pending"
   },
   {
-    "id": "21",
     "name": "Pat Sobotka",
     "gender": "Guy",
     "skill": 6,
-    "present": false
+    "id": "2025-09-26T21:43:14.961Z0.13858608583208043",
+    "presence": "Pending"
   },
   {
-    "id": "22",
     "name": "Jasona Jones",
     "gender": "Gal",
     "skill": 1,
-    "present": false
+    "id": "2025-09-26T21:43:14.961Z0.05281959899623878",
+    "presence": "Pending"
   },
   {
-    "id": "23",
     "name": "Joy Swasy",
     "gender": "Gal",
     "skill": 6,
-    "present": false
+    "id": "2025-09-26T21:43:14.961Z0.7261824119358748",
+    "presence": "Pending"
   },
   {
-    "id": "24",
-    "name": "Jesica Bullrich",
-    "gender": "Gal",
-    "skill": 2,
-    "present": false
+    "name": "Matt Schrader",
+    "gender": "Guy",
+    "skill": 9,
+    "id": "2025-09-26T21:43:14.961Z0.38741860879057755",
+    "presence": "Pending"
   },
   {
-    "id": "25",
     "name": "Lauren Hopkins",
     "gender": "Gal",
     "skill": 6,
-    "present": false
+    "id": "2025-09-26T21:43:14.961Z0.4060375379498602",
+    "presence": "Pending"
   },
   {
-    "id": "26",
     "name": "Matt Taylor",
     "gender": "Guy",
     "skill": 7,
-    "present": false
+    "id": "2025-09-26T21:43:14.961Z0.851220591558296",
+    "presence": "Pending"
   },
   {
-    "id": "27",
     "name": "Alaina McCoy",
     "gender": "Gal",
     "skill": 4,
-    "present": false
+    "id": "2025-09-26T21:43:14.961Z0.5268473889530265",
+    "presence": "Pending"
   },
   {
-    "id": "28",
     "name": "Alexandra Broskey",
     "gender": "Gal",
     "skill": 6,
-    "present": false
+    "id": "2025-09-26T21:43:14.961Z0.5614096897448619",
+    "presence": "Pending"
   }
 ]

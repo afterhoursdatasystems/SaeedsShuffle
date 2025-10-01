@@ -2,19 +2,30 @@
 
 'use client';
 
+import React from 'react';
 import { useEffect, useState, useMemo } from 'react';
 import { getPublishedData } from '@/app/actions';
-import type { Team, GameFormat, GameVariant, Match, PowerUp } from '@/types';
+import type { Team, GameFormat, GameVariant, Match, PowerUp, Handicap, Player } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Volleyball, Users, Trophy, BookOpen, Crown, Gem, ShieldQuestion, KeyRound, Zap, Calendar, Shuffle, Wand2, Clock } from 'lucide-react';
+import { Volleyball, Users, Trophy, BookOpen, Crown, Gem, ShieldQuestion, KeyRound, Zap, Calendar, Shuffle, Wand2, Clock, TrendingUp, Brain, Hammer, Heart, Shield, Sun, Scale, Dumbbell, Pen, Apple, Anchor, Snowflake, Target, Sparkles, Moon, Drama } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { KOTCFlowDiagram } from '@/components/ui/kotc-flow-diagram';
+import { Separator } from '@/components/ui/separator';
 
 type CombinedGameFormat = GameFormat | GameVariant;
+
+type TeamStats = {
+  wins: number;
+  losses: number;
+  pointsFor: number;
+  pointsAgainst: number;
+  pointDifferential: number;
+  level: number;
+};
 
 const KOTCBaseRules = ({ pointsToWin, teamCount }: { pointsToWin: number; teamCount: number }) => (
     <>
@@ -89,8 +100,7 @@ const KOTCBaseRules = ({ pointsToWin, teamCount }: { pointsToWin: number; teamCo
       </>
 );
 
-
-const getFormatDetails = (pointsToWin: number, teamCount: number): Record<CombinedGameFormat, { title: string; description: React.ReactNode; icon: React.ElementType }> => ({
+const getFormatDetails = (pointsToWin: number, teamCount: number, handicaps: Handicap[]): Record<CombinedGameFormat, { title: string; description: React.ReactNode; icon: React.ElementType }> => ({
   'king-of-the-court': {
     title: 'Continuous King of the Court',
     icon: Crown,
@@ -169,9 +179,55 @@ const getFormatDetails = (pointsToWin: number, teamCount: number): Record<Combin
         <h4 className="font-bold text-lg mb-2">Phase 1: Pool Play</h4>
         <p className="mb-4">All teams will play against other teams in their assigned pool. The results of these matches (wins, losses, and point differential) will be used to rank the teams and determine their seeding for the bracket.</p>
         <h4 className="font-bold text-lg mb-2">Phase 2: Bracket Play</h4>
-        <p>After pool play is complete, teams are seeded into a single-elimination tournament. The top-ranked team plays the lowest-ranked team, and so on. In this phase, if you win, you advance; if you lose, you're out. The last team standing is the tournament champion!</p>
+        <p>After pool play is complete, the top four teams are seeded into a single-elimination tournament. The top-ranked team plays the lowest-ranked team, and so on. In this phase, if you win, you advance; if you lose, you're out. The last team standing is the tournament champion!</p>
       </div>
     ),
+  },
+   'level-up': {
+    title: 'Level Up',
+    icon: TrendingUp,
+    description: (
+       <div>
+        <p className="mb-4">A competitive format where teams "level up" by winning, adopting progressively harder handicaps. The goal is to reach the highest level and secure a spot in the final tournament. All games are single games, not sets.</p>
+        
+        <h4 className="font-bold text-lg mb-2">Base Rules (Enforced at All Levels)</h4>
+        <ul className="list-disc pl-5 space-y-2 mb-6">
+            <li>No touching the net or interfering with play on the other side.</li>
+            <li>Hand sets must be clean (or at least nearly clean); don’t hand set if you can’t keep it clean.</li>
+            <li>No lifts.</li>
+            <li>No open-handed tips.</li>
+        </ul>
+
+        <h4 className="font-bold text-lg mb-2">How It Works</h4>
+        <ul className="list-disc pl-5 space-y-2 mb-6">
+            <li>Each team will play approximately 5 games in pool play.</li>
+            <li>If a team <strong>wins</strong>, they move up one level and must adopt the handicap of that new level for all future games. The team's level is determined by their number of wins + 1.</li>
+            <li>If a team <strong>loses</strong>, their level does not change. You can only level up.</li>
+            <li>Handicaps are <strong>not</strong> cumulative. For example, a team reaching Level 3 only has the Level 3 handicap, not the Level 2 handicap.</li>
+        </ul>
+
+        <h4 className="font-bold text-lg mb-2">The Levels & Handicaps</h4>
+        <div className="space-y-3 mb-6">
+            <p><strong>Level 1:</strong> No additional rules.</p>
+            {handicaps.length > 0 ? (
+                handicaps.map(h => (
+                    <p key={h.level}><strong>Level {h.level}:</strong> {h.description}</p>
+                ))
+            ) : (
+                <>
+                  <p><strong>Level 2:</strong> All attacks (spikes or tips) must be performed by a female player.</p>
+                  <p><strong>Level 3:</strong> One of your male players, chosen by the opposing team, is not allowed to jump for the entire game.</p>
+                  <p><strong>Level 4:</strong> All players on your team must hit the ball with their non-dominant hand.</p>
+                  <p><strong>Level 5:</strong> Your team is only allowed one touch to get the ball back over the net.</p>
+                </>
+            )}
+        </div>
+
+        <h4 className="font-bold text-lg mb-2">Playoffs</h4>
+        <p>At the end of pool play, the top four teams (those who have reached the highest levels) will compete in a single-elimination tournament. Point differential is the tie-breaker for seeding. There are no levels/handicaps during playoffs. All playoff matches are single games.</p>
+
+       </div>
+    )
   },
   'round-robin': {
     title: 'Round Robin',
@@ -201,13 +257,53 @@ const getFormatDetails = (pointsToWin: number, teamCount: number): Record<Combin
   },
 });
 
+const getLevelHeaderStyle = (level: number | undefined) => {
+    switch (level) {
+        case 1:
+        default:
+            return 'bg-slate-500 text-white';
+        case 2:
+            return 'bg-blue-500 text-white';
+        case 3:
+            return 'bg-green-600 text-white';
+        case 4:
+            return 'bg-yellow-500 text-black';
+        case 5:
+            return 'bg-red-600 text-white';
+    }
+};
+
+const PlayerRoster = ({ players }: { players: Player[] }) => (
+    <div className="space-y-2 px-4 py-2">
+        {players.length > 0 ? (
+            players.sort((a,b) => a.name.localeCompare(b.name)).map(player => (
+                <div key={player.id} className="flex items-center gap-2">
+                    <Avatar className="h-6 w-6">
+                        <AvatarFallback className="bg-muted text-xs">
+                            {player.name.charAt(0)}
+                        </AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm">{player.name}</span>
+                </div>
+            ))
+        ) : (
+            <p className="text-sm text-muted-foreground">Roster not available.</p>
+        )}
+    </div>
+);
+
+const iconMap: { [key: string]: React.ElementType } = {
+    Brain, Hammer, Crown: Crown, Heart, Shield, Sun, Scale, Dumbbell, Pen, Apple, Anchor, Snowflake, Target, Sparkles, Moon, Drama, Users
+};
+
 
 export default function PublicTeamsPage() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [schedule, setSchedule] = useState<Match[]>([]);
-  const [gameFormat, setGameFormat] = useState<CombinedGameFormat>('round-robin');
+  const [gameFormat, setGameFormat] = useState<CombinedGameFormat>('king-of-the-court');
   const [activeRule, setActiveRule] = useState<PowerUp | null>(null);
   const [pointsToWin, setPointsToWin] = useState<number>(15);
+  const [levelUpHandicaps, setLevelUpHandicaps] = useState<Handicap[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -218,6 +314,7 @@ export default function PublicTeamsPage() {
       try {
         const result = await getPublishedData();
         if (result.success && result.data) {
+<<<<<<< HEAD
           // Only update state if the data has actually changed
           if (JSON.stringify(result.data.teams) !== JSON.stringify(teams)) {
             setTeams(result.data.teams || []);
@@ -236,6 +333,15 @@ export default function PublicTeamsPage() {
             setPointsToWin(result.data.pointsToWin || 15);
           }
         } else if (result.error) {
+=======
+          setTeams(result.data.teams || []);
+          setSchedule(result.data.schedule || []);
+          setActiveRule(result.data.activeRule || null);
+          setGameFormat((result.data.format || 'king-of-the-court') as CombinedGameFormat);
+          setPointsToWin(result.data.pointsToWin || 15);
+          setLevelUpHandicaps(result.data.levelUpHandicaps || []);
+        } else {
+>>>>>>> db.json
           console.error('Failed to fetch data:', result.error);
         }
       } catch (error) {
@@ -249,10 +355,80 @@ export default function PublicTeamsPage() {
     
     fetchData(true);
     
-    const interval = setInterval(() => fetchData(false), 2000); // Refresh every 2 seconds
+    const interval = setInterval(() => fetchData(false), 2000);
     return () => clearInterval(interval);
+  }, []);
+  
+  const formatDetails = useMemo(() => getFormatDetails(pointsToWin, teams.length, levelUpHandicaps), [pointsToWin, teams.length, levelUpHandicaps]);
 
-  }, [teams, schedule, activeRule, gameFormat, pointsToWin]);
+  const { teamStats, standings } = useMemo(() => {
+    const stats: { [teamName: string]: TeamStats } = {};
+
+    teams.forEach(team => {
+      stats[team.name] = { wins: 0, losses: 0, pointsFor: 0, pointsAgainst: 0, pointDifferential: 0, level: team.level || 1 };
+    });
+
+    schedule.forEach(match => {
+      const { teamA, teamB, resultA, resultB } = match;
+      if (resultA !== null && resultB !== null) {
+        if (stats[teamA]) {
+          stats[teamA].pointsFor += resultA;
+          stats[teamA].pointsAgainst += resultB;
+        }
+        if (stats[teamB]) {
+          stats[teamB].pointsFor += resultB;
+          stats[teamB].pointsAgainst += resultA;
+        }
+
+        if (resultA > resultB) {
+          if (stats[teamA]) stats[teamA].wins++;
+          if (stats[teamB]) stats[teamB].losses++;
+        } else if (resultB > resultA) {
+          if (stats[teamB]) stats[teamB].wins++;
+          if (stats[teamA]) stats[teamA].losses++;
+        }
+      }
+    });
+    
+    for (const teamName in stats) {
+        stats[teamName].pointDifferential = stats[teamName].pointsFor - stats[teamName].pointsAgainst;
+    }
+
+    const standings = teams
+        .map(team => ({ teamName: team.name, ...stats[team.name], teamData: team }))
+        .sort((a, b) => {
+            if (b.wins !== a.wins) {
+                return b.wins - a.wins;
+            }
+            return b.pointDifferential - a.pointDifferential;
+        });
+
+
+    return { teamStats: stats, standings };
+  }, [teams, schedule]);
+
+  const isKOTC = ['king-of-the-court', 'monarch-of-the-court', 'king-s-ransom', 'power-up-round', 'standard'].includes(gameFormat);
+  const isLevelUp = gameFormat === 'level-up';
+  
+  const groupedSchedule = useMemo(() => {
+    if (isKOTC) return null;
+    
+    return schedule.reduce((acc, match) => {
+      const time = match.time;
+      if (!acc[time]) {
+        acc[time] = [];
+      }
+      acc[time].push(match);
+      return acc;
+    }, {} as Record<string, Match[]>);
+  }, [schedule, isKOTC]);
+
+  const teamMap = useMemo(() => {
+    const map = new Map<string, Team>();
+    teams.forEach(team => map.set(team.name, team));
+    return map;
+  }, [teams]);
+
 
   const renderTeamSkeletons = () => (
     Array.from({ length: 4 }).map((_, index) => (
@@ -276,13 +452,13 @@ export default function PublicTeamsPage() {
 
   const renderScheduleSkeletons = () => (
     <Card className="rounded-xl border-2 shadow-2xl">
-      <CardHeader className="p-6 bg-muted/50 rounded-t-lg">
-        <CardTitle className="flex items-center gap-4 text-2xl font-bold">
-            <Skeleton className="h-7 w-7 rounded-md" />
-            <Skeleton className="h-7 w-48 rounded-md" />
+      <CardHeader className="p-4 bg-muted/50 rounded-t-lg">
+        <CardTitle className="flex items-center gap-3 text-xl font-bold">
+            <Skeleton className="h-6 w-6 rounded-md" />
+            <Skeleton className="h-6 w-48 rounded-md" />
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-6 space-y-2">
+      <CardContent className="p-0 sm:p-4">
         <Skeleton className="h-8 w-full" />
         <Skeleton className="h-8 w-full" />
         <Skeleton className="h-8 w-full" />
@@ -291,13 +467,69 @@ export default function PublicTeamsPage() {
     </Card>
   );
 
-  const formatDetails = useMemo(() => getFormatDetails(pointsToWin, teams.length), [pointsToWin, teams.length]);
-  const isKOTC = ['king-of-the-court', 'monarch-of-the-court', 'king-s-ransom', 'power-up-round', 'standard'].includes(gameFormat);
   const currentFormatDetails = isKOTC ? formatDetails[gameFormat] || formatDetails['king-of-the-court'] : formatDetails[gameFormat];
   const CurrentFormatIcon = currentFormatDetails?.icon || ShieldQuestion;
 
   const ruleIsActive = (gameFormat === 'power-up-round' || gameFormat === 'king-s-ransom') && activeRule;
   const activeRuleTitle = gameFormat === 'king-s-ransom' ? 'Active Cosmic Scramble' : 'Active Power-Up';
+  
+  const getRankByName = (teamName: string) => {
+    const rank = standings.findIndex(s => s.teamName === teamName);
+    return rank !== -1 ? rank + 1 : null;
+  }
+  
+    const { playoffBracket, areAllGamesPlayed } = useMemo(() => {
+        if (gameFormat !== 'pool-play-bracket' || standings.length < 4 || schedule.length === 0) {
+            return { playoffBracket: null, areAllGamesPlayed: false };
+        }
+        
+        const poolPlayGames = schedule.filter(m => !m.id.startsWith('playoff-'));
+        const allPlayed = poolPlayGames.every(match => match.resultA !== null && match.resultB !== null);
+
+        if (!allPlayed) {
+            return { playoffBracket: null, areAllGamesPlayed: false };
+        }
+
+        const top4 = standings.slice(0, 4);
+        if (top4.length < 4) {
+            return { playoffBracket: null, areAllGamesPlayed: allPlayed };
+        }
+        
+        const semiFinal1Data = schedule.find(m => m.id === 'playoff-semi-1') || { teamA: top4[0].teamName, teamB: top4[3].teamName, resultA: null, resultB: null };
+        const semiFinal2Data = schedule.find(m => m.id === 'playoff-semi-2') || { teamA: top4[1].teamName, teamB: top4[2].teamName, resultA: null, resultB: null };
+        
+        const semiFinals = [
+            { teamA: semiFinal1Data.teamA, teamB: semiFinal1Data.teamB, resultA: semiFinal1Data.resultA, resultB: semiFinal1Data.resultB },
+            { teamA: semiFinal2Data.teamA, teamB: semiFinal2Data.teamB, resultA: semiFinal2Data.resultA, resultB: semiFinal2Data.resultB }
+        ];
+
+        let championshipMatch = null;
+        const semi1Played = semiFinal1Data.resultA !== null && semiFinal1Data.resultB !== null;
+        const semi2Played = semiFinal2Data.resultA !== null && semiFinal2Data.resultB !== null;
+
+        if (semi1Played && semi2Played) {
+            const winner1 = semiFinal1Data.resultA! > semiFinal1Data.resultB! ? semiFinal1Data.teamA : semiFinal1Data.teamB;
+            const winner2 = semiFinal2Data.resultA! > semiFinal2Data.resultB! ? semiFinal2Data.teamA : semiFinal2Data.teamB;
+            
+            const finalData = schedule.find(m => m.id === 'playoff-final') || { resultA: null, resultB: null };
+
+            championshipMatch = {
+                teamA: winner1,
+                teamB: winner2,
+                resultA: finalData.resultA,
+                resultB: finalData.resultB
+            };
+        }
+
+
+        return { 
+            playoffBracket: {
+                semiFinals: semiFinals,
+                championship: championshipMatch,
+            },
+            areAllGamesPlayed: allPlayed 
+        };
+    }, [gameFormat, standings, schedule]);
 
 
   return (
@@ -307,96 +539,34 @@ export default function PublicTeamsPage() {
           <Volleyball className="h-10 w-10 text-primary" />
           <div>
             <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Saeed's Shuffle</h1>
-            <p className="text-md text-muted-foreground sm:text-lg flex items-center gap-2"><Clock className="h-5 w-5" />Games start at 6:45 PM</p>
           </div>
         </div>
       </header>
       <main className="flex-1 p-4 md:p-8">
         <div className="mx-auto w-full max-w-none">
           {isLoading ? (
-             <div className="space-y-12">
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5">
-                  {renderTeamSkeletons()}
-                </div>
-                {renderScheduleSkeletons()}
-             </div>
-          ) : teams.length > 0 || gameFormat === 'blind-draw' ? (
-            <div className="space-y-12">
-
-               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5">
-                {teams.map((team) => (
-                  <Card key={team.name} className="flex flex-col rounded-xl border-2 border-primary shadow-2xl transition-transform hover:scale-105 bg-card">
-                    <CardHeader className="p-4 bg-slate-600 rounded-t-lg">
-                      <CardTitle className="flex items-center gap-3 text-lg font-bold text-white">
-                        <Users className="h-5 w-5" />
-                        {team.name}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="flex-grow p-4">
-                      <div className="space-y-3">
-                        {[...team.players]
-                          .sort((a, b) => a.name.localeCompare(b.name))
-                          .map((player) => (
-                          <div key={player.id} className="flex items-center gap-3">
-                            <Avatar className="h-10 w-10 border-2 border-white">
-                              <AvatarFallback className="bg-neutral-300 font-bold text-neutral-800">
-                                {player.name.charAt(0)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span className="text-base font-medium">{player.name}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-
-              {schedule.length > 0 && (
+             <div className="space-y-8">
                 <Card className="rounded-xl border-2 shadow-2xl">
-                  <CardHeader className="p-6 bg-muted/50 rounded-t-lg">
-                    <CardTitle className="flex items-center gap-4 text-2xl font-bold">
-                        <Calendar className="h-7 w-7 text-primary" />
-                        Tonight's Schedule
-                    </CardTitle>
+                  <CardHeader className="p-6 bg-secondary/10 rounded-t-lg">
+                      <CardTitle className="flex items-center gap-4 text-2xl font-bold text-secondary-foreground">
+                          <Skeleton className="h-7 w-7 rounded-full" />
+                           <Skeleton className="h-7 w-48 rounded-md" />
+                      </CardTitle>
                   </CardHeader>
                   <CardContent className="p-6">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="w-[150px]">Court / Status</TableHead>
-                          <TableHead>Team A</TableHead>
-                          <TableHead>{ isKOTC ? 'vs Team B / Status' : 'Team B'}</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {schedule.map((match) => (
-                          <TableRow key={match.id} className="text-base">
-                            <TableCell><Badge>{match.court}</Badge></TableCell>
-                            <TableCell className="font-medium">{match.teamA}</TableCell>
-                            <TableCell className="font-medium">{match.teamB}</TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                      <Skeleton className="h-6 w-3/4 mb-4 rounded-md" />
+                      <div className="space-y-2">
+                        <Skeleton className="h-4 w-full rounded-md" />
+                        <Skeleton className="h-4 w-full rounded-md" />
+                        <Skeleton className="h-4 w-5/6 rounded-md" />
+                      </div>
                   </CardContent>
                 </Card>
-              )}
-
-              {currentFormatDetails && <Card className="rounded-xl border-2 shadow-2xl">
-                <CardHeader className="p-6 bg-secondary/10 rounded-t-lg">
-                    <CardTitle className="flex items-center gap-4 text-2xl font-bold text-secondary-foreground">
-                        <CurrentFormatIcon className="h-7 w-7 text-secondary" />
-                        Tonight's Format
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="p-6">
-                    <h3 className="font-bold text-xl mb-4">{currentFormatDetails.title}</h3>
-                    <div>{currentFormatDetails.description}</div>
-                </CardContent>
-              </Card>}
-
-               {ruleIsActive && (
+             </div>
+          ) : (
+            <div className="space-y-8">
+              
+              {ruleIsActive && (
                   <Card className="shadow-2xl transition-all duration-300 ease-in-out transform w-full bg-accent/20 border-accent border-2">
                       <CardHeader className="text-center pb-4">
                         <CardTitle className="text-2xl font-bold text-accent-foreground flex items-center justify-center gap-4">
@@ -411,11 +581,284 @@ export default function PublicTeamsPage() {
                   </Card>
                )}
 
-            </div>
-          ) : (
-             <div className="flex h-[60vh] flex-col items-center justify-center rounded-xl border-4 border-dashed bg-muted/50 p-12 text-center">
-              <h3 className="text-4xl font-bold tracking-tight">Teams Not Yet Published</h3>
-              <p className="mt-6 text-xl text-muted-foreground">The commissioner is still drafting. Check back soon!</p>
+              {teams.length > 0 || gameFormat === 'blind-draw' ? (
+                <>
+                   <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5">
+                    {standings.map((s, index) => {
+                      const team = s.teamData;
+                      const teamRecord = `${s.wins}-${s.losses}`;
+                      const Icon = team.icon && iconMap[team.icon] ? iconMap[team.icon] : Users;
+                      return(
+                      <Card key={team.id} className={cn("flex flex-col rounded-xl border-2 shadow-2xl transition-transform hover:scale-105 bg-card",
+                        isLevelUp ? `border-transparent` : 'border-primary'
+                      )}>
+                        <CardHeader className={cn("p-4 rounded-t-lg", isLevelUp ? getLevelHeaderStyle(s.level) : 'bg-slate-600 text-white')}>
+                             <CardTitle className="text-lg font-bold">
+                                <div className="flex items-center justify-between">
+                                   <div className="flex items-center gap-3">
+                                        {Icon && <Icon className="h-5 w-5" />}
+                                        <span>{team.name}</span>
+                                   </div>
+                                    <div className="flex items-center gap-3">
+                                      {isLevelUp && <span className="font-semibold">{s.level}</span>}
+                                      {gameFormat === 'pool-play-bracket' && (
+                                        <span className="ml-2 font-semibold text-base opacity-90">{teamRecord}</span>
+                                      )}
+                                    </div>
+                                </div>
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex-grow p-4">
+                          <div className="space-y-3">
+                            {[...team.players]
+                              .sort((a, b) => a.name.localeCompare(b.name))
+                              .map((player) => (
+                              <div key={player.id} className="flex items-center gap-3">
+                                <Avatar className="h-10 w-10 border-2 border-white">
+                                  <AvatarFallback className="bg-neutral-300 font-bold text-neutral-800">
+                                    {player.name.charAt(0)}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span className="text-base font-medium">{player.name}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )})}
+                  </div>
+
+                  {gameFormat === 'pool-play-bracket' && standings.length > 0 && (
+                      <Card className="rounded-xl border-2 shadow-2xl">
+                          <CardHeader className="p-4 bg-muted/50 rounded-t-lg">
+                              <CardTitle className="flex items-center gap-3 text-xl font-bold">
+                                  <Trophy className="h-6 w-6 text-primary" />
+                                  Pool Play Standings
+                              </CardTitle>
+                          </CardHeader>
+                          <CardContent className="p-0">
+                              <Table>
+                                  <TableHeader>
+                                      <TableRow>
+                                          <TableHead className="w-[50px] text-center">Rank</TableHead>
+                                          <TableHead>Team</TableHead>
+                                          <TableHead className="text-center">Wins</TableHead>
+                                          <TableHead className="text-center">Losses</TableHead>
+                                          <TableHead className="text-center">Points For</TableHead>
+                                          <TableHead className="text-center">Points Against</TableHead>
+                                          <TableHead className="text-center">Point Diff.</TableHead>
+                                      </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                      {standings.map((s, index) => (
+                                          <TableRow key={s.teamName}>
+                                              <TableCell className="font-bold text-center">{index + 1}</TableCell>
+                                              <TableCell className="font-medium">{s.teamName}</TableCell>
+                                              <TableCell className="text-center">{s.wins}</TableCell>
+                                              <TableCell className="text-center">{s.losses}</TableCell>
+                                              <TableCell className="text-center">{s.pointsFor}</TableCell>
+                                              <TableCell className="text-center">{s.pointsAgainst}</TableCell>
+                                              <TableCell className={cn("text-center font-bold", s.pointDifferential > 0 ? 'text-green-600' : 'text-red-600')}>
+                                                  {s.pointDifferential > 0 ? `+${s.pointDifferential}` : s.pointDifferential}
+                                              </TableCell>
+                                          </TableRow>
+                                      ))}
+                                  </TableBody>
+                              </Table>
+                          </CardContent>
+                      </Card>
+                  )}
+
+
+                   {schedule.length > 0 && !isKOTC && groupedSchedule && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {Object.entries(groupedSchedule).map(([time, matches]) => (
+                        <Card key={time} className="rounded-xl border-2 shadow-2xl">
+                          <CardHeader className="p-4 bg-muted/50 rounded-t-lg">
+                            <CardTitle className="flex items-center gap-3 text-xl font-bold">
+                              <Clock className="h-6 w-6 text-primary" />
+                              Matches at {time}
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="p-0 sm:p-4 space-y-2">
+                                {matches.map((match, index) => {
+                                    const teamA = teamMap.get(match.teamA);
+                                    const teamB = teamMap.get(match.teamB);
+                                    const teamAStats = teamStats[match.teamA];
+                                    const teamBStats = teamStats[match.teamB];
+                                    const teamARecord = teamAStats ? `${teamAStats.wins}-${teamAStats.losses}` : '';
+                                    const teamBRecord = teamBStats ? `${teamBStats.wins}-${teamBStats.losses}` : '';
+                                    const teamARank = getRankByName(match.teamA);
+                                    const teamBRank = getRankByName(match.teamB);
+                                    const IconA = teamA?.icon && iconMap[teamA.icon] ? iconMap[teamA.icon] : null;
+                                    const IconB = teamB?.icon && iconMap[teamB.icon] ? iconMap[teamB.icon] : null;
+
+                                    return (
+                                        <React.Fragment key={match.id}>
+                                            <div className="text-base rounded-lg border bg-background overflow-hidden">
+                                                <div className="p-2 font-bold text-center bg-muted text-muted-foreground">{match.court}</div>
+                                                <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 w-full p-2">
+                                                    <div className="font-medium text-left">
+                                                        <div className="flex items-center gap-2">
+                                                            {gameFormat === 'pool-play-bracket' && teamARank && <span className="font-bold mr-2">#{teamARank}</span>}
+                                                            {IconA && <IconA className="h-4 w-4" />}
+                                                            {match.teamA}
+                                                        </div>
+                                                        <div className="text-muted-foreground text-sm flex items-center gap-2">
+                                                          <span>{teamARecord}</span>
+                                                          {isLevelUp && teamAStats && <span>Level {teamAStats.level}</span>}
+                                                        </div>
+                                                    </div>
+                                                    <div className="font-mono text-center px-2">
+                                                        {match.resultA !== null && match.resultB !== null
+                                                            ? `${match.resultA} - ${match.resultB}`
+                                                            : 'vs'}
+                                                    </div>
+                                                    <div className="font-medium text-right">
+                                                         <div className="flex items-center justify-end gap-2">
+                                                            {gameFormat === 'pool-play-bracket' && teamBRank && <span className="font-bold mr-2">#{teamBRank}</span>}
+                                                            {match.teamB}
+                                                            {IconB && <IconB className="h-4 w-4" />}
+                                                        </div>
+                                                        <div className="text-muted-foreground text-sm flex items-center justify-end gap-2">
+                                                           {isLevelUp && teamBStats && <span>Level {teamBStats.level}</span>}
+                                                           <span>{teamBRecord}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <Separator />
+                                                <div className="grid grid-cols-2">
+                                                    <div>
+                                                        <PlayerRoster players={teamA?.players || []} />
+                                                    </div>
+                                                    <div className="border-l">
+                                                        <PlayerRoster players={teamB?.players || []} />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {index < matches.length - 1 && <Separator />}
+                                        </React.Fragment>
+                                    );
+                                })}
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+
+                  {playoffBracket && (
+                    <Card className="rounded-xl border-2 shadow-2xl">
+                         <CardHeader className="p-4 bg-muted/50 rounded-t-lg">
+                            <CardTitle className="flex items-center gap-3 text-xl font-bold">
+                                <Trophy className="h-6 w-6 text-primary" />
+                                Playoff Bracket
+                            </CardTitle>
+                         </CardHeader>
+                         <CardContent className="p-6">
+                            <div className="flex flex-col md:flex-row justify-center items-center gap-8">
+                                {/* Semi-Finals */}
+                                <div className="flex flex-col gap-8">
+                                    {playoffBracket.semiFinals.map((match, index) => (
+                                        <div key={index} className="space-y-2">
+                                             <p className="font-bold text-center text-muted-foreground">Semi-Final {index + 1}</p>
+                                             <div className="border rounded-lg p-3 min-w-[250px]">
+                                                <div className={cn("flex justify-between items-center", (match.resultA !== null && match.resultB !== null && match.resultA < match.resultB) && 'opacity-50')}>
+                                                    <span className="font-bold">#{getRankByName(match.teamA)} {match.teamA}</span>
+                                                    <span>{match.resultA}</span>
+                                                </div>
+                                                <Separator className="my-2" />
+                                                <div className={cn("flex justify-between items-center", (match.resultA !== null && match.resultB !== null && match.resultB < match.resultA) && 'opacity-50')}>
+                                                     <span className="font-bold">#{getRankByName(match.teamB)} {match.teamB}</span>
+                                                     <span>{match.resultB}</span>
+                                                </div>
+                                             </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                
+                                {/* Connector and Final */}
+                               {playoffBracket.championship && (
+                                <div className="flex items-center">
+                                    <div className="hidden md:block w-8 border-t-2 border-dashed"></div>
+                                    <div className="space-y-2">
+                                         <p className="font-bold text-center text-muted-foreground">Championship</p>
+                                         <div className="border-2 border-primary rounded-lg p-4 min-w-[250px] bg-primary/5">
+                                             <div className={cn("flex justify-between items-center font-bold", (playoffBracket.championship.resultA !== null && playoffBracket.championship.resultB !== null && playoffBracket.championship.resultA < playoffBracket.championship.resultB) && 'opacity-50')}>
+                                                <span>#{getRankByName(playoffBracket.championship.teamA)} {playoffBracket.championship.teamA}</span>
+                                                <span>{playoffBracket.championship.resultA}</span>
+                                             </div>
+                                             <Separator className="my-2" />
+                                             <div className={cn("flex justify-between items-center font-bold", (playoffBracket.championship.resultA !== null && playoffBracket.championship.resultB !== null && playoffBracket.championship.resultB < playoffBracket.championship.resultA) && 'opacity-50')}>
+                                                <span>#{getRankByName(playoffBracket.championship.teamB)} {playoffBracket.championship.teamB}</span>
+                                                <span>{playoffBracket.championship.resultB}</span>
+                                             </div>
+                                         </div>
+                                    </div>
+                                </div>
+                               )}
+                            </div>
+                         </CardContent>
+                    </Card>
+                  )}
+
+                  {schedule.length > 0 && isKOTC && (
+                    <Card className="rounded-xl border-2 shadow-2xl">
+                      <CardHeader className="p-6 bg-muted/50 rounded-t-lg">
+                        <CardTitle className="flex items-center gap-4 text-2xl font-bold">
+                            <Calendar className="h-7 w-7 text-primary" />
+                            Continuous KOTC Schedule
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-0 sm:p-4">
+                         <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="px-2">Court / Status</TableHead>
+                              <TableHead className="px-2">Team A</TableHead>
+                               <TableHead className="w-[80px] text-center px-1">Score</TableHead>
+                              <TableHead className="text-right px-2">Team B / Status</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {schedule.map((match) => (
+                              <TableRow key={match.id} className="text-base">
+                                <TableCell className="px-2"><Badge>{match.court}</Badge></TableCell>
+                                <TableCell className="font-medium px-2">{match.teamA}</TableCell>
+                                <TableCell className="text-center font-mono whitespace-nowrap p-1 w-[80px]">
+                                    {match.resultA !== null && match.resultB !== null
+                                        ? `${match.resultA} - ${match.resultB}`
+                                        : 'vs'}
+                                </TableCell>
+                                <TableCell className="font-medium text-right px-2">{match.teamB}</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </CardContent>
+                    </Card>
+                  )}
+                </>
+              ) : (
+                <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed bg-muted/50 p-8 text-center">
+                  <h3 className="text-2xl font-bold tracking-tight">Teams & Schedule Not Yet Published</h3>
+                  <p className="mt-2 text-lg text-muted-foreground">Check back soon!</p>
+                </div>
+              )}
+
+              {currentFormatDetails && (
+                <Card className="rounded-xl border-2 shadow-2xl">
+                  <CardHeader className="p-6 bg-secondary/10 rounded-t-lg">
+                    <CardTitle className="flex items-center gap-4 text-2xl font-bold text-secondary-foreground">
+                      <CurrentFormatIcon className="h-7 w-7 text-secondary" />
+                      Tournament Format
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <h3 className="font-bold text-xl mb-4">{currentFormatDetails.title}</h3>
+                    <div>{currentFormatDetails.description}</div>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           )}
         </div>
@@ -427,3 +870,13 @@ export default function PublicTeamsPage() {
     </div>
   );
 }
+<<<<<<< HEAD
+=======
+
+
+
+
+    
+
+    
+>>>>>>> db.json

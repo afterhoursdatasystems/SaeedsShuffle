@@ -1,16 +1,24 @@
 
 
+<<<<<<< HEAD
+=======
+export type PlayerPresence = 'Present' | 'Absent' | 'Pending';
+
+>>>>>>> db.json
 export type Player = {
   id: string;
   name: string;
   skill: number;
   gender: 'Guy' | 'Gal';
-  present: boolean;
+  presence: PlayerPresence;
 };
 
 export type Team = {
+  id: string;
   name: string;
   players: Player[];
+  level?: number;
+  icon?: string;
 };
 
 export type Match = {
@@ -20,12 +28,14 @@ export type Match = {
   resultA: number | null;
   resultB: number | null;
   court: string;
+  time: string;
 };
 
 export type GameFormat = 
   | 'round-robin' 
   | 'pool-play-bracket' 
   | 'king-of-the-court'
+  | 'level-up'
   | 'blind-draw';
 
 export type GameVariant = 
@@ -40,8 +50,14 @@ export type PowerUp = {
   description: string;
 };
 
+<<<<<<< HEAD
 export type CSVRow = {
   name: string;
   gender: 'Guy' | 'Gal';
   skill: string;
+=======
+export type Handicap = {
+  level: number;
+  description: string;
+>>>>>>> db.json
 };

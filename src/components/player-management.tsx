@@ -23,7 +23,7 @@ export default function PlayerManagement() {
   const { players } = usePlayerContext();
 
   const { presentPlayersCount, presentGuys, presentGals, averageSkill } = useMemo(() => {
-    const presentPlayers = players.filter(p => p.present);
+    const presentPlayers = players.filter(p => p.presence === 'Present');
     const presentPlayersCount = presentPlayers.length;
     const presentGuys = presentPlayers.filter(p => p.gender === 'Guy').length;
     const presentGals = presentPlayers.filter(p => p.gender === 'Gal').length;

@@ -8,6 +8,10 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+<<<<<<< HEAD
+=======
+  CardFooter
+>>>>>>> db.json
 } from '@/components/ui/card';
 import {
   Table,
@@ -23,18 +27,29 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+<<<<<<< HEAD
 import { UserPlus, Edit, Trash2, ArrowUpDown, RefreshCw, MoreVertical } from 'lucide-react';
+=======
+import { 
+    UserPlus, Edit, Trash2, ArrowUpDown, MoreVertical, RotateCcw,
+    FileDown, FileUp, UserX 
+} from 'lucide-react';
+>>>>>>> db.json
 import { Badge } from '@/components/ui/badge';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useRef } from 'react';
 import type { Player, Team } from '@/types';
 import { EditPlayerDialog } from '@/components/edit-player-dialog';
 import { AddPlayerDialog } from '@/components/add-player-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { publishData } from '@/app/actions';
+<<<<<<< HEAD
 import { PlayerCSVImportExport } from '@/components/player-csv-import-export';
+=======
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+>>>>>>> db.json
 
 
-type SortKey = 'name' | 'team' | 'gender' | 'skill' | 'present';
+type SortKey = 'name' | 'team' | 'gender' | 'skill' | 'presence';
 
 const teamColors = [
   '#F3A6A6', '#A6C1F3', '#A6F3A6', '#F3ECA6', '#DDA0DD', '#B0E0E6', 
@@ -49,14 +64,41 @@ const getSkillColor = (skill: number) => {
   return `hsl(${hue}, 80%, 75%)`;
 };
 
+const getPresenceProps = (presence: Player['presence']) => {
+    switch (presence) {
+        case 'Present':
+            return {
+                style: { backgroundColor: '#D4EDDA', color: '#155724', borderColor: '#C3E6CB' },
+                text: 'Present',
+            };
+        case 'Absent':
+            return {
+                style: { backgroundColor: '#F8D7DA', color: '#721C24', borderColor: '#F5C6CB' },
+                text: 'Absent',
+            };
+        case 'Pending':
+        default:
+            return {
+                style: { backgroundColor: '#E2E8F0', color: '#475569', borderColor: '#CBD5E1' },
+                text: 'Pending',
+            };
+    }
+};
+
 
 export default function PlayerManagementPage() {
+<<<<<<< HEAD
   const { players, teams, setTeams, togglePlayerPresence, isLoading, deletePlayer, gameFormat, schedule, activeRule, pointsToWin, resetAllPlayerPresence } = usePlayerContext();
+=======
+  const { players, teams, setTeams, togglePlayerPresence, isLoading, deletePlayer, gameFormat, schedule, activeRule, pointsToWin, resetAllPlayerPresence, deleteAllPlayers, importPlayers } = usePlayerContext();
+>>>>>>> db.json
   const { toast } = useToast();
   const [sortKey, setSortKey] = useState<SortKey>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
   const [isAddPlayerOpen, setIsAddPlayerOpen] = useState(false);
+  const importInputRef = useRef<HTMLInputElement>(null);
+
 
   const playerTeamMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -128,8 +170,8 @@ export default function PlayerManagementPage() {
 
   const sortedPlayers = useMemo(() => {
     return [...players].sort((a, b) => {
-      let valA: string | number | boolean;
-      let valB: string | number | boolean;
+      let valA: string | number;
+      let valB: string | number;
 
       switch(sortKey) {
         case 'team':
@@ -140,13 +182,13 @@ export default function PlayerManagementPage() {
           valA = a.skill;
           valB = b.skill;
           break;
-        case 'present':
-            valA = a.present;
-            valB = b.present;
+        case 'presence':
+            valA = a.presence;
+            valB = b.presence;
             break;
         default:
-          valA = a[sortKey as keyof Omit<Player, 'id' | 'skill' | 'present'>];
-          valB = b[sortKey as keyof Omit<Player, 'id' | 'skill' | 'present'>];
+          valA = a[sortKey as 'name' | 'gender'];
+          valB = b[sortKey as 'name' | 'gender'];
       }
       
       if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
@@ -171,9 +213,83 @@ export default function PlayerManagementPage() {
     return sortDirection === 'asc' ? '▲' : '▼';
   };
 
+<<<<<<< HEAD
   const handleDelete = (playerId: string) => {
     deletePlayer(playerId);
+=======
+  const handleDelete = async (playerId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    await deletePlayer(playerId);
+>>>>>>> db.json
   };
+
+  const handleResetPresence = async () => {
+    await resetAllPlayerPresence();
+  };
+  
+    const handleDeleteAll = async () => {
+        await deleteAllPlayers();
+    };
+
+    const handleExportCSV = () => {
+        const headers = 'Name,Gender,Skill';
+        const rows = players.map(p => `${p.name},${p.gender},${p.skill}`);
+        const csvContent = [headers, ...rows].join('\n');
+        
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'players.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    };
+
+    const handleImportClick = () => {
+        importInputRef.current?.click();
+    };
+
+    const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            const text = e.target?.result;
+            if (typeof text !== 'string') return;
+
+            const rows = text.split('\n').slice(1); // Skip header
+            const newPlayers: Omit<Player, 'id' | 'presence'>[] = [];
+
+            for (const row of rows) {
+                if (!row.trim()) continue;
+                const [name, gender, skillStr] = row.split(',').map(s => s.trim());
+                const skill = parseInt(skillStr, 10);
+                if (name && (gender === 'Guy' || gender === 'Gal') && !isNaN(skill)) {
+                    newPlayers.push({ name, gender, skill });
+                } else {
+                     toast({
+                        title: 'Import Warning',
+                        description: `Skipped invalid row: "${row}"`,
+                        variant: 'destructive',
+                    });
+                }
+            }
+            
+            if (newPlayers.length > 0) {
+                await importPlayers(newPlayers);
+            }
+            // Reset file input
+            if(importInputRef.current) {
+                importInputRef.current.value = '';
+            }
+        };
+        reader.readAsText(file);
+    };
 
 
   if (isLoading) {
@@ -187,6 +303,7 @@ export default function PlayerManagementPage() {
   return (
     <>
       <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
+<<<<<<< HEAD
         <div className="flex items-start justify-between mb-8 flex-wrap gap-4">
           <div>
             <h1 className="text-3xl font-bold">Player Management</h1>
@@ -278,10 +395,119 @@ export default function PlayerManagementPage() {
                         backgroundColor: player.gender === 'Guy' ? '#A2D2FF' : '#FFC4D6',
                         color: '#333',
                       }}
+=======
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold">Player Management</h1>
+          <p className="text-muted-foreground">
+            Manage your league's players here. Click a player to toggle their presence.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap gap-2 mb-8">
+            <Button onClick={() => setIsAddPlayerOpen(true)} className="flex-grow sm:flex-grow-0">
+            <UserPlus className="mr-2 h-4 w-4" />
+            Add Player
+            </Button>
+            <Button onClick={handleResetPresence} variant="outline" className="flex-grow sm:flex-grow-0">
+                <RotateCcw className="mr-2 h-4 w-4" />
+                Reset Presence
+            </Button>
+            <input type="file" ref={importInputRef} onChange={handleFileImport} accept=".csv" style={{ display: 'none' }} />
+            <Button onClick={handleImportClick} variant="outline" className="flex-grow sm:flex-grow-0">
+                <FileUp className="mr-2 h-4 w-4" />
+                Import CSV
+            </Button>
+            <Button onClick={handleExportCSV} variant="outline" className="flex-grow sm:flex-grow-0">
+                <FileDown className="mr-2 h-4 w-4" />
+                Export CSV
+            </Button>
+            <AlertDialog>
+                <AlertDialogTrigger asChild>
+                    <Button variant="destructive" className="flex-grow sm:flex-grow-0">
+                        <UserX className="mr-2 h-4 w-4" />
+                        Delete All
+                    </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete all players from the roster and remove them from any teams they are on.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDeleteAll}>Yes, delete all players</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        </div>
+        
+        {/* Mobile View: Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:hidden">
+          {sortedPlayers.map((player) => {
+            const teamName = playerTeamMap.get(player.id) || 'Unassigned';
+            const teamColor = teamName === 'Unassigned' ? '#EAEAEA' : teamColorMap.get(teamName);
+            const presenceProps = getPresenceProps(player.presence);
+            return (
+              <Card key={player.id} className="flex flex-col">
+                <CardHeader className="flex flex-row items-center justify-between p-4">
+                  <CardTitle className="text-lg cursor-pointer" onClick={() => togglePlayerPresence(player.id)}>{player.name}</CardTitle>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem onSelect={() => setEditingPlayer(player)}>
+                        <Edit className="mr-2 h-4 w-4" /> Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onSelect={(e) => handleDelete(player.id, e as any)} className="text-destructive">
+                        <Trash2 className="mr-2 h-4 w-4" /> Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </CardHeader>
+                <CardContent className="p-4 pt-0 space-y-3">
+                  <div className="flex items-center justify-between" onClick={() => togglePlayerPresence(player.id)}>
+                      <span className="text-muted-foreground">Presence</span>
+                      <Badge style={presenceProps.style} className="border">
+                        {presenceProps.text}
+                      </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Team</span>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="p-1 h-auto -mr-2">
+                            <Badge style={{ backgroundColor: teamColor, color: '#333' }} className='border-gray-300 border hover:opacity-80 cursor-pointer'>
+                              {teamName}
+                            </Badge>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          <DropdownMenuItem onSelect={() => handleTeamChange(player, 'Unassigned')}>
+                            Unassigned
+                          </DropdownMenuItem>
+                          {teams.map(team => (
+                            <DropdownMenuItem key={team.name} onSelect={() => handleTeamChange(player, team.name)}>
+                              {team.name}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                  </div>
+                </CardContent>
+                <CardFooter className="p-4 pt-0 flex justify-between">
+                    <Badge
+                      style={{ backgroundColor: player.gender === 'Guy' ? '#A2D2FF' : '#FFC4D6', color: '#333' }}
+>>>>>>> db.json
                       className="border-gray-300 border"
                     >
                       {player.gender}
                     </Badge>
+<<<<<<< HEAD
                   </div>
                   <div className="flex justify-between items-center cursor-pointer" onClick={() => togglePlayerPresence(player.id)}>
                     <span className="text-muted-foreground">Skill</span>
@@ -305,6 +531,22 @@ export default function PlayerManagementPage() {
         </div>
 
         {/* Desktop View - Table */}
+=======
+                    <Badge
+                      style={{ backgroundColor: getSkillColor(player.skill), color: '#333' }}
+                      className="border-gray-300 border"
+                    >
+                      Skill: {player.skill}
+                    </Badge>
+                </CardFooter>
+              </Card>
+            );
+          })}
+        </div>
+
+
+        {/* Desktop View: Table */}
+>>>>>>> db.json
         <Card className="hidden md:block">
           <CardContent className="p-0">
             <Table>
@@ -317,9 +559,9 @@ export default function PlayerManagementPage() {
                     </Button>
                   </TableHead>
                   <TableHead>
-                    <Button variant="ghost" onClick={() => handleSort('present')}>
+                    <Button variant="ghost" onClick={() => handleSort('presence')}>
                       Presence
-                      <span className="ml-2">{getSortIcon('present')}</span>
+                      <span className="ml-2">{getSortIcon('presence')}</span>
                     </Button>
                   </TableHead>
                   <TableHead>
@@ -347,6 +589,7 @@ export default function PlayerManagementPage() {
                 {sortedPlayers.map((player) => {
                   const teamName = playerTeamMap.get(player.id) || 'Unassigned';
                   const teamColor = teamName === 'Unassigned' ? '#EAEAEA' : teamColorMap.get(teamName);
+                  const presenceProps = getPresenceProps(player.presence);
 
                   return (
                       <TableRow 
@@ -354,15 +597,8 @@ export default function PlayerManagementPage() {
                       >
                         <TableCell className="font-medium cursor-pointer" onClick={() => togglePlayerPresence(player.id)}>{player.name}</TableCell>
                         <TableCell className="cursor-pointer" onClick={() => togglePlayerPresence(player.id)}>
-                          <Badge
-                            style={{
-                              backgroundColor: player.present ? '#D4EDDA' : '#F8D7DA',
-                              color: player.present ? '#155724' : '#721C24',
-                              borderColor: player.present ? '#C3E6CB' : '#F5C6CB'
-                            }}
-                            className="border"
-                          >
-                            {player.present ? 'Present' : 'Away'}
+                          <Badge style={presenceProps.style} className="border">
+                            {presenceProps.text}
                           </Badge>
                         </TableCell>
                         <TableCell>
@@ -416,7 +652,11 @@ export default function PlayerManagementPage() {
                             <Edit className="h-4 w-4" />
                             <span className="sr-only">Edit Player</span>
                           </Button>
+<<<<<<< HEAD
                           <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDelete(player.id)}>
+=======
+                          <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={(e) => handleDelete(player.id, e as any)}>
+>>>>>>> db.json
                             <Trash2 className="h-4 w-4" />
                             <span className="sr-only">Delete Player</span>
                           </Button>

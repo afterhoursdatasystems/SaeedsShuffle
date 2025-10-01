@@ -4,63 +4,37 @@
 
 'use client';
 
-import type { Player, Team, Match, GameFormat, GameVariant, PowerUp } from '@/types';
+import type { Player, Team, Match, GameFormat, GameVariant, PowerUp, PlayerPresence, Handicap } from '@/types';
 import React, { createContext, useContext, useState, type ReactNode, useEffect, useCallback } from 'react';
+<<<<<<< HEAD
 import { getPlayers, updatePlayerPresence, getPublishedData, updatePlayer, addPlayer, deletePlayer, publishData, resetAllPlayerPresence, importPlayersFromCSV } from '@/app/actions';
+=======
+import { getPlayers, updatePlayerPresence, getPublishedData, updatePlayer, addPlayer, deletePlayer, publishData, resetAllPlayerPresence as resetAllPlayerPresenceAction, deleteAllPlayers as deleteAllPlayersAction, importPlayers as importPlayersAction } from '@/app/actions';
+>>>>>>> db.json
 import { useToast } from '@/hooks/use-toast';
+import AllHandicaps from '@/lib/handicaps.json';
+import allPowerUps from '@/lib/power-ups.json';
+import cosmicScrambleRules from '@/lib/cosmic-scramble-rules.json';
 
-const allPowerUps: PowerUp[] = [
-  { name: 'Point Boost', description: 'Start the next game with a 2-point lead.' },
-  { name: 'Serve Advantage', description: 'Get one "do-over" on a missed serve during the next match.' },
-  { name: 'The Equalizer', description: "The opponent's highest-skilled player must serve underhand for the entire game." },
-  { name: 'Secret Weapon', description: 'Choose one player on your team; their points are worth double for the first 5 points of the game.' },
-  { name: 'Triple Threat', description: "For the next three serves, your team's serves cannot be returned over the net on the first touch." },
-  { name: 'Gender Bender', description: 'The next point must be scored by a player of the opposite gender of the person who just scored.' },
-  { name: 'One-Handed Wonder', description: 'One player on the opposing team must play with one hand behind their back for the next rally.' },
-  { name: 'Rally Stopper', description: 'Your team can choose to end a rally and replay the point, once per game.' },
-  { name: 'Ace In The Hole', description: 'If your team serves an ace, you get 3 points instead of 1.' },
-  { name: 'The Wall', description: "For the next rally, your team's blocks are worth 2 points." },
-  { name: 'Butterfingers', description: 'The opposing team is not allowed to set the ball for the next two rallies (must bump-set).' },
-  { name: 'Vampire', description: 'Steal one point from the opposing team and add it to your score.' },
-  { name: 'Frozen', description: 'Pick a player on the other team. They cannot jump for the next rally.' },
-  { name: 'Mimic', description: 'For the next rally, the opposing team must mimic your team\'s formation.' },
-  { name: 'Double Trouble', description: 'For the next rally, your team is allowed to have two contacts in a row by the same player.' },
-  { name: 'Low Ceiling', description: 'For the next rally, the opposing team is not allowed to send the ball over the net above the height of the antennae.' },
-  { name: 'Friendly Fire', description: 'Your team can get a point if the opposing team has a miscommunication and two players run into each other.' },
-  { name: 'Serve Swap', description: 'You may force any player on the opposing team to serve for the next point.' },
-];
 
-const cosmicScrambleRules: PowerUp[] = [
-    { name: 'Birthday Swap', description: 'The two players (one from each team) whose birthday is closest to today must swap teams.' },
-    { name: 'Alphabetical Swap', description: 'The player whose first name comes last alphabetically on the losing team swaps with the player whose first name comes last alphabetically on the other team.' },
-    { name: 'Brightest Shirt Swap', description: 'Of all the players on both teams, the two wearing the brightest color shirts must swap.' },
-    { name: 'Sibling Swap', description: 'The player with the most siblings on the losing team swaps places with the player with the most siblings on the other team.' },
-    { name: 'Traveler Swap', description: 'The two players (one from each team) who traveled the farthest to get to the tournament must swap teams.' },
-    { name: 'Longest Last Name Swap', description: 'The player with the most letters in their last name on the losing team swaps with the player with the most letters in their last name on the other team.' },
-    { name: 'Newest Shoes Swap', description: 'The two players (one from each team) with the newest-looking shoes must swap.' },
-    { name: 'Concert Goer Swap', description: 'The player who most recently went to a concert on the losing team swaps with the player who most recently went to a concert on the other team.' },
-    { name: 'Longest Hair Swap', description: 'The two players (one from each team) with the longest hair must swap.' },
-    { name: 'Most Vowels Swap', description: 'The player with the most vowels in their first name on the losing team swaps with the player with the most vowels in their first name on the other team.' },
-    { name: 'Car Brand Swap', description: 'The two players (one from each team) who own the same brand of car must swap.' },
-    { name: 'Early Bird Swap', description: 'The player who woke up the earliest this morning on the losing team swaps places with the player who woke up the earliest on the other team.' },
-    { name: 'Tallest Swap', description: 'The two players (one from each team) who are the tallest must swap.' },
-    { name: 'Restaurant Swap', description: 'The player who last ate at a restaurant on the losing team swaps with the player who last ate at a restaurant on the other team.' },
-    { name: 'Pet Swap', description: 'The two players (one from each team) with the most unique or unusual pet must swap.' },
-    { name: 'Volleyball Veteran Swap', description: 'The player who has been playing volleyball for the longest number of years on the losing team swaps with their counterpart on the other team.' },
-    { name: 'Blue Clothing Swap', description: 'The two players (one from each team) with the most blue on their clothing must swap.' },
-    { name: 'Language Swap', description: 'The player who can speak another language on the losing team swaps with the player who can speak another language on the other team (if one exists on both teams).' },
-    { name: 'Birth Month Swap', description: 'The two players (one from each team) who share the same birth month must swap (if applicable).' },
-    { name: 'Movie Goer Swap', description: 'The player who last watched a movie in a theater on the losing team swaps places with the player who last did the same on the other team.' },
-];
+const defaultLevelUpHandicaps = AllHandicaps.map(levelData => {
+    return {
+        level: levelData.level,
+        description: levelData.handicaps[0] // Select the first rule as the default
+    };
+});
 
 
 interface PlayerContextType {
   players: Player[];
   setPlayers: React.Dispatch<React.SetStateAction<Player[]>>;
-  togglePlayerPresence: (playerId: string) => void;
+  togglePlayerPresence: (playerId: string) => Promise<void>;
+  resetAllPlayerPresence: () => Promise<void>;
   updatePlayer: (player: Player) => Promise<boolean>;
-  addPlayer: (player: Omit<Player, 'id' | 'present'>) => Promise<boolean>;
+  addPlayer: (player: Omit<Player, 'id' | 'presence'>) => Promise<boolean>;
   deletePlayer: (playerId: string) => Promise<boolean>;
+  deleteAllPlayers: () => Promise<boolean>;
+  importPlayers: (players: Omit<Player, 'id' | 'presence'>[]) => Promise<boolean>;
   isLoading: boolean;
   teams: Team[];
   setTeams: React.Dispatch<React.SetStateAction<Team[]>>;
@@ -75,11 +49,24 @@ interface PlayerContextType {
   setActiveRule: React.Dispatch<React.SetStateAction<PowerUp | null>>;
   pointsToWin: number;
   setPointsToWin: React.Dispatch<React.SetStateAction<number>>;
+  gamesPerTeam: number;
+  setGamesPerTeam: React.Dispatch<React.SetStateAction<number>>;
+  gameDuration: number;
+  setGameDuration: React.Dispatch<React.SetStateAction<number>>;
   publishSettings: () => void;
   allPowerUps: PowerUp[];
   cosmicScrambleRules: PowerUp[];
+<<<<<<< HEAD
   resetAllPlayerPresence: () => Promise<void>;
   importPlayers: (csvData: string) => Promise<void>;
+=======
+  updateTeam: (team: Team) => void;
+  levelUpHandicaps: Handicap[];
+  setLevelUpHandicaps: React.Dispatch<React.SetStateAction<Handicap[]>>;
+  shuffleLevelUpHandicaps: (levelToShuffle?: number) => Promise<void>;
+  resetLevelUpHandicapsToDefault: () => Promise<void>;
+  loadAllData: () => Promise<void>;
+>>>>>>> db.json
 }
 
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
@@ -91,77 +78,139 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [gameFormat, setGameFormat] = useState<GameFormat>('king-of-the-court');
   const [gameVariant, setGameVariant] = useState<GameVariant>('standard');
   const [activeRule, setActiveRule] = useState<PowerUp | null>(null);
-  const [pointsToWin, setPointsToWin] = useState<number>(15);
+  const [pointsToWin, setPointsToWinInternal] = useState<number>(15);
+  const [gamesPerTeam, setGamesPerTeam] = useState<number>(4);
+  const [gameDuration, setGameDuration] = useState<number>(30);
+  const [levelUpHandicaps, setLevelUpHandicaps] = useState<Handicap[]>(defaultLevelUpHandicaps);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  
+  const setPointsToWin = useCallback((points: number) => {
+    setPointsToWinInternal(points);
+    const durationOptions = [15, 20, 25, 30, 35, 40, 45];
+    let newDuration = Math.round(points / 5) * 5;
+    // Find the closest available duration
+    newDuration = durationOptions.reduce((prev, curr) => 
+      Math.abs(curr - newDuration) < Math.abs(prev - newDuration) ? curr : prev
+    );
+    setGameDuration(newDuration);
+  }, []);
 
-  useEffect(() => {
-    const fetchData = async () => {
-        setIsLoading(true);
-        try {
-            const [playerResult, publishedDataResult] = await Promise.all([
-                getPlayers(),
-                getPublishedData()
-            ]);
 
-            if (playerResult.success && playerResult.data) {
-                setPlayers(playerResult.data);
-            } else {
-                 toast({
-                    title: "Error fetching players",
-                    description: playerResult.error || "Could not load player data.",
-                    variant: 'destructive',
-                });
-            }
+  const loadAllData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+        const [playerResult, publishedDataResult] = await Promise.all([
+            getPlayers(),
+            getPublishedData()
+        ]);
 
-            if (publishedDataResult.success && publishedDataResult.data) {
-                const { teams, format, schedule, activeRule, pointsToWin } = publishedDataResult.data;
-                setTeams(teams || []);
-                setSchedule(schedule || []);
-                setActiveRule(activeRule || null);
-                setPointsToWin(pointsToWin || 15);
-                
-                // Handle complex format state
-                if (format === 'monarch-of-the-court' || format === 'king-s-ransom' || format === 'power-up-round' || format === 'standard') {
-                    setGameFormat('king-of-the-court');
-                    setGameVariant(format);
-                } else if (format) {
-                    setGameFormat(format as GameFormat);
-                    setGameVariant('standard');
-                }
-
-            } else {
-                 toast({
-                    title: "Error fetching settings",
-                    description: publishedDataResult.error || "Could not load tournament settings.",
-                    variant: 'destructive',
-                });
-            }
-
-        } catch (error) {
+        if (playerResult.success && playerResult.data) {
+            setPlayers(playerResult.data);
+        } else {
              toast({
-                title: "Failed to load initial data",
-                description: "There was an error loading data from the server.",
+                title: "Error fetching players",
+                description: playerResult.error || "Could not load player data.",
                 variant: 'destructive',
             });
-        } finally {
-            setIsLoading(false);
         }
-    };
-    fetchData();
-  }, [toast]);
+
+        if (publishedDataResult.success && publishedDataResult.data) {
+            const { teams, format, schedule, activeRule, pointsToWin, levelUpHandicaps, players: publishedPlayers } = publishedDataResult.data as any;
+            setTeams(teams || []);
+            setSchedule(schedule || []);
+            setActiveRule(activeRule || null);
+            setPointsToWin(pointsToWin || 15);
+            setLevelUpHandicaps(levelUpHandicaps && levelUpHandicaps.length > 0 ? levelUpHandicaps : defaultLevelUpHandicaps);
+            
+             if (publishedPlayers) {
+                setPlayers(publishedPlayers);
+            }
+            
+            // Handle complex format state
+            if (format === 'monarch-of-the-court' || format === 'king-s-ransom' || format === 'power-up-round' || format === 'standard') {
+                setGameFormat('king-of-the-court');
+                setGameVariant(format);
+            } else if (format) {
+                setGameFormat(format as GameFormat);
+                setGameVariant('standard');
+            }
+
+        } else {
+             toast({
+                title: "Error fetching settings",
+                description: publishedDataResult.error || "Could not load tournament settings.",
+                variant: 'destructive',
+            });
+        }
+
+    } catch (error) {
+         toast({
+            title: "Failed to load initial data",
+            description: "There was an error loading data from the server.",
+            variant: 'destructive',
+        });
+    } finally {
+        setIsLoading(false);
+    }
+  }, [toast, setPointsToWin]);
+
+
+  useEffect(() => {
+    loadAllData();
+  }, [loadAllData]);
+  
+  useEffect(() => {
+    if (gameFormat === 'level-up' && teams.length > 0 && schedule.length > 0) {
+      const teamWins: { [teamName: string]: number } = {};
+
+      // Initialize wins for all teams
+      for (const team of teams) {
+        teamWins[team.name] = 0;
+      }
+
+      // Calculate wins from schedule
+      for (const match of schedule) {
+        if (match.resultA !== null && match.resultB !== null) {
+          if (match.resultA > match.resultB) {
+            if (teamWins.hasOwnProperty(match.teamA)) {
+              teamWins[match.teamA]++;
+            }
+          } else if (match.resultB > match.resultA) {
+            if (teamWins.hasOwnProperty(match.teamB)) {
+              teamWins[match.teamB]++;
+            }
+          }
+        }
+      }
+
+      // Update team levels
+      const updatedTeams = teams.map(team => ({
+        ...team,
+        level: (teamWins[team.name] || 0) + 1,
+      }));
+      
+      // Only update state if there's a change to prevent infinite loops
+      if (JSON.stringify(updatedTeams) !== JSON.stringify(teams)) {
+        setTeams(updatedTeams);
+      }
+    }
+  }, [schedule, gameFormat, teams]);
 
 
   const togglePlayerPresence = async (playerId: string) => {
     const player = players.find(p => p.id === playerId);
     if (!player) return;
 
-    const newPresence = !player.present;
+    const presenceOrder: PlayerPresence[] = ['Pending', 'Present', 'Absent'];
+    const currentIndex = presenceOrder.indexOf(player.presence);
+    const nextIndex = (currentIndex + 1) % presenceOrder.length;
+    const newPresence = presenceOrder[nextIndex];
 
     // Optimistically update the UI
     setPlayers(currentPlayers =>
       currentPlayers.map(p =>
-        p.id === playerId ? { ...p, present: newPresence } : p
+        p.id === playerId ? { ...p, presence: newPresence } : p
       )
     );
     
@@ -177,9 +226,34 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       });
       setPlayers(currentPlayers =>
         currentPlayers.map(p =>
-          p.id === playerId ? { ...p, present: !newPresence } : p
+          p.id === playerId ? { ...p, presence: player.presence } : p
         )
       );
+    }
+  };
+
+  const resetAllPlayerPresence = async () => {
+    const originalPlayers = [...players];
+    // Optimistically update the UI
+    setPlayers(currentPlayers =>
+      currentPlayers.map(p => ({ ...p, presence: 'Pending' }))
+    );
+
+    const result = await resetAllPlayerPresenceAction();
+
+    if (result.success) {
+      toast({
+        title: "Presence Reset",
+        description: "All players have been set to 'Pending'.",
+      });
+    } else {
+      // Revert on failure
+      setPlayers(originalPlayers);
+      toast({
+        title: "Update Failed",
+        description: result.error || "Could not update all players.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -213,9 +287,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const handleAddPlayer = async (playerToAdd: Omit<Player, 'id' | 'present'>) => {
+  const handleAddPlayer = async (playerToAdd: Omit<Player, 'id' | 'presence'>) => {
     const tempId = `temp-${Date.now()}`;
-    const newPlayer: Player = { ...playerToAdd, id: tempId, present: true };
+    const newPlayer: Player = { ...playerToAdd, id: tempId, presence: 'Present' };
 
     setPlayers(current => [...current, newPlayer]);
     
@@ -238,6 +312,27 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         return false;
     }
   };
+  
+    const handleImportPlayers = async (playersToImport: Omit<Player, 'id' | 'presence'>[]) => {
+    const result = await importPlayersAction(playersToImport);
+
+    if (result.success && result.data) {
+      setPlayers(result.data);
+      toast({
+        title: "Import Successful",
+        description: `${playersToImport.length} players have been added to the roster.`
+      });
+      return true;
+    } else {
+      toast({
+        title: "Import Failed",
+        description: result.error || "Could not import players.",
+        variant: "destructive"
+      });
+      return false;
+    }
+  };
+
 
   const handleDeletePlayer = async (playerId: string) => {
     const originalPlayers = [...players];
@@ -276,6 +371,28 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         return false;
     }
   };
+  
+    const handleDeleteAllPlayers = async () => {
+    const result = await deleteAllPlayersAction();
+
+    if (result.success) {
+      setPlayers([]);
+      setTeams(current => current.map(team => ({ ...team, players: [] })));
+      toast({
+        title: "All Players Deleted",
+        description: "The player roster has been cleared."
+      });
+      return true;
+    } else {
+      toast({
+        title: "Deletion Failed",
+        description: result.error || "Could not delete all players.",
+        variant: "destructive"
+      });
+      return false;
+    }
+  };
+
 
   const publishSettings = useCallback(async () => {
     let finalFormat: GameFormat | GameVariant = gameFormat;
@@ -283,7 +400,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         finalFormat = gameVariant;
     }
 
-    const result = await publishData(teams, finalFormat, schedule, activeRule, pointsToWin);
+    const result = await publishData(teams, finalFormat, schedule, activeRule, pointsToWin, levelUpHandicaps);
     
     if (result.success) {
       toast({
@@ -297,7 +414,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         variant: 'destructive',
       });
     }
-  }, [gameFormat, gameVariant, teams, schedule, activeRule, pointsToWin, toast]);
+  }, [gameFormat, gameVariant, teams, schedule, activeRule, pointsToWin, levelUpHandicaps, toast]);
 
   const handleSetGameVariant = (variant: GameVariant) => {
     setGameVariant(variant);
@@ -329,6 +446,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     }
   };
 
+<<<<<<< HEAD
   const handleResetAllPlayerPresence = async () => {
     const originalPlayers = [...players];
     // Optimistic UI update
@@ -367,6 +485,50 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
               variant: "destructive"
           });
       }
+=======
+  const updateTeam = (teamToUpdate: Team) => {
+    setTeams(currentTeams => 
+        currentTeams.map(t => t.id === teamToUpdate.id ? teamToUpdate : t)
+    );
+  };
+  
+    const shuffleLevelUpHandicaps = async (levelToShuffle?: number) => {
+    let newHandicaps: Handicap[] = [];
+
+    if (levelToShuffle) {
+      newHandicaps = levelUpHandicaps.map(handicap => {
+        if (handicap.level === levelToShuffle) {
+          const levelData = AllHandicaps.find(h => h.level === levelToShuffle);
+          if (levelData) {
+            const availableHandicaps = levelData.handicaps.filter(h => h !== handicap.description);
+            const randomIndex = Math.floor(Math.random() * availableHandicaps.length);
+            return {
+              ...handicap,
+              description: availableHandicaps.length > 0 ? availableHandicaps[randomIndex] : handicap.description
+            };
+          }
+        }
+        return handicap;
+      });
+    } else {
+      newHandicaps = AllHandicaps.map(levelData => {
+        const randomIndex = Math.floor(Math.random() * levelData.handicaps.length);
+        return {
+          level: levelData.level,
+          description: levelData.handicaps[randomIndex]
+        };
+      });
+    }
+
+    setLevelUpHandicaps(newHandicaps);
+    await publishData(teams, gameFormat, schedule, activeRule, pointsToWin, newHandicaps);
+  };
+
+
+  const resetLevelUpHandicapsToDefault = async () => {
+    setLevelUpHandicaps(defaultLevelUpHandicaps);
+    await publishData(teams, gameFormat, schedule, activeRule, pointsToWin, defaultLevelUpHandicaps);
+>>>>>>> db.json
   };
 
 
@@ -374,9 +536,12 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     players,
     setPlayers,
     togglePlayerPresence,
+    resetAllPlayerPresence,
     updatePlayer: handleUpdatePlayer,
     addPlayer: handleAddPlayer,
     deletePlayer: handleDeletePlayer,
+    deleteAllPlayers: handleDeleteAllPlayers,
+    importPlayers: handleImportPlayers,
     isLoading,
     teams,
     setTeams,
@@ -391,11 +556,24 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setActiveRule,
     pointsToWin,
     setPointsToWin,
+    gamesPerTeam,
+    setGamesPerTeam,
+    gameDuration,
+    setGameDuration,
     publishSettings,
     allPowerUps,
     cosmicScrambleRules,
+<<<<<<< HEAD
     resetAllPlayerPresence: handleResetAllPlayerPresence,
     importPlayers: handleImportPlayers,
+=======
+    updateTeam,
+    levelUpHandicaps,
+    setLevelUpHandicaps,
+    shuffleLevelUpHandicaps,
+    resetLevelUpHandicapsToDefault,
+    loadAllData,
+>>>>>>> db.json
   };
 
   return (
@@ -412,3 +590,4 @@ export function usePlayerContext() {
   }
   return context;
 }
+
